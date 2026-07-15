@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Employee;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,6 +41,27 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+        ]);
+
+        [$firstName, $lastName] = explode(' ', $user->name, 2) + ['', ''];
+
+        // Generate unique employee code, e.g. EMP-0001, EMP-0002...
+        $code = 'EMP-' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
+
+        // Default department kung wala kang field para dito sa registration form
+        $department = $request->input('department', 'Unassigned');
+
+        $employee = Employee::create([
+            'user_id' => $user->id,
+            'employee_code' => $code,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $user->email,
+            'department' => $department,
+            'position' => fake()->jobTitle(),
+            'hire_date' => now(),
+            'employment_type' => 'full_time',
+            'status' => 'active',
         ]);
 
         $user->assignRole('employee');
