@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
         // Generate unique employee code, e.g. EMP-0001, EMP-0002...
         $code = 'EMP-' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
 
-        // Default department kung wala kang field para dito sa registration form
+        // Default department 
         $department = $request->input('department', 'Unassigned');
 
         $employee = Employee::create([
