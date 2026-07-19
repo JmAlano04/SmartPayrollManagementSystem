@@ -3,9 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Employee;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\RolePermission;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -22,11 +25,14 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        $this->call([
-            RoleSeeder::class,
-            UserSeeder::class,
-            EmployeeSeeder::class,
-        ]);      
+        // $this->call([
+        //     RoleSeeder::class,
+        //     UserSeeder::class,
+
+            
+        // ]); 
+        
+        Employee::factory()->count(10)->create();
 
     }
 }
