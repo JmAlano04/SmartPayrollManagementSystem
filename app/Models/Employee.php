@@ -24,6 +24,11 @@ class Employee extends Model
         'status',
     ];
 
+    public function salaryStructures()
+    {
+        return $this->hasMany(SalaryStructure::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

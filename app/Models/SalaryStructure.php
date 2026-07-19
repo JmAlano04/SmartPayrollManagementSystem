@@ -19,4 +19,9 @@ class SalaryStructure extends Model
             'effective_from',
             'effective_to',
         ];
+
+         public function Employee()
+        {
+            return $this->belongsTo(Employee::class, 'employee_id');
+        }
 }
