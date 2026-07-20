@@ -12,16 +12,17 @@ class EmployeeFactory extends Factory
 
     public function definition(): array
     {
+        $user      = User::factory()->create();
+        $nameParts = explode(' ', $user->name);
+
         return [
-            'user_id' => User::factory(),
+            'user_id' => $user->id,
 
             'employee_code' => 'EMP-' . fake()->unique()->numerify('####'),
 
-            'first_name' => fake()->firstName(),
-
-            'last_name' => fake()->lastName(),
-
-            'email' => fake()->unique()->safeEmail(),
+            'first_name' => $nameParts[0],                       // ← from User
+            'last_name'  => $nameParts[1] ?? fake()->lastName(), // ← from User
+            'email'      => $user->email,                        // ← from User
 
             'department' => fake()->randomElement([
                 'IT',
@@ -57,5 +58,12 @@ class EmployeeFactory extends Factory
 
             'face_enrolled_at' => null,
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Employee $employee) {
+            $employee->user->assignRole('employee');
+        });
     }
 }
