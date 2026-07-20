@@ -63,7 +63,8 @@ class EmployeeFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Employee $employee) {
-            $employee->user->assignRole('employee');
+           $role = fake()->randomElement(['employee', 'hr_manager', 'admin']);
+           $employee->user->assignRole($role);
         });
     }
 }
