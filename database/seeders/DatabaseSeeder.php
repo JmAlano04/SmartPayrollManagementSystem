@@ -9,6 +9,9 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\RolePermission;
+use App\Models\SalaryStructure;
+
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -25,14 +28,20 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        $this->call([
-            // RoleSeeder::class,
-            // UserSeeder::class,
-
-            
-        ]); 
-        
-        Employee::factory()->count(10)->create();
+        // $this->call([
+        //     RoleSeeder::class,
+        //     // UserSeeder::class,
+        // ]); 
+     
+   
+             Employee::factory()
+            ->count(10)
+            ->create()
+            ->each(function ($employee) {
+                SalaryStructure::factory()->create([
+                    'employee_id' => $employee->id,
+                ]);
+            });
 
     }
 }

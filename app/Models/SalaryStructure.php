@@ -3,13 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\SalaryStructureFactory;
 
 class SalaryStructure extends Model
 {
     //
+      /** @use HasFactory<\Database\Factories\EmployeeFactory> */
+    use HasFactory;
+   
         protected $fillable = [
             'employee_id',
-            'basic_salary',
+            'base_salary',
             'housing_allowance',
             'transport_allowance',
             'other_allowance',
