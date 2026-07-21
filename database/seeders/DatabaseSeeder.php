@@ -28,20 +28,21 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        // $this->call([
-        //     RoleSeeder::class,
-        //     // UserSeeder::class,
-        // ]); 
+        $this->call([
+            TaxBracketSeeder::class,
+            // RoleSeeder::class,
+            // // UserSeeder::class,
+        ]); 
      
    
-             Employee::factory()
-            ->count(10)
-            ->create()
-            ->each(function ($employee) {
-                SalaryStructure::factory()->create([
-                    'employee_id' => $employee->id,
-                ]);
-            });
+            //  Employee::factory()
+            // ->count(10)
+            // ->create()
+            // ->each(function ($employee) {
+            //     SalaryStructure::factory()->create([
+            //         'employee_id' => $employee->id,
+            //     ]);
+            // });
 
     }
 }
