@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('attendance', function (Blueprint $table) {
-             $table->id();
+            $table->id();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->date('work_date');
             $table->decimal('hours_worked', 5, 2)->default(0);
@@ -20,7 +20,9 @@ return new class extends Migration
             $table->boolean('is_absent')->default(false);
             $table->boolean('is_paid_leave')->default(false);
             $table->timestamps();
+ 
             $table->unique(['employee_id', 'work_date']);
+
         });
     }
 

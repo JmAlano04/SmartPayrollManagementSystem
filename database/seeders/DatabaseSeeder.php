@@ -12,6 +12,7 @@ use Spatie\Permission\Models\RolePermission;
 use App\Models\SalaryStructure;
 
 
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -29,9 +30,9 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            TaxBracketSeeder::class,
-            // RoleSeeder::class,
-            // // UserSeeder::class,
+         TaxBracketSeeder::class,
+            //  RoleSeeder::class,
+        // // /// UserSeeder::class,
         ]); 
      
    
@@ -43,6 +44,5 @@ class DatabaseSeeder extends Seeder
             //         'employee_id' => $employee->id,
             //     ]);
             // });
-
     }
 }
