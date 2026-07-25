@@ -15,7 +15,7 @@ Laravel + PostgreSQL + React. 85 weekdays across 17 weeks, start to finish.
 - [ ] **Day 7** — `salary_structures` migration + model, relate to employee
 - [ ] **Day 8** — `tax_brackets` migration + model, seed sample bracket data
 - [ ] **Day 9** — `attendance` migration + model + factory (simulate a month of records)
-- [ ] **Day 10** — `payroll_runs`, `payslips`, `payroll_run_logs` migrations + models; migrate on Postgres; seed realistic data
+- [ ] **Day 10** — `payroll_runs`, `payslip3s`, `payroll_run_logs` migrations + models; migrate on Postgres; seed realistic data
 
 ### Week 3 — Payroll engine core
 - [ ] **Day 11** — Build `TaxCalculatorService`; unit test against manual bracket math

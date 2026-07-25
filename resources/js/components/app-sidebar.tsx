@@ -13,6 +13,7 @@ const mainNavItems: NavItem[] = [
         url: '/dashboard',
         icon: LayoutGrid,
     },
+    
 ];
 
 const footerNavItems: NavItem[] = [
@@ -30,9 +31,9 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
+        <Sidebar className="bg-red-" collapsible="icon" variant="inset">
+            <SidebarHeader >
+                <SidebarMenu >
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/dashboard" prefetch>
