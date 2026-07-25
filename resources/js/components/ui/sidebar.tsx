@@ -164,7 +164,7 @@ const Sidebar = React.forwardRef<
                 <SheetContent
                     data-sidebar="sidebar"
                     data-mobile="true"
-                    className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+                    className="w-(--sidebar-width)  p-0 text-sidebar-foreground [&>button]:hidden"
                     style={
                         {
                             '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -173,7 +173,7 @@ const Sidebar = React.forwardRef<
                     side={side}
                 >
                     <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
-                    <div className="flex h-full w-full flex-col">{children}</div>
+                    <div className="flex h-full w-full flex-col ">{children}</div>
                 </SheetContent>
             </Sheet>
         );
@@ -296,7 +296,7 @@ const SidebarInput = React.forwardRef<React.ElementRef<typeof Input>, React.Comp
         <Input
             ref={ref}
             data-sidebar="input"
-            className={cn('h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring', className)}
+            className={cn('h-8 w-full shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring', className)}
             {...props}
         />
     );
@@ -325,7 +325,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<'di
         <div
             ref={ref}
             data-sidebar="content"
-            className={cn('flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden', className)}
+            className={cn('flex min-h-0 flex-1  flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden', className)}
             {...props}
         />
     );
@@ -333,7 +333,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<'di
 SidebarContent.displayName = 'SidebarContent';
 
 const SidebarGroup = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => {
-    return <div ref={ref} data-sidebar="group" className={cn('relative flex w-full min-w-0 flex-col p-2', className)} {...props} />;
+    return <div ref={ref} data-sidebar="group" className={cn('relative  flex w-full min-w-0 flex-col p-2', className)} {...props} />;
 });
 SidebarGroup.displayName = 'SidebarGroup';
 
