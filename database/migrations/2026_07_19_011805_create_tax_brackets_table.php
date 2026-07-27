@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tax_bracket', function (Blueprint $table) {
+        Schema::create('tax_brackets', function (Blueprint $table) {
                $table->id();
                 $table->string('region')->default('default');
                 $table->decimal('min_income', 12, 2);
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tax_bracket');
+        Schema::dropIfExists('tax_brackets');
     }
 };
