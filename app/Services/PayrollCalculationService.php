@@ -3,15 +3,25 @@
 namespace App\Services;
 
 use App\Models\SalaryStructure;
+use App\Services\TaxCalculatorService;
 
 class PayrollCalculationService
 {
+    protected TaxCalculatorService $taxCalculator;
+
+    public function __construct(
+        TaxCalculatorService $taxCalculator
+    ) {
+        $this->taxCalculator = $taxCalculator;
+    }
+
     public function calculate(
         SalaryStructure $salary,
         int $workingDays,
         int $absentDays,
         float $overtimeHours
     ): array {
+
         // Calculate the daily rate
         $dailyRate =
             $salary->base_salary / $workingDays;
@@ -52,7 +62,36 @@ class PayrollCalculationService
             + $transportAllowance
             + $otherAllowance;
 
+        // ==========================
+        // Compute annual taxable income, tax, and net pay
+        // ==========================
+
+        // Convert monthly gross pay to annual taxable income
+        $annualTaxableIncome =
+            $grossPay * 12;
+
+        // Compute tax
+        $tax =
+            $this->taxCalculator->calculate(
+                $annualTaxableIncome
+            );
+
+        // Get fixed deductions
+        $fixedDeductions =
+            $salary->fixed_deductions;
+
+        // Compute net pay
+        $netPay =
+            $grossPay
+            - $tax
+            - $fixedDeductions;
+
+        // ==========================
+        // Return the payroll calculation results
+        // ==========================
+
         return [
+
             'base_salary' => round(
                 $salary->base_salary,
                 2
@@ -106,6 +145,30 @@ class PayrollCalculationService
 
             'gross_pay' => round(
                 $grossPay,
+                2
+            ),
+
+            // NEW
+            'annual_taxable_income' => round(
+                $annualTaxableIncome,
+                2
+            ),
+
+            // NEW
+            'tax' => round(
+                $tax,
+                2
+            ),
+
+            // NEW
+            'fixed_deductions' => round(
+                $fixedDeductions,
+                2
+            ),
+
+            // NEW
+            'net_pay' => round(
+                $netPay,
                 2
             ),
         ];
