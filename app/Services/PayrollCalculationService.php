@@ -148,25 +148,25 @@ class PayrollCalculationService
                 2
             ),
 
-            // NEW
+            
             'annual_taxable_income' => round(
                 $annualTaxableIncome,
                 2
             ),
 
-            // NEW
+            
             'tax' => round(
                 $tax,
                 2
             ),
 
-            // NEW
+            
             'fixed_deductions' => round(
                 $fixedDeductions,
                 2
             ),
 
-            // NEW
+            
             'net_pay' => round(
                 $netPay,
                 2
