@@ -3,21 +3,21 @@ Laravel + PostgreSQL + React. 85 weekdays across 17 weeks, start to finish.
 
 ## Month 1 — Foundation, data model, payroll engine
 
-### Week 1 — Environment & auth
+### Week 1 — Environment & auth - CHECK
 - [ ] **Day 1** — Install Laravel, connect to PostgreSQL (`.env`), install Sanctum, `git init`
 - [ ] **Day 2** — Install `spatie/laravel-permission`, create admin/hr/employee roles, seed them
 - [ ] **Day 3** — Auth endpoints (register/login/logout) with Sanctum tokens, test in Postman
 - [ ] **Day 4** — Scaffold React app (Vite), Axios instance with auth interceptor, login page
 - [ ] **Day 5** — Protected route wrapper in React, role-based guarding, base layout/nav
 
-### Week 2 — Core data model
+### Week 2 — Core data model - CHECK
 - [ ] **Day 6** — `employees` migration + model + factory
 - [ ] **Day 7** — `salary_structures` migration + model, relate to employee
 - [ ] **Day 8** — `tax_brackets` migration + model, seed sample bracket data
 - [ ] **Day 9** — `attendance` migration + model + factory (simulate a month of records)
 - [ ] **Day 10** — `payroll_runs`, `payslip3s`, `payroll_run_logs` migrations + models; migrate on Postgres; seed realistic data
 
-### Week 3 — Payroll engine core
+### Week 3 — Payroll engine core  - CHECK
 - [ ] **Day 11** — Build `TaxCalculatorService`; unit test against manual bracket math
 - [ ] **Day 12** — Build `PayrollCalculationService` skeleton: base pay + absence deduction
 - [ ] **Day 13** — Add overtime calculation, allowances, gross pay assembly

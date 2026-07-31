@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Payslip;
 use App\Models\SalaryStructure;
 use App\Services\TaxCalculatorService;
 
@@ -9,6 +10,8 @@ class PayrollCalculationService
 {
     protected TaxCalculatorService $taxCalculator;
 
+
+    // METHOD FOR CALCULATING PAYROLL
     public function __construct(
         TaxCalculatorService $taxCalculator
     ) {
@@ -173,4 +176,49 @@ class PayrollCalculationService
             ),
         ];
     }
+
+    //METHOD FOR GENERATING PAYSLIP
+    public function generatePayslip(
+    int $payrollRunId,
+    SalaryStructure $salary,
+    int $workingDays,
+    int $absentDays,
+    float $overtimeHours
+    ): Payslip {
+
+    // Compute payroll
+    $result = $this->calculate(
+        $salary,
+        $workingDays,
+        $absentDays,
+        $overtimeHours
+    );
+
+    // Total allowances
+    $allowancesTotal =
+        $result['housing_allowance']
+        + $result['transport_allowance']
+        + $result['other_allowance'];
+
+    // Save payslip
+    return Payslip::create([
+        'payroll_run_id' => $payrollRunId,
+        'employee_id' => $salary->employee_id,
+
+        'base_pay' => $result['base_pay'],
+        'overtime_pay' => $result['overtime_pay'],
+        'allowances_total' => $allowancesTotal,
+        'gross_pay' => $result['gross_pay'],
+
+        'tax_amount' => $result['tax'],
+        'other_deductions' => $result['fixed_deductions'],
+
+        'net_pay' => $result['net_pay'],
+
+        'is_flagged_anomaly' => false,
+        'anomaly_reason' => null,
+
+        'calculation_breakdown' => $result,
+    ]);
+}
 }
