@@ -304,12 +304,12 @@ const SidebarInput = React.forwardRef<React.ElementRef<typeof Input>, React.Comp
 SidebarInput.displayName = 'SidebarInput';
 
 const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => {
-    return <div ref={ref} data-sidebar="header" className={cn('flex bg-[#16241c]  flex-col gap-2 p-2', className)} {...props} />;
+    return <div ref={ref} data-sidebar="header" className={cn('flex bg-[#16241c] flex-col gap-2 p-2', className)} {...props} />;
 });
 SidebarHeader.displayName = 'SidebarHeader';
 
 const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => {
-    return <div ref={ref} data-sidebar="footer" className={cn('flex flex-col bg-[#16241c]  gap-2 p-2', className)} {...props} />;
+    return <div ref={ref} data-sidebar="footer" className={cn('flex flex-col bg-[#16241c] gap-2 p-2', className)} {...props} />;
 });
 SidebarFooter.displayName = 'SidebarFooter';
 
@@ -333,7 +333,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<'di
 SidebarContent.displayName = 'SidebarContent';
 
 const SidebarGroup = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => {
-    return <div ref={ref} data-sidebar="group" className={cn('relative bg-[#16241c] flex w-full min-w-0 flex-col p-2', className)} {...props} />;
+    return <div ref={ref} data-sidebar="group" className={cn('relative flex w-full min-w-0 flex-col p-2', className)} {...props} />;
 });
 SidebarGroup.displayName = 'SidebarGroup';
 
