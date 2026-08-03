@@ -16,7 +16,7 @@ Day 4
 •	UI/UX Task: Implement Login UI from Figma.
 Day 5
 •	Backend Task: Protected routes and base layout.
-•	UI/UX Task: Design Sidebar, Topbar and Dashboard layout.
+•	UI/UX Task: Design Sidebar, Topbar and Dashboard layout. CHECK
 Week 2 — Core Data Model
 Day 6
 •	Backend Task: Employees migration/model/factory.
