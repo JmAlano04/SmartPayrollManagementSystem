@@ -1,0 +1,13 @@
+  feature/TaxCalculatorService.php[m
+  features/AddCalculation[m
+* [32mfeatures/AddEmployeePage[m
+  features/ChangeLogoInSideBar[m
+  features/ChangeUIDashboard[m
+  features/ChangeUIofSideBar[m
+  features/CreateFactoryAttendance[m
+  features/CreateMigrationEmployee[m
+  features/CreateSalarySturesFactory[m
+  features/CreateSalary_StructuresTable[m
+  features/CreateUserRoleRegistration[m
+  features/PayrollCalculationService[m
+  main[m

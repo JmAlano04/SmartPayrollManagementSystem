@@ -47,8 +47,8 @@ const payrollItems: NavItem[] = [
 ];
 
 const peopleItems: NavItem[] = [
-    { title: 'Employees', href: '/people/employees', icon: Users },
-    { title: 'Attendance', href: '/people/attendance', icon: CalendarClock },
+    { title: 'Employees', href: 'employee', icon: Users },
+    { title: 'Attendance', href: '/attendance', icon: CalendarClock },
 ];
 
 const reportItems: NavItem[] = [{ title: 'Cost forecast', href: '/reports/forecast', icon: TrendingUp }];
