@@ -10,12 +10,25 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const stats = [
-    { label: 'Total payroll', value: '₱284,500', delta: '4.2%', trend: 'up', icon: Banknote, tint: 'bg-[#16241c]/10 text-[#16241c]' },
-    { label: 'Employees', value: '128', delta: '2.1%', trend: 'up', icon: Users, tint: 'bg-[#2563EB]/10 text-[#2563EB]' },
-    { label: 'Pending approvals', value: '6', delta: '1.3%', trend: 'down', icon: Clock, tint: 'bg-[#B98A2E]/10 text-[#B98A2E]' },
-    { label: 'Anomalies', value: '3', delta: '0.8%', trend: 'down', icon: AlertTriangle, tint: 'bg-[#DC2626]/10 text-[#DC2626]' },
-];
+interface Stats {
+    employees: number;
+    payrollRuns: number;
+    payslips: number;
+    totalPayroll: number;
+}
+
+interface PayRun {
+    id: string;
+    period: string;
+    employees: number;
+    total: string;
+    status: string;
+}
+
+interface Props {
+    stats: Stats;
+    payRuns: PayRun[];
+}
 
 const trend = [
     { month: 'Feb', value: 210 },
@@ -33,20 +46,28 @@ const anomalies = [
     { employee: 'Wade Warren', role: 'Product Manager', issue: 'Duplicate bonus entry detected', amount: '+₱1,200' },
 ];
 
-const payRuns = [
-    { id: 'PR-2026-07', period: 'Jul 1 – Jul 31, 2026', employees: 128, total: '₱284,500', status: 'Paid' },
-    { id: 'PR-2026-06', period: 'Jun 1 – Jun 30, 2026', employees: 126, total: '₱276,300', status: 'Paid' },
-    { id: 'PR-2026-05', period: 'May 1 – May 31, 2026', employees: 124, total: '₱268,900', status: 'Failed' },
-    { id: 'PR-2026-04', period: 'Apr 1 – Apr 30, 2026', employees: 122, total: '₱261,400', status: 'Processing' },
-];
-
 const statusStyle: Record<string, string> = {
     Paid: 'bg-[#16A34A]/15 text-[#16A34A]',
     Processing: 'bg-[#2563EB]/15 text-[#2563EB]',
     Failed: 'bg-[#DC2626]/15 text-[#DC2626]',
 };
 
-export default function Dashboard() {
+export default function Dashboard({ stats, payRuns }: Props) {
+
+    const statCards = [
+        { 
+            label: 'Total payroll', 
+            value: `₱${Number(stats.totalPayroll).toLocaleString()}`, // 👈 format as peso
+            delta: '4.2%', 
+            trend: 'up', 
+            icon: Banknote, 
+            tint: 'bg-[#16241c]/10 text-[#16241c]' 
+        },
+        { label: 'Employees',         value: stats.employees,   delta: '2.1%', trend: 'up',   icon: Users,         tint: 'bg-[#2563EB]/10 text-[#2563EB]' },
+        { label: 'Pending approvals', value: stats.payrollRuns, delta: '1.3%', trend: 'down', icon: Clock,         tint: 'bg-[#B98A2E]/10 text-[#B98A2E]' },
+        { label: 'Anomalies',         value: stats.payslips,    delta: '0.8%', trend: 'down', icon: AlertTriangle, tint: 'bg-[#DC2626]/10 text-[#DC2626]' },
+    ];
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -55,7 +76,7 @@ export default function Dashboard() {
 
                 {/* Stat cards */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {stats.map((stat) => (
+                    {statCards.map((stat) => (
                         <div
                             key={stat.label}
                             className="rounded-2xl bg-white p-5 ring-1 ring-[#14172B]/5 dark:bg-white/5 dark:ring-white/10"
