@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { ArrowDownRight, ArrowUpRight, ChevronRight, DollarSign, Users, Clock, AlertTriangle } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ChevronRight, Banknote, Users, Clock, AlertTriangle } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,9 +10,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// TODO: replace with real data (props / API call)
 const stats = [
-    { label: 'Total payroll', value: '$284,500', delta: '4.2%', trend: 'up', icon: DollarSign, tint: 'bg-[#16241c]/10 text-[#16241c]' },
+    { label: 'Total payroll', value: '₱284,500', delta: '4.2%', trend: 'up', icon: Banknote, tint: 'bg-[#16241c]/10 text-[#16241c]' },
     { label: 'Employees', value: '128', delta: '2.1%', trend: 'up', icon: Users, tint: 'bg-[#2563EB]/10 text-[#2563EB]' },
     { label: 'Pending approvals', value: '6', delta: '1.3%', trend: 'down', icon: Clock, tint: 'bg-[#B98A2E]/10 text-[#B98A2E]' },
     { label: 'Anomalies', value: '3', delta: '0.8%', trend: 'down', icon: AlertTriangle, tint: 'bg-[#DC2626]/10 text-[#DC2626]' },
@@ -29,16 +28,16 @@ const trend = [
 const maxTrend = Math.max(...trend.map((t) => t.value));
 
 const anomalies = [
-    { employee: 'Jane Cooper', role: 'Software Engineer', issue: 'Overtime pay exceeds usual pattern', amount: '+$450' },
-    { employee: 'Devon Lane', role: 'Designer', issue: 'Missing timesheet entry', amount: '$0' },
-    { employee: 'Wade Warren', role: 'Product Manager', issue: 'Duplicate bonus entry detected', amount: '+$1,200' },
+    { employee: 'Jane Cooper', role: 'Software Engineer', issue: 'Overtime pay exceeds usual pattern', amount: '+₱450' },
+    { employee: 'Devon Lane', role: 'Designer', issue: 'Missing timesheet entry', amount: '₱0' },
+    { employee: 'Wade Warren', role: 'Product Manager', issue: 'Duplicate bonus entry detected', amount: '+₱1,200' },
 ];
 
 const payRuns = [
-    { id: 'PR-2026-07', period: 'Jul 1 – Jul 31, 2026', employees: 128, total: '$284,500', status: 'Paid' },
-    { id: 'PR-2026-06', period: 'Jun 1 – Jun 30, 2026', employees: 126, total: '$276,300', status: 'Paid' },
-    { id: 'PR-2026-05', period: 'May 1 – May 31, 2026', employees: 124, total: '$268,900', status: 'Failed' },
-    { id: 'PR-2026-04', period: 'Apr 1 – Apr 30, 2026', employees: 122, total: '$261,400', status: 'Processing' },
+    { id: 'PR-2026-07', period: 'Jul 1 – Jul 31, 2026', employees: 128, total: '₱284,500', status: 'Paid' },
+    { id: 'PR-2026-06', period: 'Jun 1 – Jun 30, 2026', employees: 126, total: '₱276,300', status: 'Paid' },
+    { id: 'PR-2026-05', period: 'May 1 – May 31, 2026', employees: 124, total: '₱268,900', status: 'Failed' },
+    { id: 'PR-2026-04', period: 'Apr 1 – Apr 30, 2026', employees: 122, total: '₱261,400', status: 'Processing' },
 ];
 
 const statusStyle: Record<string, string> = {
@@ -53,6 +52,7 @@ export default function Dashboard() {
             <Head title="Dashboard" />
 
             <main className="flex-1 space-y-6 p-6">
+
                 {/* Stat cards */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {stats.map((stat) => (

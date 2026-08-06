@@ -1,7 +1,10 @@
 import { LucideIcon } from 'lucide-react';
 
+// resources/js/types/index.d.ts
 export interface Auth {
     user: User;
+    role: string;
+    permissions: string[];
 }
 
 export interface BreadcrumbItem {
@@ -36,5 +39,5 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    [key: string]: unknown;
 }
