@@ -47,7 +47,7 @@ const payrollItems: NavItem[] = [
 ];
 
 const peopleItems: NavItem[] = [
-    { title: 'Employees', href: 'employee', icon: Users },
+    { title: 'Employees', href: '/employee', icon: Users },
     { title: 'Attendance', href: '/attendance', icon: CalendarClock },
 ];
 
