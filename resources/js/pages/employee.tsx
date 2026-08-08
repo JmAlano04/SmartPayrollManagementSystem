@@ -3,8 +3,6 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
-import { usePage } from '@inertiajs/react';
-import { type SharedData } from '@/types';
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -17,8 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Employee() {
 
-    const { auth } = usePage<SharedData>().props;
-
+   
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
