@@ -41,6 +41,15 @@ class DashboardsController extends Controller
                 ->take(5)
                 ->get(),
 
+                // Payslips that need review
+            // Only payslips flagged as anomalies are shown
+            'needsReview' => Payslip::with('employee')
+                ->where('is_flagged_anomaly', true)
+                ->latest()
+                ->take(5)
+                ->get(),
+
+                
             // Total gross payroll from paid payroll runs
             'totalPayroll' => PayrollRun::where('status', 'paid')
                 ->sum('total_gross'),

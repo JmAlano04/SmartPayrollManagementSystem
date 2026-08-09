@@ -43,11 +43,25 @@ interface TrendItem {
     total_gross: number;
 }
 
+interface NeedsReviewItem {
+   id: number;
+   employee_id: number;
+   gross_pay: number;
+   anomaly_reason: string;
+   is_flagged_anomaly: boolean;
+   employee: {
+    id: number;
+    first_name: string;
+    last_name: string;
+   }
+}
+
 // Dashboard props
 interface Props {
     stats: Stats;
     payRuns: PayRun[];
     trend: TrendItem[];
+    needsReview: NeedsReviewItem[];
 }
 
 // Status badge styles
@@ -64,6 +78,7 @@ export default function Dashboard({
     stats,
     payRuns,
     trend,
+    needsReview,
 }: Props) {
 
     // Convert database trend data into chart data
@@ -132,27 +147,35 @@ export default function Dashboard({
         },
     ];
 
-    // Temporary anomaly data
-    const anomalies = [
-        {
-            employee: 'Jane Cooper',
-            role: 'Software Engineer',
-            issue: 'Overtime pay exceeds usual pattern',
-            amount: '+₱450',
-        },
-        {
-            employee: 'Devon Lane',
-            role: 'Designer',
-            issue: 'Missing timesheet entry',
-            amount: '₱0',
-        },
-        {
-            employee: 'Wade Warren',
-            role: 'Product Manager',
-            issue: 'Duplicate bonus entry detected',
-            amount: '+₱1,200',
-        },
-    ];
+    const anomalies = (needsReview ?? [])
+        .filter((item) => item.is_flagged_anomaly)
+        .slice(0, 3)
+        .map((item) => {
+            const employeeName = [
+                item.employee?.first_name,
+                item.employee?.last_name,
+            ]
+                .filter(Boolean)
+                .join(' ');
+
+            const amountValue = Number(item.gross_pay ?? 0);
+
+            return {
+                employee: employeeName || 'Unknown employee',
+                role: 'Employee',
+                issue: item.anomaly_reason || 'Needs review',
+                amount:
+                    amountValue >= 0
+                        ? `+₱${amountValue.toLocaleString('en-PH', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                          })}`
+                        : `-₱${Math.abs(amountValue).toLocaleString('en-PH', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                          })}`,
+            };
+        });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -316,37 +339,41 @@ export default function Dashboard({
 
                         <div className="mt-4 space-y-3">
 
-                            {anomalies.map((a) => (
+                            {anomalies.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-[#14172B]/15 px-3 py-5 text-center text-sm text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
+                                    No items need review.
+                                </div>
+                            ) : (
+                                anomalies.map((a) => (
+                                    <button
+                                        key={`${a.employee}-${a.issue}`}
+                                        className="flex w-full items-start justify-between gap-3 rounded-xl border border-[#14172B]/8 p-3 text-left transition-colors hover:border-[#F5A524]/40 hover:bg-[#F5A524]/5 dark:border-white/10"
+                                    >
 
-                                <button
-                                    key={a.employee}
-                                    className="flex w-full items-start justify-between gap-3 rounded-xl border border-[#14172B]/8 p-3 text-left transition-colors hover:border-[#F5A524]/40 hover:bg-[#F5A524]/5 dark:border-white/10"
-                                >
+                                        <div className="min-w-0">
 
-                                    <div className="min-w-0">
+                                            <p className="truncate text-sm font-medium text-[#14172B] dark:text-white">
+                                                {a.employee}
+                                            </p>
 
-                                        <p className="truncate text-sm font-medium text-[#14172B] dark:text-white">
-                                            {a.employee}
-                                        </p>
+                                            <p className="text-xs text-[#14172B]/45 dark:text-white/45">
+                                                {a.role}
+                                            </p>
 
-                                        <p className="text-xs text-[#14172B]/45 dark:text-white/45">
-                                            {a.role}
-                                        </p>
+                                            <p className="mt-1 text-xs leading-5 text-[#14172B]/65 dark:text-white/65">
+                                                {a.issue}
+                                            </p>
 
-                                        <p className="mt-1 text-xs leading-5 text-[#14172B]/65 dark:text-white/65">
-                                            {a.issue}
-                                        </p>
+                                        </div>
 
-                                    </div>
+                                        <div className="flex shrink-0 items-center gap-1 pt-0.5 font-['IBM_Plex_Mono'] text-xs text-[#B98A2E]">
+                                            {a.amount}
+                                            <ChevronRight className="h-3.5 w-3.5" />
+                                        </div>
 
-                                    <div className="flex shrink-0 items-center gap-1 pt-0.5 font-['IBM_Plex_Mono'] text-xs text-[#B98A2E]">
-                                        {a.amount}
-                                        <ChevronRight className="h-3.5 w-3.5" />
-                                    </div>
-
-                                </button>
-
-                            ))}
+                                    </button>
+                                ))
+                            )}
 
                         </div>
 
