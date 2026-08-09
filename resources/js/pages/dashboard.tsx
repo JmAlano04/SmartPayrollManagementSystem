@@ -31,7 +31,7 @@ interface PayRun {
     id: number;
     period_start: string;
     period_end: string;
-    total_gross_pay: number;
+    total_gross: number;
     status: string;
 }
 
@@ -434,7 +434,7 @@ export default function Dashboard({
                                         <td className="py-3 font-['IBM_Plex_Mono'] text-[#14172B] dark:text-white">
                                             ₱
                                             {Number(
-                                                run.total_gross_pay ?? 0
+                                                run.total_gross ?? 0
                                             ).toLocaleString('en-PH', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
@@ -444,7 +444,8 @@ export default function Dashboard({
                                         <td className="py-3">
 
                                             <span
-                                                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                                                className={`rounded-full px-2.5 py-1 text-xs font-medium 
+                                                    ${
                                                     statusStyle[
                                                         run.status
                                                     ] ??
