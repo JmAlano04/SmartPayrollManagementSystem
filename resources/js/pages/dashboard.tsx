@@ -9,6 +9,7 @@ import {
     Users,
     Clock,
     AlertTriangle,
+    UserPlus,
 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -183,6 +184,27 @@ export default function Dashboard({
 
             <main className="flex-1 space-y-6 p-6">
 
+                {/* Banner — was missing its dark background, so the white text was invisible */}
+                <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
+                    <div
+                        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                        style={{
+                            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+                            backgroundSize: '18px 18px',
+                        }}
+                    />
+                    <div className="relative flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <h1 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Dashboard overview</h1>
+                            <p className="text-sm text-white/55">Payroll performance and what needs your attention today.</p>
+                        </div>
+                        <button className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] hover:bg-[#c99a3e]">
+                            <UserPlus className="h-4 w-4" />
+                            Add employee
+                        </button>
+                    </div>
+                </div>
+
                 {/* Statistics cards */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -196,7 +218,7 @@ export default function Dashboard({
                                 <span
                                     className={`flex h-9 w-9 items-center justify-center rounded-xl ${stat.tint}`}
                                 >
-                                    <stat.icon className="h-4.5 w-4.5" />
+                                    <stat.icon className="h-5 w-5" />
                                 </span>
 
                                 <span
@@ -257,7 +279,7 @@ export default function Dashboard({
                         {/* Display payroll trend chart */}
                         {trendData.length === 0 ? (
 
-                            <div className="flex h-40 items-center justify-center">
+                            <div className="flex h-48 items-center justify-center">
                                 <p className="text-sm text-[#14172B]/40 dark:text-white/40">
                                     No payroll trend data available.
                                 </p>
@@ -265,7 +287,7 @@ export default function Dashboard({
 
                         ) : (
 
-                            <div className="mt-16  flex h-50 items-end bg-gray-100 rounded-lg  gap-2">
+                            <div className="mt-8 flex h-48 items-end gap-2 rounded-lg bg-gray-50 p-4 dark:bg-white/5">
 
                                 {trendData.map((item) => (
 
@@ -275,7 +297,7 @@ export default function Dashboard({
                                     >
 
                                         {/* Payroll amount */}
-                                        <span className="text-[15px] text-[#14172B]/50 dark:text-white/90">
+                                        <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#14172B]/50 dark:text-white/70">
                                             ₱
                                             {item.value.toLocaleString(
                                                 'en-PH',
@@ -308,7 +330,7 @@ export default function Dashboard({
                                         </div>
 
                                         {/* Month */}
-                                        <span className="font-['IBM_Plex_Mono'] text-[15px] text-[#14172B]/45 dark:text-white/45">
+                                        <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#14172B]/45 dark:text-white/45">
                                             {item.month} {item.year}
                                         </span>
 
