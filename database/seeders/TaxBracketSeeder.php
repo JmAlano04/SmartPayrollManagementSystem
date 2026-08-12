@@ -74,11 +74,11 @@ class TaxBracketSeeder extends Seeder
 
         // Avoid duplicate rows if the seeder is run more than once for
         // the same region/effective_from combination.
-        DB::table('tax_bracket')
+        DB::table('tax_brackets')
             ->where('region', 'PH')
             ->where('effective_from', $effectiveFrom)
             ->delete();
 
-        DB::table('tax_bracket')->insert($brackets);
+        DB::table('tax_brackets')->insert($brackets);
     }
 }

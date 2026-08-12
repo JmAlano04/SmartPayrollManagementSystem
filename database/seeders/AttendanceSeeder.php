@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\CarbonPeriod;
 
+
 class AttendanceSeeder extends Seeder
 {
     public function run(): void
