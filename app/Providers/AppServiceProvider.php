@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Listeners\RecordLastLogin;
 use Illuminate\Auth\Events\Login;
+
+use App\Listeners\RecordLastLogout;
+use Illuminate\Auth\Events\Logout;
+
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,5 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(Login::class, RecordLastLogin::class);
+        Event::listen(Logout::class, RecordLastLogout::class);
     }
+    
 }

@@ -2,11 +2,11 @@
 
 namespace App\Listeners;
 
-use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class RecordLastLogin
+class RecordLastLogout
 {
     /**
      * Create the event listener.
@@ -19,9 +19,14 @@ class RecordLastLogin
     /**
      * Handle the event.
      */
-    public function handle(Login $event): void
+    public function handle(Logout $event): void
     {
         /** @var \App\Models\User $user */
         $user = $event->user;
+
+        // I-update ang last_login_at sa logout
+        $user->update([
+            'last_login_at' => now(),
+        ]);
     }
 }

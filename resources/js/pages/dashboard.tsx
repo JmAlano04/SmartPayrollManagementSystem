@@ -88,8 +88,11 @@ export default function Dashboard({
 
     const { auth, flash } = usePage<SharedData>().props;
     const firstName = auth.user.name.split(' ')[0];
-    const greeting = flash?.isFirstLogin ? `Welcome, ${firstName}!` : `Welcome back, ${firstName}`;
-    
+    const greeting = flash.isFirstLogin ? `Welcome, ${firstName}!` : `Welcome back, ${firstName}`;
+
+
+    console.log(flash);
+
     // Convert database trend data into chart data
    const trendData = (trend ?? []).map((item) => {
     const [year, month] = item.period_start.split('-');
@@ -189,8 +192,10 @@ export default function Dashboard({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
+            
 
             <main className="flex-1 space-y-6 p-6">
+            
                     {/* Banner */}
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
                     <div
@@ -200,6 +205,7 @@ export default function Dashboard({
                             backgroundSize: '18px 18px',
                         }}
                     />
+
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
                         <div>
                             <h1 className="font-['Space_Grotesk'] text-xl font-semibold text-white">{greeting}</h1>
