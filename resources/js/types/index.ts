@@ -24,10 +24,18 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface Flash {
+    isFirstLogin: boolean;
+    success?: string | null;
+    error?: string | null;
+    message?: string | null;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    flash: Flash;
     [key: string]: unknown;
 }
 
