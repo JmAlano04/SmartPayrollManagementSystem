@@ -4,16 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Attendance;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Employee extends Model
 {
-    /** @use HasFactory<\Database\Factories\EmployeeFactory> */
     use HasFactory;
-    
 
-     protected $fillable = [
+    protected $fillable = [
         'user_id',
         'employee_code',
         'first_name',
@@ -26,22 +22,20 @@ class Employee extends Model
         'status',
     ];
 
-    // HasMany relationship with SalaryStructure model
-    public function salaryStructures()
-    {
-        return $this->hasMany(SalaryStructure::class);
-    }
 
-    // BelongsTo relationship with User model
-    public function User()
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function Attendances()
+    public function attendances()
     {
         return $this->hasMany(Attendance::class);
     }
 
-
+    public function salaryStructures()
+    {
+        return $this->hasMany(SalaryStructure::class);
+    }
 }
