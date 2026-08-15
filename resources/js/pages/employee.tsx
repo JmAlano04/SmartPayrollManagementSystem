@@ -16,12 +16,9 @@ type Employee = {
     hire_date: string;
 };
 
-const employees: Employee[] = [
-    { id: 1, name: 'Ana Cruz', email: 'ana.cruz@company.com', department: 'HR', position: 'HR Administrator', salary: '2400.00', status: 'active', hire_date: '2023-03-14' },
-    { id: 2, name: 'Marco Reyes', email: 'marco.reyes@company.com', department: 'Operations', position: 'Field Technician', salary: '1980.00', status: 'active', hire_date: '2022-07-01' },
-    { id: 3, name: 'Priya Nandan', email: 'priya.nandan@company.com', department: 'Sales', position: 'Account Manager', salary: '2650.00', status: 'active', hire_date: '2021-11-20' },
-    { id: 4, name: 'Diego Fuentes', email: 'diego.fuentes@company.com', department: 'Warehouse', position: 'Warehouse Lead', salary: '2100.00', status: 'inactive', hire_date: '2020-05-09' },
-];
+type Props = {
+    employees: Employee[];
+};
 
 function initialsOf(name: string) {
     return name
@@ -31,7 +28,7 @@ function initialsOf(name: string) {
         .join('');
 }
 
-export default function EmployeesIndex() {
+export default function EmployeesIndex({ employees }: Props) {
     const activeCount = employees.filter((e) => e.status === 'active').length;
     const inactiveCount = employees.filter((e) => e.status === 'inactive').length;
     const departmentCount = new Set(employees.map((e) => e.department)).size;
@@ -126,7 +123,7 @@ export default function EmployeesIndex() {
                                 <th className="px-4 py-3 font-medium">Employee</th>
                                 <th className="px-4 py-3 font-medium">Department</th>
                                 <th className="px-4 py-3 font-medium">Position</th>
-                                <th className="px-4 py-3 font-medium">Salary</th>
+                                <th className="px-4 py-3 font-medium">Base Salary</th>
                                 <th className="px-4 py-3 font-medium">Hired</th>
                                 <th className="px-4 py-3 font-medium">Status</th>
                                 <th className="px-4 py-3 font-medium text-right">Actions</th>
@@ -149,10 +146,16 @@ export default function EmployeesIndex() {
                                     <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">{employee.department}</td>
                                     <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">{employee.position}</td>
                                     <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#14172B] dark:text-white">
-                                        ${Number(employee.salary).toLocaleString()}
+                                        ₱ {Number(employee.salary).toLocaleString()}
                                     </td>
-                                    <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">{employee.hire_date}</td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">
+                                        {new Date(employee.hire_date).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}
+                                    </td>
+                                        <td className="px-4 py-3">
                                         <span
                                             className={
                                                 employee.status === 'active'
