@@ -14,7 +14,7 @@ class AttendanceSeeder extends Seeder
         $employeeIds = DB::table('employees')->pluck('id');
 
         if ($employeeIds->isEmpty()) {
-            $this->command->warn('Walang employees sa database. Patakbuhin muna ang EmployeeSeeder.');
+            $this->command->warn('No employees found. Please seed the employees table first.');
             return;
         }
 

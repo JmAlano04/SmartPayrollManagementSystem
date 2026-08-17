@@ -11,11 +11,10 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardsController::class, 'index'])->name('dashboard');
-    Route::get('/employee', function () {
-        return Inertia::render('employee');
-    })->name('employee');
+   
 
-    Route::get ('/employee', [EmployeesController::class, 'index'])->name('employee');
+    // Employee ROUTE
+    Route::get ('/employees', [EmployeesController::class, 'index'])->name('employee');
 });
 
 require __DIR__.'/settings.php';
