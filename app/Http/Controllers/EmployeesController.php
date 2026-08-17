@@ -8,7 +8,16 @@ use Inertia\Inertia;
 class EmployeesController extends Controller
 {
     public function index()
+
     {
+        // Card Data
+        $totalEmployees      = Employee::count('id');
+        $activeEmployees     = Employee::where('status', '=', 'active')->count('id');
+        $terminatedEmployees = Employee::where('status', '=', 'terminated')->count('id');
+        $onLeaveCount        = Employee::where('status', '=', 'on_leave')->count('id');
+
+
+        // Fetch employees with their latest salary structure table and map the data to include the salary information
         $employees = Employee::with('salaryStructures')->take(10)->get()->map(function ($employee) {
             $salaryStructure = $employee->salaryStructures->last();
             return [
@@ -24,6 +33,13 @@ class EmployeesController extends Controller
         });
 
         return Inertia::render('employee', [
+              'stats' => [
+                    'totalEmployees'      => $totalEmployees,
+                    'activeEmployees'     => $activeEmployees,
+                    'terminatedEmployees' => $terminatedEmployees,
+                    'onLeaveCount'        => $onLeaveCount,
+                ],
+            
             'employees' => $employees,
         ]);
     }

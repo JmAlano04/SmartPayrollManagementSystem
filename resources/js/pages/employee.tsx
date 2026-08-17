@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Pencil, Search, Trash2, UserCheck, UserMinus, UserPlus, Users } from 'lucide-react';
+import { Pencil, Search, Trash2, UserCheck, UserMinus, UserPlus, Users, Clock} from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Employees', href: '/employees' }];
 
@@ -12,12 +12,20 @@ type Employee = {
     department: string;
     position: string;
     salary: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'terminated' | 'on_leave' ;
     hire_date: string;
 };
 
+interface Stats {
+    totalEmployees : number;
+    activeEmployees : number;
+    terminatedEmployees : number;
+    onLeaveCount : number;
+}
+
 type Props = {
     employees: Employee[];
+    stats: Stats;
 };
 
 function initialsOf(name: string) {
@@ -28,10 +36,12 @@ function initialsOf(name: string) {
         .join('');
 }
 
-export default function EmployeesIndex({ employees }: Props) {
-    const activeCount = employees.filter((e) => e.status === 'active').length;
-    const inactiveCount = employees.filter((e) => e.status === 'inactive').length;
-    const departmentCount = new Set(employees.map((e) => e.department)).size;
+export default function EmployeesIndex({ employees, stats }: Props) {
+    const totalCount = stats.totalEmployees;
+    const activeCount = stats.activeEmployees;
+    const terminatedCount = stats.terminatedEmployees;
+    const onLeaveCount = stats.onLeaveCount;
+    // const departmentCount = new Set(employees.map((e) => e.department)).size
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -48,6 +58,8 @@ export default function EmployeesIndex({ employees }: Props) {
                     />
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
                         <div>
+
+                            <h1>  </h1>
                             <h1 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Employee records</h1>
                             <p className="text-sm text-white/55">Manage your workforce, roles, and pay details.</p>
                         </div>
@@ -64,7 +76,7 @@ export default function EmployeesIndex({ employees }: Props) {
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10 text-[#16241c] dark:bg-[#b98a2e]/15 dark:text-[#b98a2e]">
                             <Users className="h-4.5 w-4.5" />
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{employees.length}</p>
+                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{totalCount}</p>
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Total employees</p>
                     </div>
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
@@ -78,15 +90,16 @@ export default function EmployeesIndex({ employees }: Props) {
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14172B]/8 text-[#14172B]/60 dark:bg-white/10 dark:text-white/50">
                             <UserMinus className="h-4.5 w-4.5" />
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{inactiveCount}</p>
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Inactive</p>
+                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{terminatedCount}</p>
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Terminated</p>
                     </div>
+                    
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EC4899]/10 text-[#EC4899]">
-                            <UserPlus className="h-4.5 w-4.5" />
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+                            <Clock className="h-4.5 w-4.5" />
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{departmentCount}</p>
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Departments</p>
+                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{onLeaveCount}</p>
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">On Leave</p>
                     </div>
                 </div>
 
@@ -111,7 +124,8 @@ export default function EmployeesIndex({ employees }: Props) {
                     <select className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white">
                         <option>All statuses</option>
                         <option>Active</option>
-                        <option>Inactive</option>
+                        <option>Terminated</option>
+                        <option>On Leave</option>
                     </select>
                 </div>
 
@@ -159,11 +173,11 @@ export default function EmployeesIndex({ employees }: Props) {
                                         <span
                                             className={
                                                 employee.status === 'active'
-                                                    ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A]'
+                                                    ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A] dark:bg-[#22C55E]/15 dark:text-[#16A34A]'
                                                     : 'rounded-full bg-[#14172B]/8 px-2.5 py-1 text-xs font-medium text-[#14172B]/55 dark:bg-white/10 dark:text-white/50'
                                             }
                                         >
-                                            {employee.status === 'active' ? 'Active' : 'Inactive'}
+                                            {employee.status === 'active' ? 'Active' : employee.status === 'terminated' ? 'Terminated' : 'On Leave'}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3">
