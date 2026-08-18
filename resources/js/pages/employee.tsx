@@ -1,9 +1,31 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { Pencil, Search, Trash2, UserCheck, UserMinus, UserPlus, Users, Clock} from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Employees', href: '/employees' }];
+import {
+    Pencil,
+    Search,
+    Trash2,
+    UserCheck,
+    UserMinus,
+    UserPlus,
+    Users,
+    Clock,
+} from 'lucide-react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Employees',
+        href: '/employees',
+    },
+];
+
+
+/*
+|--------------------------------------------------------------------------
+| Employee Type
+|--------------------------------------------------------------------------
+*/
 
 type Employee = {
     id: number;
@@ -11,22 +33,52 @@ type Employee = {
     email: string;
     department: string;
     position: string;
-    salary: string;
-    status: 'active' | 'terminated' | 'on_leave' ;
+    salary: number;
+    status: 'active' | 'terminated' | 'on_leave';
     hire_date: string;
 };
 
-interface Stats {
-    totalEmployees : number;
-    activeEmployees : number;
-    terminatedEmployees : number;
-    onLeaveCount : number;
-}
+
+/*
+|--------------------------------------------------------------------------
+| Stats Type
+|--------------------------------------------------------------------------
+*/
+
+type Stats = {
+    totalEmployees: number;
+    activeEmployees: number;
+    terminatedEmployees: number;
+    onLeaveCount: number;
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
 
 type Props = {
     employees: Employee[];
+
     stats: Stats;
+
+    departments: string[];
+
+    statuses: string[];
+
+    selectedDepartment?: string;
+
+    selectedStatus?: string;
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| Initials
+|--------------------------------------------------------------------------
+*/
 
 function initialsOf(name: string) {
     return name
@@ -36,166 +88,615 @@ function initialsOf(name: string) {
         .join('');
 }
 
-export default function EmployeesIndex({ employees, stats }: Props) {
-    const totalCount = stats.totalEmployees;
-    const activeCount = stats.activeEmployees;
-    const terminatedCount = stats.terminatedEmployees;
-    const onLeaveCount = stats.onLeaveCount;
-    // const departmentCount = new Set(employees.map((e) => e.department)).size
+
+/*
+|--------------------------------------------------------------------------
+| Component
+|--------------------------------------------------------------------------
+*/
+
+export default function EmployeesIndex({
+    employees,
+    stats,
+    departments,
+    statuses,
+    selectedDepartment,
+    selectedStatus,
+}: Props) {
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Department Change
+    |--------------------------------------------------------------------------
+    */
+
+    const handleDepartmentChange = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+
+        const department = event.target.value;
+
+        router.get(
+            '/employees',
+            {
+                department: department,
+                status: selectedStatus ?? '',
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status Change
+    |--------------------------------------------------------------------------
+    */
+
+    const handleStatusChange = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+
+        const status = event.target.value;
+
+        router.get(
+            '/employees',
+            {
+                department: selectedDepartment ?? '',
+                status: status,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clear Filters
+    |--------------------------------------------------------------------------
+    */
+
+    const clearFilters = () => {
+
+        router.get(
+            '/employees',
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+    };
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+
             <Head title="Employees" />
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                {/* Banner */}
+
+
+                {/* =========================================================
+                    HEADER
+                ========================================================= */}
+
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
-                    <div
-                        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-                        style={{
-                            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-                            backgroundSize: '18px 18px',
-                        }}
-                    />
+
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
+
                         <div>
 
-                            <h1>  </h1>
-                            <h1 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Employee records</h1>
-                            <p className="text-sm text-white/55">Manage your workforce, roles, and pay details.</p>
+                            <h1 className="text-xl font-semibold text-white">
+                                Employee records
+                            </h1>
+
+                            <p className="text-sm text-white/55">
+                                Manage your workforce, roles, and pay details.
+                            </p>
+
                         </div>
-                        <button className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] hover:bg-[#c99a3e]">
+
+
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c]"
+                        >
+
                             <UserPlus className="h-4 w-4" />
+
                             Add employee
+
                         </button>
+
                     </div>
+
                 </div>
 
-                {/* Stat cards */}
+
+
+                {/* =========================================================
+                    STATS
+                ========================================================= */}
+
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+
+                    {/* TOTAL */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10 text-[#16241c] dark:bg-[#b98a2e]/15 dark:text-[#b98a2e]">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
+
                             <Users className="h-4.5 w-4.5" />
+
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{totalCount}</p>
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Total employees</p>
+
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
+                            {stats.totalEmployees}
+
+                        </p>
+
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
+                            Total employees
+
+                        </p>
+
                     </div>
+
+
+
+                    {/* ACTIVE */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10 text-[#16A34A]">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
+
                             <UserCheck className="h-4.5 w-4.5" />
+
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{activeCount}</p>
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Active</p>
+
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
+                            {stats.activeEmployees}
+
+                        </p>
+
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
+                            Active
+
+                        </p>
+
                     </div>
+
+
+
+                    {/* TERMINATED */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14172B]/8 text-[#14172B]/60 dark:bg-white/10 dark:text-white/50">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14172B]/8">
+
                             <UserMinus className="h-4.5 w-4.5" />
+
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{terminatedCount}</p>
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">Terminated</p>
+
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
+                            {stats.terminatedEmployees}
+
+                        </p>
+
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
+                            Terminated
+
+                        </p>
+
                     </div>
-                    
+
+
+
+                    {/* ON LEAVE */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
+
                             <Clock className="h-4.5 w-4.5" />
+
                         </span>
-                        <p className="mt-4 font-['Space_Grotesk'] text-2xl font-semibold text-[#14172B] dark:text-white">{onLeaveCount}</p>
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">On Leave</p>
+
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
+                            {stats.onLeaveCount}
+
+                        </p>
+
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
+                            On Leave
+
+                        </p>
+
                     </div>
+
                 </div>
 
-                {/* Filters — plain HTML controls, no extra UI-kit dependencies */}
+
+
+                {/* =========================================================
+                    FILTERS
+                ========================================================= */}
+
                 <div className="flex flex-wrap items-center gap-3">
+
+
+                    {/* SEARCH */}
+
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
-                        <Search className="h-4 w-4 text-[#14172B]/40 dark:text-white/40" />
+
+                        <Search className="h-4 w-4 text-[#14172B]/40" />
+
                         <input
-                            placeholder="Search by name, email, or department…"
-                            className="w-full bg-transparent text-sm text-[#14172B] outline-none placeholder:text-[#14172B]/40 dark:text-white dark:placeholder:text-white/40"
+                            type="text"
+                            placeholder="Search by name, email, or department..."
+                            className="w-full bg-transparent text-sm outline-none"
                         />
+
                     </div>
 
-                    <select className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white">
-                        <option>All departments</option>
-                        <option>HR</option>
-                        <option>Operations</option>
-                        <option>Sales</option>
-                        <option>Warehouse</option>
+
+
+                    {/* =====================================================
+                        DEPARTMENT SELECT
+                    ===================================================== */}
+
+                    <select
+                        value={selectedDepartment ?? ''}
+                        onChange={handleDepartmentChange}
+                        className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                    >
+
+                        <option value="">
+                            All departments
+                        </option>
+
+
+                        {departments.map((department) => (
+
+                            <option
+                                key={department}
+                                value={department}
+                            >
+                                {department}
+                            </option>
+
+                        ))}
+
                     </select>
 
-                    <select className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white">
-                        <option>All statuses</option>
-                        <option>Active</option>
-                        <option>Terminated</option>
-                        <option>On Leave</option>
+
+
+                    {/* =====================================================
+                        STATUS SELECT
+                    ===================================================== */}
+
+                    <select
+                        value={selectedStatus ?? ''}
+                        onChange={handleStatusChange}
+                        className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                    >
+
+                        <option value="">
+                            All statuses
+                        </option>
+
+
+                        {statuses.map((status) => (
+
+                            <option
+                                key={status}
+                                value={status}
+                            >
+
+                                {status === 'active'
+                                    ? 'Active'
+                                    : status === 'terminated'
+                                        ? 'Terminated'
+                                        : status === 'on_leave'
+                                            ? 'On Leave'
+                                            : status}
+
+                            </option>
+
+                        ))}
+
                     </select>
+
+
+
+                    {/* CLEAR */}
+
+                    {(selectedDepartment || selectedStatus) && (
+
+                        <button
+                            type="button"
+                            onClick={clearFilters}
+                            className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm hover:bg-[#14172B]/5"
+                        >
+                            Clear
+                        </button>
+
+                    )}
+
                 </div>
 
-                {/* Table */}
+
+
+                {/* =========================================================
+                    TABLE
+                ========================================================= */}
+
                 <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
-                                <th className="px-4 py-3 font-medium">Employee</th>
-                                <th className="px-4 py-3 font-medium">Department</th>
-                                <th className="px-4 py-3 font-medium">Position</th>
-                                <th className="px-4 py-3 font-medium">Base Salary</th>
-                                <th className="px-4 py-3 font-medium">Hired</th>
-                                <th className="px-4 py-3 font-medium">Status</th>
-                                <th className="px-4 py-3 font-medium text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {employees.map((employee) => (
-                                <tr key={employee.id} className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10">
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 font-['IBM_Plex_Mono'] text-xs font-semibold text-[#16241c] dark:bg-[#b98a2e]/15 dark:text-[#b98a2e]">
-                                                {initialsOf(employee.name)}
-                                            </span>
-                                            <div>
-                                                <p className="font-medium text-[#14172B] dark:text-white">{employee.name}</p>
-                                                <p className="text-xs text-[#14172B]/45 dark:text-white/45">{employee.email}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">{employee.department}</td>
-                                    <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">{employee.position}</td>
-                                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#14172B] dark:text-white">
-                                        ₱ {Number(employee.salary).toLocaleString()}
-                                    </td>
-                                    <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">
-                                        {new Date(employee.hire_date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                        })}
-                                    </td>
-                                        <td className="px-4 py-3">
-                                        <span
-                                            className={
-                                                employee.status === 'active'
-                                                    ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A] dark:bg-[#22C55E]/15 dark:text-[#16A34A]'
-                                                    : 'rounded-full bg-[#14172B]/8 px-2.5 py-1 text-xs font-medium text-[#14172B]/55 dark:bg-white/10 dark:text-white/50'
-                                            }
-                                        >
-                                            {employee.status === 'active' ? 'Active' : employee.status === 'terminated' ? 'Terminated' : 'On Leave'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex justify-end gap-1">
-                                            <button className="rounded-md p-1.5 text-[#14172B]/50 hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/50">
-                                                <Pencil className="h-4 w-4" />
-                                            </button>
-                                            <button className="rounded-md p-1.5 text-[#14172B]/50 hover:bg-red-50 hover:text-red-600 dark:text-white/50">
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </td>
+
+                    <div className="overflow-x-auto">
+
+                        <table className="w-full text-left text-sm">
+
+
+                            {/* TABLE HEADER */}
+
+                            <thead>
+
+                                <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Employee
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Department
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Position
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Base Salary
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Hired
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Status
+                                    </th>
+
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Actions
+                                    </th>
+
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+                            </thead>
+
+
+
+                            {/* =================================================
+                                TABLE BODY
+                            ================================================= */}
+
+                            <tbody>
+
+                                {employees.length > 0 ? (
+
+                                    employees.map((employee) => (
+
+                                        <tr
+                                            key={employee.id}
+                                            className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
+                                        >
+
+
+                                            {/* EMPLOYEE */}
+
+                                            <td className="px-4 py-3">
+
+                                                <div className="flex items-center gap-3">
+
+                                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold">
+
+                                                        {initialsOf(
+                                                            employee.name
+                                                        )}
+
+                                                    </span>
+
+
+                                                    <div>
+
+                                                        <p className="font-medium text-[#14172B] dark:text-white">
+
+                                                            {employee.name}
+
+                                                        </p>
+
+
+                                                        <p className="text-xs text-[#14172B]/45 dark:text-white/45">
+
+                                                            {employee.email}
+
+                                                        </p>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </td>
+
+
+
+                                            {/* DEPARTMENT */}
+
+                                            <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
+
+                                                {employee.department}
+
+                                            </td>
+
+
+
+                                            {/* POSITION */}
+
+                                            <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
+
+                                                {employee.position}
+
+                                            </td>
+
+
+
+                                            {/* SALARY */}
+
+                                            <td className="px-4 py-3">
+
+                                                ₱{' '}
+
+                                                {Number(
+                                                    employee.salary
+                                                ).toLocaleString(
+                                                    'en-PH',
+                                                    {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    }
+                                                )}
+
+                                            </td>
+
+
+
+                                            {/* HIRE DATE */}
+
+                                            <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">
+
+                                                {employee.hire_date}
+
+                                            </td>
+
+
+
+                                            {/* STATUS */}
+
+                                            <td className="px-4 py-3">
+
+                                                <span
+                                                    className={
+                                                        employee.status ===
+                                                        'active'
+                                                            ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A]'
+                                                            : employee.status ===
+                                                                'terminated'
+                                                                ? 'rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-600'
+                                                                : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-600'
+                                                    }
+                                                >
+
+                                                    {employee.status ===
+                                                    'active'
+                                                        ? 'Active'
+                                                        : employee.status ===
+                                                            'terminated'
+                                                            ? 'Terminated'
+                                                            : 'On Leave'}
+
+                                                </span>
+
+                                            </td>
+
+
+
+                                            {/* ACTIONS */}
+
+                                            <td className="px-4 py-3">
+
+                                                <div className="flex justify-end gap-1">
+
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-md p-1.5 hover:bg-[#16241c]/10"
+                                                    >
+
+                                                        <Pencil className="h-4 w-4" />
+
+                                                    </button>
+
+
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-md p-1.5 text-red-500 hover:bg-red-50"
+                                                    >
+
+                                                        <Trash2 className="h-4 w-4" />
+
+                                                    </button>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                                ) : (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan={7}
+                                            className="px-4 py-10 text-center text-sm text-[#14172B]/50"
+                                        >
+
+                                            No employees found.
+
+                                        </td>
+
+                                    </tr>
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
                 </div>
+
             </div>
+
         </AppLayout>
     );
 }
