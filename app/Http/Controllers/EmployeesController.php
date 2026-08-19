@@ -58,7 +58,8 @@ class EmployeesController extends Controller
                 $query->where('first_name', 'ILIKE', "%{$search}%")
                     ->orWhere('last_name', 'ILIKE', "%{$search}%")
                     ->orWhere('email', 'ILIKE', "%{$search}%")
-                    ->orWhere('department', 'ILIKE', "%{$search}%");
+                    ->orWhere('department', 'ILIKE', "%{$search}%")
+                    ->orWhere('status', 'ILIKE', "%{$search}");
             });
         }
 
@@ -83,10 +84,11 @@ class EmployeesController extends Controller
         // Get employees
         $employees = $query
             ->latest('created_at')
-            ->take(10)
-            ->get()
-            ->map(function ($employee) {
-                $salaryStructure = $employee->salaryStructures->last();
+            ->paginate(10)
+            ->withQueryString();
+
+        $employees->through(function ($employee) {
+            $salaryStructure = $employee->salaryStructures->last();
 
                 return [
                     'id' => $employee->id,

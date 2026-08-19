@@ -39,8 +39,25 @@ type Stats = {
     onLeaveCount: number;
 };
 
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+type EmployeesPagination = {
+    data: Employee[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: PaginationLink[];
+};
+
 type Props = {
-    employees: Employee[];
+    employees: EmployeesPagination;
     stats: Stats;
     departments: string[];
     statuses: string[];
@@ -136,6 +153,21 @@ export default function EmployeesIndex({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+            }
+        );
+    };
+
+    const goToPage = (url: string | null) => {
+        if (!url) {
+            return;
+        }
+
+        router.get(
+            url,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
             }
         );
     };
@@ -344,8 +376,8 @@ export default function EmployeesIndex({
 
                             <tbody>
 
-                                {employees.length > 0 ? (
-                                    employees.map((employee) => (
+                                {employees.data.length > 0 ? (
+                                    employees.data.map((employee) => (
                                         <tr
                                             key={employee.id}
                                             className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
@@ -381,7 +413,9 @@ export default function EmployeesIndex({
 
                                             <td className="px-4 py-3">
                                                 ₱{' '}
-                                                {Number(employee.salary).toLocaleString(
+                                                {Number(
+                                                    employee.salary
+                                                ).toLocaleString(
                                                     'en-PH',
                                                     {
                                                         minimumFractionDigits: 2,
@@ -450,6 +484,54 @@ export default function EmployeesIndex({
                         </table>
 
                     </div>
+
+                    {/* Pagination */}
+                    {employees.last_page > 1 && (
+                        <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+
+                            <p className="text-sm text-[#14172B]/50 dark:text-white/50">
+                                Showing{' '}
+                                <span className="font-medium text-[#14172B] dark:text-white">
+                                    {employees.from ?? 0}
+                                </span>{' '}
+                                to{' '}
+                                <span className="font-medium text-[#14172B] dark:text-white">
+                                    {employees.to ?? 0}
+                                </span>{' '}
+                                of{' '}
+                                <span className="font-medium text-[#14172B] dark:text-white">
+                                    {employees.total}
+                                </span>{' '}
+                                employees
+                            </p>
+
+                            <div className="flex items-center gap-1">
+
+                                {employees.links.map((link, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        disabled={!link.url}
+                                        onClick={() => goToPage(link.url)}
+                                        className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                                            link.active
+                                                ? 'bg-[#16241c] text-white'
+                                                : 'text-[#14172B]/60 hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10'
+                                        } ${
+                                            !link.url
+                                                ? 'cursor-not-allowed opacity-40'
+                                                : ''
+                                        }`}
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
+                                    />
+                                ))}
+
+                            </div>
+
+                        </div>
+                    )}
 
                 </div>
 
