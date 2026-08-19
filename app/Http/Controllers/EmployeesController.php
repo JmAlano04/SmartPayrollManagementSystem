@@ -10,30 +10,28 @@ class EmployeesController extends Controller
 {
     public function index(Request $request)
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Employee Stats
-        |--------------------------------------------------------------------------
-        */
-
+        // Employee stats
         $totalEmployees = Employee::count();
 
-        $activeEmployees = Employee::where('status', 'active')
-            ->count();
+        $activeEmployees = Employee::where(
+            'status',
+            '=',
+            'active'
+        )->count();
 
-        $terminatedEmployees = Employee::where('status', 'terminated')
-            ->count();
+        $terminatedEmployees = Employee::where(
+            'status',
+            '=',
+            'terminated'
+        )->count();
 
-        $onLeaveCount = Employee::where('status', 'on_leave')
-            ->count();
+        $onLeaveCount = Employee::where(
+            'status',
+            '=',
+            'on_leave'
+        )->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Departments for Select
-        |--------------------------------------------------------------------------
-        */
-
+        // Departments
         $departments = Employee::query()
             ->whereNotNull('department')
             ->where('department', '!=', '')
@@ -41,13 +39,7 @@ class EmployeesController extends Controller
             ->orderBy('department')
             ->pluck('department');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Statuses for Select
-        |--------------------------------------------------------------------------
-        */
-
+        // Statuses
         $statuses = Employee::query()
             ->whereNotNull('status')
             ->where('status', '!=', '')
@@ -55,92 +47,62 @@ class EmployeesController extends Controller
             ->orderBy('status')
             ->pluck('status');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Employee Query
-        |--------------------------------------------------------------------------
-        */
-
+        // Employee query
         $query = Employee::with('salaryStructures');
 
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Department Filter
-        |--------------------------------------------------------------------------
-        */
+            $query->where(function ($query) use ($search) {
+                $query->where('first_name', 'ILIKE', "%{$search}%")
+                    ->orWhere('last_name', 'ILIKE', "%{$search}%")
+                    ->orWhere('email', 'ILIKE', "%{$search}%")
+                    ->orWhere('department', 'ILIKE', "%{$search}%");
+            });
+        }
 
+        // Department filter
         if ($request->filled('department')) {
             $query->where(
                 'department',
-                $request->department
+                '=',
+                $request->input('department')
             );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Status Filter
-        |--------------------------------------------------------------------------
-        */
-
+        // Status filter
         if ($request->filled('status')) {
             $query->where(
                 'status',
-                $request->status
+                '=',
+                $request->input('status')
             );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Get Employees
-        |--------------------------------------------------------------------------
-        */
-
+        // Get employees
         $employees = $query
+            ->latest('created_at')
             ->take(10)
             ->get()
             ->map(function ($employee) {
-
-                $salaryStructure =
-                    $employee->salaryStructures->last();
+                $salaryStructure = $employee->salaryStructures->last();
 
                 return [
                     'id' => $employee->id,
-
                     'name' => trim(
-                        $employee->first_name .
-                        ' ' .
-                        $employee->last_name
+                        $employee->first_name . ' ' . $employee->last_name
                     ),
-
                     'email' => $employee->email,
-
                     'department' => $employee->department,
-
                     'position' => $employee->position,
-
-                    'salary' => (float) (
-                        $salaryStructure->base_salary ?? 0
-                    ),
-
+                    'salary' => (float) ($salaryStructure->base_salary ?? 0),
                     'status' => $employee->status,
-
                     'hire_date' => $employee->hire_date,
                 ];
             });
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Send Data to React
-        |--------------------------------------------------------------------------
-        */
-
         return Inertia::render('employee', [
-
             'stats' => [
                 'totalEmployees' => $totalEmployees,
                 'activeEmployees' => $activeEmployees,
@@ -154,11 +116,11 @@ class EmployeesController extends Controller
 
             'statuses' => $statuses,
 
-            'selectedDepartment' =>
-                $request->department,
+            'selectedDepartment' => $request->input('department', ''),
 
-            'selectedStatus' =>
-                $request->status,
+            'selectedStatus' => $request->input('status', ''),
+
+            'search' => $request->input('search', ''),
         ]);
     }
 }
