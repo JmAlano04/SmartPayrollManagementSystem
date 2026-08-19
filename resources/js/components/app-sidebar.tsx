@@ -4,7 +4,7 @@ import {
     CalendarClock,
     ChevronsUpDown,
     Home,
-    LogOut,
+    // LogOut,
     Percent,
     ScrollText,
     Settings,
@@ -139,12 +139,12 @@ export function AppSidebar() {
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild tooltip="Log out">
+                        {/* <SidebarMenuButton asChild tooltip="Log out">
                             <Link href="/logout" method="post" as="button" className="w-full">
                                 <LogOut className="text-white/50" />
                                 <span>Log out</span>
                             </Link>
-                        </SidebarMenuButton>
+                        </SidebarMenuButton> */}
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
