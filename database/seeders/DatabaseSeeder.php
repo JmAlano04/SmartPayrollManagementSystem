@@ -39,10 +39,10 @@ class DatabaseSeeder extends Seeder
             //  AttendanceSeeder::class,
             
         // SEED THIS 4th for tax brackets after EmployeeSeeder is seeded
-              TaxBracketSeeder::class,
+            //   TaxBracketSeeder::class,
 
         // SEED THIS 5th for Payroll Run after EmployeeSeeder is seeded
-              PayrollRunSeeder::class,
+            //   PayrollRunSeeder::class,
         ]); 
      
         // SEED this 2nd for Users and Employees

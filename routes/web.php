@@ -14,7 +14,8 @@ Route::middleware(['auth'])->group(function () {
    
 
     // Employee ROUTE
-    Route::get ('/employees', [EmployeesController::class, 'index'])->name('employee');
+    Route::get ('/employees', [EmployeesController::class, 'index'])->name('employees.index');
+    Route::post ('/employees/store', [EmployeesController::class, 'store'])->name('employee.store');
 });
 
 require __DIR__.'/settings.php';

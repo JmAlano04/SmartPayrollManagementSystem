@@ -1,7 +1,14 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { Search } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { LogOut } from 'lucide-react';
+
+import {
+    SidebarMenuButton,
+   
+} from '@/components/ui/sidebar';
+
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     return (
@@ -24,13 +31,16 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 </div>
             </div>
 
-            <div className="hidden items-center gap-2 rounded-full bg-[#14172B]/5 px-3 py-1.5 text-sm text-[#14172B]/50 sm:flex dark:bg-white/5 dark:text-white/50">
-                <Search className="h-3.5 w-3.5" />
-                <span>Search employees, pay runs…</span>
-            </div>
+          
 
-            <button className="rounded-full bg-[#16241c] px-4 py-2 text-sm font-medium text-white hover:bg-[#233A2B]">
-                Run payroll
+            <button className="rounded-full border border-gray-300 px-2 font-medium text-gray-600 hover:bg-gray-100">
+                        <SidebarMenuButton asChild tooltip="Log out">
+                            <Link href="/logout" method="post" as="button" className="w-full">
+                                <LogOut className="text-black/50" />
+                                <span className='text-[12px] text-black/50'>Log out</span>
+                            </Link>
+                        </SidebarMenuButton>
+
             </button>
         </header>
     );

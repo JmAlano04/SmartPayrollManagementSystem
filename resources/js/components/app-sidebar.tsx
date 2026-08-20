@@ -1,10 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
+
 import {
     AlertTriangle,
     CalendarClock,
-    ChevronsUpDown,
     Home,
-    LogOut,
+    // LogOut,
     Percent,
     ScrollText,
     Settings,
@@ -51,6 +51,34 @@ const peopleItems: NavItem[] = [
     { title: 'Attendance', href: '/attendance', icon: CalendarClock },
 ];
 
+type User = {
+    id: number;
+    name: string;
+    email: string;
+};
+
+type Auth = {
+    user: User | null;
+    role: string | null;
+};
+
+export interface SharedData {
+    name: string;
+    quote: {
+        message: string;
+        author: string;
+    };
+    auth: Auth;
+    flash: {
+        isFirstLogin: boolean;
+        success?: string;
+        error?: string;
+        message?: string;
+    };
+    [key: string]: unknown;
+}
+
+
 const reportItems: NavItem[] = [{ title: 'Cost forecast', href: '/reports/forecast', icon: TrendingUp }];
 
 function NavGroup({ label, items, currentPath }: { label: string; items: NavItem[]; currentPath: string }) {
@@ -84,36 +112,82 @@ function NavGroup({ label, items, currentPath }: { label: string; items: NavItem
 }
 
 export function AppSidebar() {
-    const { url } = usePage();
+    const { url, props } = usePage<SharedData>();
+
+    const user = props.auth.user;
+    const role = props.auth.role;
+
+    const initials =
+        user?.name
+            ?.split(' ')
+            .map((name) => name[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase() ?? 'U';
 
     return (
-        <Sidebar collapsible="icon" className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[#16241c]">
+        <Sidebar
+            collapsible="icon"
+            className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[#16241c]"
+        >
             <SidebarHeader className="border-b border-white/10 px-2.5 py-3.5">
                 <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#b98a2e] font-['Space_Grotesk'] text-sm font-semibold text-white">
                         S
                     </span>
+
                     <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-                        <span className="truncate font-['Space_Grotesk'] text-sm font-semibold text-white">SmartPayroll</span>
-                        <span className="truncate text-xs text-white/45">Acme Corp</span>
+                        <span className="truncate font-['Space_Grotesk'] text-sm font-semibold text-white">
+                            SmartPayroll
+                        </span>
+
+                        <span className="truncate text-xs text-white/45">
+                            Acme Corp
+                        </span>
                     </div>
                 </div>
             </SidebarHeader>
 
             <SidebarContent className="px-1 py-2 [&_[data-sidebar=group-label]]:text-white/40 [&_[data-sidebar=menu-button]]:text-white/75 [&_[data-sidebar=menu-button]]:hover:bg-[#b98a2e]/15 [&_[data-sidebar=menu-button]]:hover:text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-[#b98a2e]/20 [&_[data-sidebar=menu-button][data-active=true]]:text-white">
-                <NavGroup label="Overview" items={overviewItems} currentPath={url} />
+                <NavGroup
+                    label="Overview"
+                    items={overviewItems}
+                    currentPath={url}
+                />
+
                 <SidebarSeparator className="bg-white/10" />
-                <NavGroup label="Payroll" items={payrollItems} currentPath={url} />
+
+                <NavGroup
+                    label="Payroll"
+                    items={payrollItems}
+                    currentPath={url}
+                />
+
                 <SidebarSeparator className="bg-white/10" />
-                <NavGroup label="People" items={peopleItems} currentPath={url} />
+
+                <NavGroup
+                    label="People"
+                    items={peopleItems}
+                    currentPath={url}
+                />
+
                 <SidebarSeparator className="bg-white/10" />
-                <NavGroup label="Reports" items={reportItems} currentPath={url} />
+
+                <NavGroup
+                    label="Reports"
+                    items={reportItems}
+                    currentPath={url}
+                />
             </SidebarContent>
 
             <SidebarFooter className="border-t border-white/10 px-1 py-2 [&_[data-sidebar=menu-button]]:text-white/75 [&_[data-sidebar=menu-button]]:hover:bg-[#b98a2e]/15 [&_[data-sidebar=menu-button]]:hover:text-white">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={url.startsWith('/settings')} tooltip="Settings">
+                        <SidebarMenuButton
+                            asChild
+                            isActive={url.startsWith('/settings')}
+                            tooltip="Settings"
+                        >
                             <Link href="/settings">
                                 <Settings className="text-[#b98a2e]/70" />
                                 <span>Settings</span>
@@ -125,25 +199,23 @@ export function AppSidebar() {
                         <SidebarMenuButton
                             size="lg"
                             className="mt-1 data-[state=open]:bg-white/[0.06]"
-                            tooltip="Ana Cruz"
+                            tooltip={user?.name ?? 'User'}
                         >
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#b98a2e] font-['IBM_Plex_Mono'] text-xs font-semibold text-[#16241c]">
-                                AC
+                                {initials}
                             </span>
-                            <div className="flex min-w-0 flex-col text-left">
-                                <span className="truncate text-sm font-medium">Ana Cruz</span>
-                                <span className="truncate text-xs text-white/45">HR Administrator</span>
-                            </div>
-                            <ChevronsUpDown className="ml-auto h-4 w-4 text-white/40" />
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
 
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild tooltip="Log out">
-                            <Link href="/logout" method="post" as="button" className="w-full">
-                                <LogOut className="text-white/50" />
-                                <span>Log out</span>
-                            </Link>
+                            <div className="flex min-w-0 flex-col text-left">
+                                <span className="truncate text-sm font-medium">
+                                    {user?.name ?? 'User'}
+                                </span>
+
+                                <span className="truncate text-xs text-white/45">
+                                    {role ?? 'User'}
+                                </span>
+                            </div>
+
+                            {/* <ChevronsUpDown className="ml-auto h-4 w-4 text-white/40" /> */}
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
