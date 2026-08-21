@@ -2,6 +2,9 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import AddModal from '@/components/AddModal';
+import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
+
 
 import {
     Pencil,
@@ -83,7 +86,16 @@ export default function EmployeesIndex({
     selectedStatus,
     search: initialSearch,
 }: Props) {
+
     const [search, setSearch] = useState(initialSearch ?? '');
+
+   const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search
+    |--------------------------------------------------------------------------
+    */
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -102,6 +114,12 @@ export default function EmployeesIndex({
             }
         );
     };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Department Filter
+    |--------------------------------------------------------------------------
+    */
 
     const handleDepartmentChange = (
         event: React.ChangeEvent<HTMLSelectElement>
@@ -123,6 +141,12 @@ export default function EmployeesIndex({
         );
     };
 
+    /*
+    |--------------------------------------------------------------------------
+    | Status Filter
+    |--------------------------------------------------------------------------
+    */
+
     const handleStatusChange = (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
@@ -143,6 +167,12 @@ export default function EmployeesIndex({
         );
     };
 
+    /*
+    |--------------------------------------------------------------------------
+    | Clear Filters
+    |--------------------------------------------------------------------------
+    */
+
     const clearFilters = () => {
         setSearch('');
 
@@ -156,6 +186,12 @@ export default function EmployeesIndex({
             }
         );
     };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination
+    |--------------------------------------------------------------------------
+    */
 
     const goToPage = (url: string | null) => {
         if (!url) {
@@ -172,16 +208,29 @@ export default function EmployeesIndex({
         );
     };
 
+    /*
+    |--------------------------------------------------------------------------
+    | Render
+    |--------------------------------------------------------------------------
+    */
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+
             <Head title="Employees" />
 
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
 
+                {/* =========================================================
+                    HEADER
+                ========================================================= */}
+
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
+
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
 
                         <div>
+
                             <h1 className="text-xl font-semibold text-white">
                                 Employee records
                             </h1>
@@ -189,10 +238,12 @@ export default function EmployeesIndex({
                             <p className="text-sm text-white/55">
                                 Manage your workforce, roles, and pay details.
                             </p>
+
                         </div>
 
                         <button
                             type="button"
+                            onClick={() => setShowAddEmployeeModal(true)}
                             className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c]"
                         >
                             <UserPlus className="h-4 w-4" />
@@ -200,11 +251,37 @@ export default function EmployeesIndex({
                         </button>
 
                     </div>
+
                 </div>
+
+
+                {/* =========================================================
+                    ADD EMPLOYEE MODAL
+                ========================================================= */}
+
+               <AddModal
+                    open={showAddEmployeeModal}
+                    onClose={() => setShowAddEmployeeModal(false)}
+                    title="Add New Employee"
+                    description="Create a new employee record."
+                >
+                    <AddEmployeeForm
+                        onCancel={() => setShowAddEmployeeModal(false)}
+                        onSuccess={() => setShowAddEmployeeModal(false)}
+                    />
+                </AddModal>
+
+
+                {/* =========================================================
+                    STATS
+                ========================================================= */}
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
+                    {/* Total */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
                             <Users className="h-4.5 w-4.5" />
                         </span>
@@ -216,9 +293,14 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Total employees
                         </p>
+
                     </div>
 
+
+                    {/* Active */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
                             <UserCheck className="h-4.5 w-4.5" />
                         </span>
@@ -230,9 +312,14 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Active
                         </p>
+
                     </div>
 
+
+                    {/* Terminated */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14172B]/8">
                             <UserMinus className="h-4.5 w-4.5" />
                         </span>
@@ -244,9 +331,14 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Terminated
                         </p>
+
                     </div>
 
+
+                    {/* On Leave */}
+
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
                             <Clock className="h-4.5 w-4.5" />
                         </span>
@@ -258,11 +350,19 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             On Leave
                         </p>
+
                     </div>
 
                 </div>
 
+
+                {/* =========================================================
+                    FILTERS
+                ========================================================= */}
+
                 <div className="flex flex-wrap items-center gap-3">
+
+                    {/* Search */}
 
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
 
@@ -278,11 +378,15 @@ export default function EmployeesIndex({
 
                     </div>
 
+
+                    {/* Department */}
+
                     <select
                         value={selectedDepartment ?? ''}
                         onChange={handleDepartmentChange}
                         className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
+
                         <option value="">
                             All departments
                         </option>
@@ -295,13 +399,18 @@ export default function EmployeesIndex({
                                 {department}
                             </option>
                         ))}
+
                     </select>
+
+
+                    {/* Status */}
 
                     <select
                         value={selectedStatus ?? ''}
                         onChange={handleStatusChange}
                         className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
+
                         <option value="">
                             All statuses
                         </option>
@@ -320,9 +429,14 @@ export default function EmployeesIndex({
                                             : status}
                             </option>
                         ))}
+
                     </select>
 
+
+                    {/* Clear */}
+
                     {(search || selectedDepartment || selectedStatus) && (
+
                         <button
                             type="button"
                             onClick={clearFilters}
@@ -330,9 +444,15 @@ export default function EmployeesIndex({
                         >
                             Clear
                         </button>
+
                     )}
 
                 </div>
+
+
+                {/* =========================================================
+                    TABLE
+                ========================================================= */}
 
                 <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
 
@@ -341,6 +461,7 @@ export default function EmployeesIndex({
                         <table className="w-full text-left text-sm">
 
                             <thead>
+
                                 <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
 
                                     <th className="px-4 py-3 font-medium">
@@ -372,18 +493,25 @@ export default function EmployeesIndex({
                                     </th>
 
                                 </tr>
+
                             </thead>
+
 
                             <tbody>
 
                                 {employees.data.length > 0 ? (
+
                                     employees.data.map((employee) => (
+
                                         <tr
                                             key={employee.id}
                                             className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
                                         >
 
+                                            {/* Employee */}
+
                                             <td className="px-4 py-3">
+
                                                 <div className="flex items-center gap-3">
 
                                                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold">
@@ -391,6 +519,7 @@ export default function EmployeesIndex({
                                                     </span>
 
                                                     <div>
+
                                                         <p className="font-medium text-[#14172B] dark:text-white">
                                                             {employee.name}
                                                         </p>
@@ -398,21 +527,34 @@ export default function EmployeesIndex({
                                                         <p className="text-xs text-[#14172B]/45 dark:text-white/45">
                                                             {employee.email}
                                                         </p>
+
                                                     </div>
 
                                                 </div>
+
                                             </td>
+
+
+                                            {/* Department */}
 
                                             <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
                                                 {employee.department}
                                             </td>
 
+
+                                            {/* Position */}
+
                                             <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
                                                 {employee.position}
                                             </td>
 
+
+                                            {/* Salary */}
+
                                             <td className="px-4 py-3">
+
                                                 ₱{' '}
+
                                                 {Number(
                                                     employee.salary
                                                 ).toLocaleString(
@@ -422,13 +564,21 @@ export default function EmployeesIndex({
                                                         maximumFractionDigits: 2,
                                                     }
                                                 )}
+
                                             </td>
+
+
+                                            {/* Hire Date */}
 
                                             <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">
                                                 {employee.hire_date}
                                             </td>
 
+
+                                            {/* Status */}
+
                                             <td className="px-4 py-3">
+
                                                 <span
                                                     className={
                                                         employee.status === 'active'
@@ -438,15 +588,22 @@ export default function EmployeesIndex({
                                                                 : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-600'
                                                     }
                                                 >
+
                                                     {employee.status === 'active'
                                                         ? 'Active'
                                                         : employee.status === 'terminated'
                                                             ? 'Terminated'
                                                             : 'On Leave'}
+
                                                 </span>
+
                                             </td>
 
+
+                                            {/* Actions */}
+
                                             <td className="px-4 py-3">
+
                                                 <div className="flex justify-end gap-1">
 
                                                     <button
@@ -464,19 +621,26 @@ export default function EmployeesIndex({
                                                     </button>
 
                                                 </div>
+
                                             </td>
 
                                         </tr>
+
                                     ))
+
                                 ) : (
+
                                     <tr>
+
                                         <td
                                             colSpan={7}
                                             className="px-4 py-10 text-center text-sm text-[#14172B]/50"
                                         >
                                             No employees found.
                                         </td>
+
                                     </tr>
+
                                 )}
 
                             </tbody>
@@ -485,29 +649,44 @@ export default function EmployeesIndex({
 
                     </div>
 
-                    {/* Pagination */}
+
+                    {/* =====================================================
+                        PAGINATION
+                    ===================================================== */}
+
                     {employees.last_page > 1 && (
+
                         <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
 
                             <p className="text-sm text-[#14172B]/50 dark:text-white/50">
+
                                 Showing{' '}
+
                                 <span className="font-medium text-[#14172B] dark:text-white">
                                     {employees.from ?? 0}
-                                </span>{' '}
-                                to{' '}
+                                </span>
+
+                                {' '}to{' '}
+
                                 <span className="font-medium text-[#14172B] dark:text-white">
                                     {employees.to ?? 0}
-                                </span>{' '}
-                                of{' '}
+                                </span>
+
+                                {' '}of{' '}
+
                                 <span className="font-medium text-[#14172B] dark:text-white">
                                     {employees.total}
-                                </span>{' '}
-                                employees
+                                </span>
+
+                                {' '}employees
+
                             </p>
+
 
                             <div className="flex items-center gap-1">
 
                                 {employees.links.map((link, index) => (
+
                                     <button
                                         key={index}
                                         type="button"
@@ -526,16 +705,19 @@ export default function EmployeesIndex({
                                             __html: link.label,
                                         }}
                                     />
+
                                 ))}
 
                             </div>
 
                         </div>
+
                     )}
 
                 </div>
 
             </div>
+
         </AppLayout>
     );
 }
