@@ -19,8 +19,8 @@ Day 5
 •	UI/UX Task: Design Sidebar, Topbar and Dashboard layout.  ------- admin and HR no employee
 Week 2 — Core Data Model
 Day 6
-•	Backend Task: Employees migration/model/factory.
-•	UI/UX Task: Design Employee List page.
+•	Backend Task: Employees migration/model/factory. ---------------
+•	UI/UX Task: Design Employee List page.    
 Day 7
 •	Backend Task: Salary Structure migration/model.
 •	UI/UX Task: Design Employee Details & Salary page.
