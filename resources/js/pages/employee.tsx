@@ -7,8 +7,10 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AddModal from '@/components/AddModal';
+import UpdateModal from '@/components/UpdateModal';
 
 import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
+import UpdateEmployeeForm from '@/components/employees/UpdateEmployeeForm';
 
 import {
     Pencil,
@@ -92,6 +94,7 @@ export default function EmployeesIndex({
 }: Props) {
     const [search, setSearch] = useState(initialSearch ?? '');
     const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
+    const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
 
     // Search
     const handleSearch = (value: string) => {
@@ -226,6 +229,18 @@ export default function EmployeesIndex({
                         onSuccess={() => setShowAddEmployeeModal(false)}
                     />
                 </AddModal>
+
+                {/* Update employee modal */}
+
+                <UpdateModal
+                    open={showUpdateEmployeeModal}
+                    onClose={() => setShowUpdateEmployeeModal(false)}
+                    title="Update Employee">
+                    <UpdateEmployeeForm
+                        onCancel={() => setShowUpdateEmployeeModal(false)}
+                        onSuccess={() => setShowUpdateEmployeeModal(false)}                    
+                    />
+                </UpdateModal>
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -464,6 +479,7 @@ export default function EmployeesIndex({
                                                 <div className="flex justify-end gap-1">
                                                     <button
                                                         type="button"
+                                                        onClick={() => setShowUpdateEmployeeModal(true)}
                                                         className="rounded-md p-1.5 hover:bg-[#16241c]/10"
                                                     >
                                                         <Pencil className="h-4 w-4" />
@@ -475,6 +491,8 @@ export default function EmployeesIndex({
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
+
+                                                   
                                                 </div>
                                             </td>
                                         </tr>
@@ -492,6 +510,8 @@ export default function EmployeesIndex({
                             </tbody>
                         </table>
                     </div>
+
+                  
 
                     {/* Pagination */}
                     {employees.last_page > 1 && (
