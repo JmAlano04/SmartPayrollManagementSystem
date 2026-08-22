@@ -1,10 +1,14 @@
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
-import AddModal from '@/components/AddModal';
-import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
 
+import { type BreadcrumbItem } from '@/types';
+
+import { Head, router } from '@inertiajs/react';
+
+import { useState } from 'react';
+
+import AddModal from '@/components/AddModal';
+
+import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
 
 import {
     Pencil,
@@ -86,17 +90,10 @@ export default function EmployeesIndex({
     selectedStatus,
     search: initialSearch,
 }: Props) {
-
     const [search, setSearch] = useState(initialSearch ?? '');
+    const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
 
-   const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Search
-    |--------------------------------------------------------------------------
-    */
-
+    // Search
     const handleSearch = (value: string) => {
         setSearch(value);
 
@@ -111,18 +108,13 @@ export default function EmployeesIndex({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            }
+            },
         );
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Department Filter
-    |--------------------------------------------------------------------------
-    */
-
+    // Department filter
     const handleDepartmentChange = (
-        event: React.ChangeEvent<HTMLSelectElement>
+        event: React.ChangeEvent<HTMLSelectElement>,
     ) => {
         const department = event.target.value;
 
@@ -137,18 +129,13 @@ export default function EmployeesIndex({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            }
+            },
         );
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Status Filter
-    |--------------------------------------------------------------------------
-    */
-
+    // Status filter
     const handleStatusChange = (
-        event: React.ChangeEvent<HTMLSelectElement>
+        event: React.ChangeEvent<HTMLSelectElement>,
     ) => {
         const status = event.target.value;
 
@@ -163,16 +150,11 @@ export default function EmployeesIndex({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            }
+            },
         );
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Clear Filters
-    |--------------------------------------------------------------------------
-    */
-
+    // Clear filters
     const clearFilters = () => {
         setSearch('');
 
@@ -183,16 +165,11 @@ export default function EmployeesIndex({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            }
+            },
         );
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Pagination
-    |--------------------------------------------------------------------------
-    */
-
+    // Pagination
     const goToPage = (url: string | null) => {
         if (!url) {
             return;
@@ -204,33 +181,19 @@ export default function EmployeesIndex({
             {
                 preserveState: true,
                 preserveScroll: true,
-            }
+            },
         );
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Render
-    |--------------------------------------------------------------------------
-    */
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-
             <Head title="Employees" />
 
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-
-                {/* =========================================================
-                    HEADER
-                ========================================================= */}
-
+                {/* Header */}
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
-
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
-
                         <div>
-
                             <h1 className="text-xl font-semibold text-white">
                                 Employee records
                             </h1>
@@ -238,7 +201,6 @@ export default function EmployeesIndex({
                             <p className="text-sm text-white/55">
                                 Manage your workforce, roles, and pay details.
                             </p>
-
                         </div>
 
                         <button
@@ -249,17 +211,11 @@ export default function EmployeesIndex({
                             <UserPlus className="h-4 w-4" />
                             Add employee
                         </button>
-
                     </div>
-
                 </div>
 
-
-                {/* =========================================================
-                    ADD EMPLOYEE MODAL
-                ========================================================= */}
-
-               <AddModal
+                {/* Add employee modal */}
+                <AddModal
                     open={showAddEmployeeModal}
                     onClose={() => setShowAddEmployeeModal(false)}
                     title="Add New Employee"
@@ -271,17 +227,10 @@ export default function EmployeesIndex({
                     />
                 </AddModal>
 
-
-                {/* =========================================================
-                    STATS
-                ========================================================= */}
-
+                {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
                     {/* Total */}
-
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
                             <Users className="h-4.5 w-4.5" />
                         </span>
@@ -293,14 +242,10 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Total employees
                         </p>
-
                     </div>
 
-
                     {/* Active */}
-
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
                             <UserCheck className="h-4.5 w-4.5" />
                         </span>
@@ -312,14 +257,10 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Active
                         </p>
-
                     </div>
 
-
                     {/* Terminated */}
-
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14172B]/8">
                             <UserMinus className="h-4.5 w-4.5" />
                         </span>
@@ -331,14 +272,10 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Terminated
                         </p>
-
                     </div>
 
-
-                    {/* On Leave */}
-
+                    {/* On leave */}
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
                             <Clock className="h-4.5 w-4.5" />
                         </span>
@@ -350,22 +287,13 @@ export default function EmployeesIndex({
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             On Leave
                         </p>
-
                     </div>
-
                 </div>
 
-
-                {/* =========================================================
-                    FILTERS
-                ========================================================= */}
-
+                {/* Filters */}
                 <div className="flex flex-wrap items-center gap-3">
-
                     {/* Search */}
-
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
-
                         <Search className="h-4 w-4 text-[#14172B]/40" />
 
                         <input
@@ -375,68 +303,46 @@ export default function EmployeesIndex({
                             placeholder="Search by name, email, or department..."
                             className="w-full bg-transparent text-sm outline-none"
                         />
-
                     </div>
 
-
                     {/* Department */}
-
                     <select
                         value={selectedDepartment ?? ''}
                         onChange={handleDepartmentChange}
                         className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
-
-                        <option value="">
-                            All departments
-                        </option>
+                        <option value="">All departments</option>
 
                         {departments.map((department) => (
-                            <option
-                                key={department}
-                                value={department}
-                            >
+                            <option key={department} value={department}>
                                 {department}
                             </option>
                         ))}
-
                     </select>
 
-
                     {/* Status */}
-
                     <select
                         value={selectedStatus ?? ''}
                         onChange={handleStatusChange}
                         className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
-
-                        <option value="">
-                            All statuses
-                        </option>
+                        <option value="">All statuses</option>
 
                         {statuses.map((status) => (
-                            <option
-                                key={status}
-                                value={status}
-                            >
+                            <option key={status} value={status}>
                                 {status === 'active'
                                     ? 'Active'
                                     : status === 'terminated'
-                                        ? 'Terminated'
-                                        : status === 'on_leave'
-                                            ? 'On Leave'
-                                            : status}
+                                      ? 'Terminated'
+                                      : status === 'on_leave'
+                                        ? 'On Leave'
+                                        : status}
                             </option>
                         ))}
-
                     </select>
 
-
                     {/* Clear */}
-
                     {(search || selectedDepartment || selectedStatus) && (
-
                         <button
                             type="button"
                             onClick={clearFilters}
@@ -444,82 +350,56 @@ export default function EmployeesIndex({
                         >
                             Clear
                         </button>
-
                     )}
-
                 </div>
 
-
-                {/* =========================================================
-                    TABLE
-                ========================================================= */}
-
+                {/* Employee table */}
                 <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
-
                     <div className="overflow-x-auto">
-
                         <table className="w-full text-left text-sm">
-
                             <thead>
-
                                 <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
-
                                     <th className="px-4 py-3 font-medium">
                                         Employee
                                     </th>
-
                                     <th className="px-4 py-3 font-medium">
                                         Department
                                     </th>
-
                                     <th className="px-4 py-3 font-medium">
                                         Position
                                     </th>
-
                                     <th className="px-4 py-3 font-medium">
                                         Base Salary
                                     </th>
-
                                     <th className="px-4 py-3 font-medium">
                                         Hired
                                     </th>
-
                                     <th className="px-4 py-3 font-medium">
                                         Status
                                     </th>
-
                                     <th className="px-4 py-3 text-right font-medium">
                                         Actions
                                     </th>
-
                                 </tr>
-
                             </thead>
 
-
                             <tbody>
-
                                 {employees.data.length > 0 ? (
-
                                     employees.data.map((employee) => (
-
                                         <tr
                                             key={employee.id}
                                             className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
                                         >
-
                                             {/* Employee */}
-
                                             <td className="px-4 py-3">
-
                                                 <div className="flex items-center gap-3">
-
                                                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold">
-                                                        {initialsOf(employee.name)}
+                                                        {initialsOf(
+                                                            employee.name,
+                                                        )}
                                                     </span>
 
                                                     <div>
-
                                                         <p className="font-medium text-[#14172B] dark:text-white">
                                                             {employee.name}
                                                         </p>
@@ -527,85 +407,61 @@ export default function EmployeesIndex({
                                                         <p className="text-xs text-[#14172B]/45 dark:text-white/45">
                                                             {employee.email}
                                                         </p>
-
                                                     </div>
-
                                                 </div>
-
                                             </td>
 
-
                                             {/* Department */}
-
                                             <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
                                                 {employee.department}
                                             </td>
 
-
                                             {/* Position */}
-
                                             <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
                                                 {employee.position}
                                             </td>
 
-
                                             {/* Salary */}
-
                                             <td className="px-4 py-3">
-
                                                 ₱{' '}
-
                                                 {Number(
-                                                    employee.salary
-                                                ).toLocaleString(
-                                                    'en-PH',
-                                                    {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    }
-                                                )}
-
+                                                    employee.salary,
+                                                ).toLocaleString('en-PH', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </td>
 
-
-                                            {/* Hire Date */}
-
+                                            {/* Hire date */}
                                             <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">
                                                 {employee.hire_date}
                                             </td>
 
-
                                             {/* Status */}
-
                                             <td className="px-4 py-3">
-
                                                 <span
                                                     className={
-                                                        employee.status === 'active'
+                                                        employee.status ===
+                                                        'active'
                                                             ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A]'
-                                                            : employee.status === 'terminated'
-                                                                ? 'rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-600'
-                                                                : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-600'
+                                                            : employee.status ===
+                                                                'terminated'
+                                                              ? 'rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-600'
+                                                              : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-600'
                                                     }
                                                 >
-
                                                     {employee.status === 'active'
                                                         ? 'Active'
-                                                        : employee.status === 'terminated'
-                                                            ? 'Terminated'
-                                                            : 'On Leave'}
-
+                                                        : employee.status ===
+                                                            'terminated'
+                                                          ? 'Terminated'
+                                                          : 'On Leave'}
                                                 </span>
-
                                             </td>
 
-
                                             {/* Actions */}
-
                                             <td className="px-4 py-3">
-
                                                 <div className="flex justify-end gap-1">
-
                                                     <button
                                                         type="button"
                                                         className="rounded-md p-1.5 hover:bg-[#16241c]/10"
@@ -619,74 +475,45 @@ export default function EmployeesIndex({
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
-
                                                 </div>
-
                                             </td>
-
                                         </tr>
-
                                     ))
-
                                 ) : (
-
                                     <tr>
-
                                         <td
                                             colSpan={7}
                                             className="px-4 py-10 text-center text-sm text-[#14172B]/50"
                                         >
                                             No employees found.
                                         </td>
-
                                     </tr>
-
                                 )}
-
                             </tbody>
-
                         </table>
-
                     </div>
 
-
-                    {/* =====================================================
-                        PAGINATION
-                    ===================================================== */}
-
+                    {/* Pagination */}
                     {employees.last_page > 1 && (
-
                         <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
-
                             <p className="text-sm text-[#14172B]/50 dark:text-white/50">
-
                                 Showing{' '}
-
                                 <span className="font-medium text-[#14172B] dark:text-white">
                                     {employees.from ?? 0}
-                                </span>
-
-                                {' '}to{' '}
-
+                                </span>{' '}
+                                to{' '}
                                 <span className="font-medium text-[#14172B] dark:text-white">
                                     {employees.to ?? 0}
-                                </span>
-
-                                {' '}of{' '}
-
+                                </span>{' '}
+                                of{' '}
                                 <span className="font-medium text-[#14172B] dark:text-white">
                                     {employees.total}
-                                </span>
-
-                                {' '}employees
-
+                                </span>{' '}
+                                employees
                             </p>
 
-
                             <div className="flex items-center gap-1">
-
                                 {employees.links.map((link, index) => (
-
                                     <button
                                         key={index}
                                         type="button"
@@ -705,19 +532,12 @@ export default function EmployeesIndex({
                                             __html: link.label,
                                         }}
                                     />
-
                                 ))}
-
                             </div>
-
                         </div>
-
                     )}
-
                 </div>
-
             </div>
-
         </AppLayout>
     );
 }
