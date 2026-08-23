@@ -219,5 +219,16 @@ class EmployeesController extends Controller
     return redirect()
         ->back()
         ->with('success', 'Employee updated successfully.');
-}
+    }
+
+    public function destroy (Employee $employee) 
+    {
+         DB::table($employee->getTable())
+            ->where($employee->getKeyName(), $employee->getKey())
+            ->delete();
+
+        return redirect()
+        ->back()
+        ->with('success', 'Employee Deleted successfully');
+    }
 }
