@@ -116,7 +116,7 @@ class EmployeesController extends Controller
         $user->assignRole('employee');
 
         return redirect()
-            ->route('employees.index')
+            ->back()
             ->with('success', 'Employee added successfully.');
     }
 
@@ -217,7 +217,7 @@ class EmployeesController extends Controller
     });
 
     return redirect()
-        ->route('employees.index')
+        ->back()
         ->with('success', 'Employee updated successfully.');
 }
 }
