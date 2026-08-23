@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 
 class EmployeesController extends Controller
@@ -117,4 +119,105 @@ class EmployeesController extends Controller
             ->route('employees.index')
             ->with('success', 'Employee added successfully.');
     }
+
+  public function update(
+    Request $request,
+    Employee $employee
+): RedirectResponse {
+    $validated = $request->validate([
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'email' => [
+            'required',
+            'email',
+            Rule::unique('employees', 'email')
+                ->ignore($employee->id),
+        ],
+
+        'department' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'position' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'status' => [
+            'required',
+            Rule::in([
+                'active',
+                'on_leave',
+                'terminated',
+            ]),
+        ],
+
+        'hire_date' => [
+            'required',
+            'date',
+        ],
+
+        'salary' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+    ]);
+
+    DB::transaction(function () use ($validated, $employee) {
+
+        $nameParts = preg_split(
+            '/\s+/',
+            trim($validated['name']),
+            2
+        );
+
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? '';
+
+        $employee->update([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $validated['email'],
+            'department' => $validated['department'],
+            'position' => $validated['position'],
+            'status' => $validated['status'],
+            'hire_date' => $validated['hire_date'],
+        ]);
+
+        if ($employee->user) {
+            $employee->user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+            ]);
+        }
+
+        $salaryStructure = $employee
+            ->salaryStructures()
+            ->latest()
+            ->first();
+
+        if ($salaryStructure) {
+            $salaryStructure->update([
+                'base_salary' => $validated['salary'],
+            ]);
+        } else {
+            $employee->salaryStructures()->create([
+                'base_salary' => $validated['salary'],
+                'effective_from' => $validated['hire_date'],
+            ]);
+        }
+    });
+
+    return redirect()
+        ->route('employees.index')
+        ->with('success', 'Employee updated successfully.');
+}
 }

@@ -2,7 +2,19 @@ import { router } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 
-type AddEmployeeFormProps = {
+type Employee = {
+    id: number;
+    name: string;
+    email: string;
+    department: string;
+    position: string;
+    salary: number;
+    status: 'active' | 'on_leave' | 'terminated';
+    hire_date: string;
+};
+
+type UpdateEmployeeFormProps = {
+    employee: Employee | null;
     onSuccess?: () => void;
     onCancel?: () => void;
 };
@@ -10,27 +22,34 @@ type AddEmployeeFormProps = {
 type FormData = {
     name: string;
     email: string;
-    password: string;
-    password_confirmation: string;
+    department: string;
+    position: string;
+    salary: string;
+    hire_date: string;
+    status: 'active' | 'on_leave' | 'terminated';
 };
 
-const initialForm: FormData = {
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
-};
-
-export default function AddEmployeeForm({
+export default function UpdateEmployeeForm({
+    employee,
     onSuccess,
     onCancel,
-}: AddEmployeeFormProps) {
-    const [form, setForm] = useState<FormData>(initialForm);
+}: UpdateEmployeeFormProps) {
+    const [form, setForm] = useState<FormData>({
+        name: employee?.name ?? '',
+        email: employee?.email ?? '',
+        department: employee?.department ?? '',
+        position: employee?.position ?? '',
+        salary: employee?.salary?.toString() ?? '',
+        hire_date: employee?.hire_date ?? '',
+        status: employee?.status ?? 'active',
+    });
+
     const [processing, setProcessing] = useState(false);
+
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
         const { name, value } = e.target;
 
@@ -48,14 +67,17 @@ export default function AddEmployeeForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (!employee) {
+            return;
+        }
+
         setProcessing(true);
         setErrors({});
 
-        router.post('/employees/store', form, {
+        router.put(`/employees/${employee.id}`, form, {
             preserveScroll: true,
 
             onSuccess: () => {
-                setForm(initialForm);
                 onSuccess?.();
             },
 
@@ -74,7 +96,7 @@ export default function AddEmployeeForm({
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className="grid gap-6">
+            <div className="grid gap-6 sm:grid-cols-2">
 
                 {/* Name */}
                 <div className="grid gap-2">
@@ -90,8 +112,6 @@ export default function AddEmployeeForm({
                         name="name"
                         type="text"
                         required
-                        autoFocus
-                        autoComplete="name"
                         value={form.name}
                         onChange={handleChange}
                         disabled={processing}
@@ -120,7 +140,6 @@ export default function AddEmployeeForm({
                         name="email"
                         type="email"
                         required
-                        autoComplete="email"
                         value={form.email}
                         onChange={handleChange}
                         disabled={processing}
@@ -135,60 +154,141 @@ export default function AddEmployeeForm({
                     )}
                 </div>
 
-                {/* Password */}
+                {/* Department */}
                 <div className="grid gap-2">
                     <label
-                        htmlFor="password"
+                        htmlFor="department"
                         className="text-sm font-medium text-[#16241C] dark:text-white"
                     >
-                        Password
+                        Department
                     </label>
 
                     <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        required
-                        autoComplete="new-password"
-                        value={form.password}
+                        id="department"
+                        name="department"
+                        type="text"
+                        value={form.department}
                         onChange={handleChange}
                         disabled={processing}
-                        placeholder="Password"
+                        placeholder="Finance"
                         className={ledgerInput}
                     />
 
-                    {errors.password && (
+                    {errors.department && (
                         <p className="text-sm text-red-500">
-                            {errors.password}
+                            {errors.department}
                         </p>
                     )}
                 </div>
 
-                {/* Confirm Password */}
+                {/* Position */}
                 <div className="grid gap-2">
                     <label
-                        htmlFor="password_confirmation"
+                        htmlFor="position"
                         className="text-sm font-medium text-[#16241C] dark:text-white"
                     >
-                        Confirm password
+                        Position
                     </label>
 
                     <input
-                        id="password_confirmation"
-                        name="password_confirmation"
-                        type="password"
-                        required
-                        autoComplete="new-password"
-                        value={form.password_confirmation}
+                        id="position"
+                        name="position"
+                        type="text"
+                        value={form.position}
                         onChange={handleChange}
                         disabled={processing}
-                        placeholder="Confirm password"
+                        placeholder="Accountant"
                         className={ledgerInput}
                     />
 
-                    {errors.password_confirmation && (
+                    {errors.position && (
                         <p className="text-sm text-red-500">
-                            {errors.password_confirmation}
+                            {errors.position}
+                        </p>
+                    )}
+                </div>
+
+                {/* Salary */}
+                <div className="grid gap-2">
+                    <label
+                        htmlFor="salary"
+                        className="text-sm font-medium text-[#16241C] dark:text-white"
+                    >
+                        Base Salary
+                    </label>
+
+                    <input
+                        id="salary"
+                        name="salary"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.salary}
+                        onChange={handleChange}
+                        disabled={processing}
+                        placeholder="25000"
+                        className={ledgerInput}
+                    />
+
+                    {errors.salary && (
+                        <p className="text-sm text-red-500">
+                            {errors.salary}
+                        </p>
+                    )}
+                </div>
+
+                {/* Hire Date */}
+                <div className="grid gap-2">
+                    <label
+                        htmlFor="hire_date"
+                        className="text-sm font-medium text-[#16241C] dark:text-white"
+                    >
+                        Hire Date
+                    </label>
+
+                    <input
+                        id="hire_date"
+                        name="hire_date"
+                        type="date"
+                        required
+                        value={form.hire_date}
+                        onChange={handleChange}
+                        disabled={processing}
+                        className={ledgerInput}
+                    />
+
+                    {errors.hire_date && (
+                        <p className="text-sm text-red-500">
+                            {errors.hire_date}
+                        </p>
+                    )}
+                </div>
+
+                {/* Status */}
+                <div className="grid gap-2 sm:col-span-2">
+                    <label
+                        htmlFor="status"
+                        className="text-sm font-medium text-[#16241C] dark:text-white"
+                    >
+                        Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                        value={form.status}
+                        onChange={handleChange}
+                        disabled={processing}
+                        className={ledgerInput}
+                    >
+                        <option value="active">Active</option>
+                        <option value="on_leave">On Leave</option>
+                        <option value="terminated">Terminated</option>
+                    </select>
+
+                    {errors.status && (
+                        <p className="text-sm text-red-500">
+                            {errors.status}
                         </p>
                     )}
                 </div>
@@ -207,14 +307,14 @@ export default function AddEmployeeForm({
 
                 <button
                     type="submit"
-                    disabled={processing}
+                    disabled={processing || !employee}
                     className="flex items-center gap-2 rounded-lg bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {processing && (
                         <LoaderCircle className="h-4 w-4 animate-spin" />
                     )}
 
-                    {processing ? 'Creating...' : 'Create Employee'}
+                    {processing ? 'Updating...' : 'Update Employee'}
                 </button>
             </div>
         </form>

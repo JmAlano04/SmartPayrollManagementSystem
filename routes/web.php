@@ -16,7 +16,7 @@ Route::middleware(['auth'])->group(function () {
     // Employee ROUTE
     Route::get ('/employees', [EmployeesController::class, 'index'])->name('employees.index');
     Route::post ('/employees/store', [EmployeesController::class, 'store'])->name('employee.store');
-    Route:: put ('/employees/{employee}', [EmployeeController::class, 'update'])->name('employee.update');
+    Route::put ('/employees/{employee}', [EmployeesController::class, 'update'])->name('employee.update');
 });
 
 require __DIR__.'/settings.php';

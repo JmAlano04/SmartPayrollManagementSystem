@@ -95,6 +95,7 @@ export default function EmployeesIndex({
     const [search, setSearch] = useState(initialSearch ?? '');
     const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
     const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null); // 👈
 
     // Search
     const handleSearch = (value: string) => {
@@ -188,6 +189,12 @@ export default function EmployeesIndex({
         );
     };
 
+    // Open update modal with selected employee 👈
+    const handleEdit = (employee: Employee) => {
+        setSelectedEmployee(employee);
+        setShowUpdateEmployeeModal(true);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Employees" />
@@ -230,17 +237,29 @@ export default function EmployeesIndex({
                     />
                 </AddModal>
 
-                {/* Update employee modal */}
-
-                <UpdateModal
-                    open={showUpdateEmployeeModal}
-                    onClose={() => setShowUpdateEmployeeModal(false)}
-                    title="Update Employee">
-                    <UpdateEmployeeForm
-                        onCancel={() => setShowUpdateEmployeeModal(false)}
-                        onSuccess={() => setShowUpdateEmployeeModal(false)}                    
-                    />
-                </UpdateModal>
+                {/* Update employee modal 👈 */}
+                {selectedEmployee && (
+                    <UpdateModal
+                        open={showUpdateEmployeeModal}
+                        onClose={() => {
+                            setShowUpdateEmployeeModal(false);
+                            setSelectedEmployee(null);
+                        }}
+                        title="Update Employee"
+                    >
+                        <UpdateEmployeeForm
+                            employee={selectedEmployee}
+                            onCancel={() => {
+                                setShowUpdateEmployeeModal(false);
+                                setSelectedEmployee(null);
+                            }}
+                            onSuccess={() => {
+                                setShowUpdateEmployeeModal(false);
+                                setSelectedEmployee(null);
+                            }}
+                        />
+                    </UpdateModal>
+                )}
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -374,27 +393,13 @@ export default function EmployeesIndex({
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
-                                    <th className="px-4 py-3 font-medium">
-                                        Employee
-                                    </th>
-                                    <th className="px-4 py-3 font-medium">
-                                        Department
-                                    </th>
-                                    <th className="px-4 py-3 font-medium">
-                                        Position
-                                    </th>
-                                    <th className="px-4 py-3 font-medium">
-                                        Base Salary
-                                    </th>
-                                    <th className="px-4 py-3 font-medium">
-                                        Hired
-                                    </th>
-                                    <th className="px-4 py-3 font-medium">
-                                        Status
-                                    </th>
-                                    <th className="px-4 py-3 text-right font-medium">
-                                        Actions
-                                    </th>
+                                    <th className="px-4 py-3 font-medium">Employee</th>
+                                    <th className="px-4 py-3 font-medium">Department</th>
+                                    <th className="px-4 py-3 font-medium">Position</th>
+                                    <th className="px-4 py-3 font-medium">Base Salary</th>
+                                    <th className="px-4 py-3 font-medium">Hired</th>
+                                    <th className="px-4 py-3 font-medium">Status</th>
+                                    <th className="px-4 py-3 text-right font-medium">Actions</th>
                                 </tr>
                             </thead>
 
@@ -409,9 +414,7 @@ export default function EmployeesIndex({
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-3">
                                                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold">
-                                                        {initialsOf(
-                                                            employee.name,
-                                                        )}
+                                                        {initialsOf(employee.name)}
                                                     </span>
 
                                                     <div>
@@ -439,9 +442,7 @@ export default function EmployeesIndex({
                                             {/* Salary */}
                                             <td className="px-4 py-3">
                                                 ₱{' '}
-                                                {Number(
-                                                    employee.salary,
-                                                ).toLocaleString('en-PH', {
+                                                {Number(employee.salary).toLocaleString('en-PH', {
                                                     minimumFractionDigits: 2,
                                                     maximumFractionDigits: 2,
                                                 })}
@@ -456,19 +457,16 @@ export default function EmployeesIndex({
                                             <td className="px-4 py-3">
                                                 <span
                                                     className={
-                                                        employee.status ===
-                                                        'active'
+                                                        employee.status === 'active'
                                                             ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A]'
-                                                            : employee.status ===
-                                                                'terminated'
+                                                            : employee.status === 'terminated'
                                                               ? 'rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-600'
                                                               : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-600'
                                                     }
                                                 >
                                                     {employee.status === 'active'
                                                         ? 'Active'
-                                                        : employee.status ===
-                                                            'terminated'
+                                                        : employee.status === 'terminated'
                                                           ? 'Terminated'
                                                           : 'On Leave'}
                                                 </span>
@@ -479,7 +477,7 @@ export default function EmployeesIndex({
                                                 <div className="flex justify-end gap-1">
                                                     <button
                                                         type="button"
-                                                        onClick={() => setShowUpdateEmployeeModal(true)}
+                                                        onClick={() => handleEdit(employee)} // 👈
                                                         className="rounded-md p-1.5 hover:bg-[#16241c]/10"
                                                     >
                                                         <Pencil className="h-4 w-4" />
@@ -491,8 +489,6 @@ export default function EmployeesIndex({
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
-
-                                                   
                                                 </div>
                                             </td>
                                         </tr>
@@ -510,8 +506,6 @@ export default function EmployeesIndex({
                             </tbody>
                         </table>
                     </div>
-
-                  
 
                     {/* Pagination */}
                     {employees.last_page > 1 && (
