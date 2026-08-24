@@ -17,6 +17,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get ('/employees', [EmployeesController::class, 'index'])->name('employees.index');
     Route::post ('/employees/store', [EmployeesController::class, 'store'])->name('employee.store');
     Route::put ('/employees/{employee}', [EmployeesController::class, 'update'])->name('employee.update');
+    Route::Delete ('/employees/destroy/{employee}', [EmployeesController::class, 'destroy'])-> name('employee.destroy');
 });
 
 require __DIR__.'/settings.php';

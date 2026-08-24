@@ -8,9 +8,11 @@ import { useState } from 'react';
 
 import AddModal from '@/components/AddModal';
 import UpdateModal from '@/components/UpdateModal';
+import DeleteModal from '@/components/DeleteModal';
 
 import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
 import UpdateEmployeeForm from '@/components/employees/UpdateEmployeeForm';
+
 
 import {
     Pencil,
@@ -95,6 +97,8 @@ export default function EmployeesIndex({
     const [search, setSearch] = useState(initialSearch ?? '');
     const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
     const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
+    const [showDeleteEmployeeModal, setDeleteEmployeeModal] = useState(false);
+
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null); // 👈
 
     // Search
@@ -224,6 +228,8 @@ export default function EmployeesIndex({
                     </div>
                 </div>
 
+                {/* Modal Section */}
+
                 {/* Add employee modal */}
                 <AddModal
                     open={showAddEmployeeModal}
@@ -260,6 +266,33 @@ export default function EmployeesIndex({
                         />
                     </UpdateModal>
                 )}
+                
+
+                {/* Delete Employee Modal */}
+
+                 {selectedEmployee && (
+                    <DeleteModal
+                        open={showDeleteEmployeeModal}
+                        onClose={() => {
+                            setDeleteEmployeeModal(false);
+                            setSelectedEmployee(null);
+                        }}
+                        onConfirm={() => {
+                            if (!selectedEmployee) return;
+
+                            router.delete(`/employees/destroy/${selectedEmployee.id}`, {
+                                onSuccess: () => {
+                                    setDeleteEmployeeModal(false);
+                                    setSelectedEmployee(null);
+                                },
+                            });
+                        }}
+                        title="Delete Employee"
+                    >
+                    </DeleteModal>
+                )}
+
+    {/* ---------------------------------------------------------------------------------------------- */}
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -485,6 +518,10 @@ export default function EmployeesIndex({
 
                                                     <button
                                                         type="button"
+                                                        onClick={() => {
+                                                            setSelectedEmployee(employee);
+                                                            setDeleteEmployeeModal(true);
+                                                        }}
                                                         className="rounded-md p-1.5 text-red-500 hover:bg-red-50"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
