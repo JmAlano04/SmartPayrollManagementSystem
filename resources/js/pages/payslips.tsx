@@ -1,0 +1,760 @@
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
+
+import {
+    CalendarDays,
+    ChevronLeft,
+    ChevronRight,
+    CircleCheck,
+    Clock,
+    Download,
+    Eye,
+    FileText,
+    Search,
+    Wallet,
+} from 'lucide-react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Payslips',
+        href: '/payslips',
+    },
+];
+
+type PayslipStatus = 'paid' | 'pending' | 'draft';
+
+type Payslip = {
+    id: number;
+    payslip_number: string;
+    employee_code: string;
+    employee_name: string;
+    email: string;
+    department: string;
+    position: string;
+    pay_period: string;
+    pay_date: string;
+    gross_pay: number;
+    total_deductions: number;
+    net_pay: number;
+    status: PayslipStatus;
+};
+
+const payslips: Payslip[] = [
+    {
+        id: 1,
+        payslip_number: 'PS-2026-0001',
+        employee_code: 'EMP-0001',
+        employee_name: 'Juan Dela Cruz',
+        email: 'juan@example.com',
+        department: 'Information Technology',
+        position: 'Software Developer',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 48144.37,
+        total_deductions: 8307.81,
+        net_pay: 39836.56,
+        status: 'paid',
+    },
+    {
+        id: 2,
+        payslip_number: 'PS-2026-0002',
+        employee_code: 'EMP-0002',
+        employee_name: 'Maria Santos',
+        email: 'maria@example.com',
+        department: 'Human Resources',
+        position: 'HR Specialist',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 42500.0,
+        total_deductions: 7290.0,
+        net_pay: 35210.0,
+        status: 'paid',
+    },
+    {
+        id: 3,
+        payslip_number: 'PS-2026-0003',
+        employee_code: 'EMP-0003',
+        employee_name: 'Pedro Reyes',
+        email: 'pedro@example.com',
+        department: 'Finance',
+        position: 'Accountant',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 36800.0,
+        total_deductions: 6350.0,
+        net_pay: 30450.0,
+        status: 'pending',
+    },
+    {
+        id: 4,
+        payslip_number: 'PS-2026-0004',
+        employee_code: 'EMP-0004',
+        employee_name: 'Angela Garcia',
+        email: 'angela@example.com',
+        department: 'Operations',
+        position: 'Operations Officer',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 39500.0,
+        total_deductions: 6900.0,
+        net_pay: 32600.0,
+        status: 'paid',
+    },
+    {
+        id: 5,
+        payslip_number: 'PS-2026-0005',
+        employee_code: 'EMP-0005',
+        employee_name: 'Michael Tan',
+        email: 'michael@example.com',
+        department: 'Sales',
+        position: 'Sales Representative',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 35000.0,
+        total_deductions: 5900.0,
+        net_pay: 29100.0,
+        status: 'pending',
+    },
+    {
+        id: 6,
+        payslip_number: 'PS-2026-0006',
+        employee_code: 'EMP-0006',
+        employee_name: 'Sofia Ramos',
+        email: 'sofia@example.com',
+        department: 'Marketing',
+        position: 'Marketing Specialist',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 41000.0,
+        total_deductions: 7100.0,
+        net_pay: 33900.0,
+        status: 'draft',
+    },
+    {
+        id: 7,
+        payslip_number: 'PS-2026-0007',
+        employee_code: 'EMP-0007',
+        employee_name: 'Daniel Cruz',
+        email: 'daniel@example.com',
+        department: 'Information Technology',
+        position: 'System Administrator',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 45000.0,
+        total_deductions: 7800.0,
+        net_pay: 37200.0,
+        status: 'paid',
+    },
+    {
+        id: 8,
+        payslip_number: 'PS-2026-0008',
+        employee_code: 'EMP-0008',
+        employee_name: 'Lisa Mendoza',
+        email: 'lisa@example.com',
+        department: 'Administration',
+        position: 'Administrative Assistant',
+        pay_period: 'Aug 1 - Aug 15, 2026',
+        pay_date: 'Aug 15, 2026',
+        gross_pay: 32000.0,
+        total_deductions: 5200.0,
+        net_pay: 26800.0,
+        status: 'paid',
+    },
+];
+
+function formatCurrency(value: number) {
+    return `₱ ${value.toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
+}
+
+function getStatusClass(status: PayslipStatus) {
+    switch (status) {
+        case 'paid':
+            return 'bg-[#22C55E]/10 text-[#16A34A]';
+
+        case 'pending':
+            return 'bg-amber-100 text-amber-700';
+
+        case 'draft':
+            return 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white/60';
+
+        default:
+            return 'bg-slate-100 text-slate-600';
+    }
+}
+
+function getStatusLabel(status: PayslipStatus) {
+    switch (status) {
+        case 'paid':
+            return 'Paid';
+
+        case 'pending':
+            return 'Pending';
+
+        case 'draft':
+            return 'Draft';
+
+        default:
+            return status;
+    }
+}
+
+function initialsOf(name: string) {
+    return name
+        .split(' ')
+        .map((word) => word[0])
+        .slice(0, 2)
+        .join('');
+}
+
+export default function Payslips() {
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
+    const [payPeriod, setPayPeriod] = useState('');
+
+    const filteredPayslips = useMemo(() => {
+        return payslips.filter((payslip) => {
+            const searchValue = search.toLowerCase();
+
+            const matchesSearch =
+                payslip.employee_name
+                    .toLowerCase()
+                    .includes(searchValue) ||
+                payslip.employee_code
+                    .toLowerCase()
+                    .includes(searchValue) ||
+                payslip.payslip_number
+                    .toLowerCase()
+                    .includes(searchValue) ||
+                payslip.department
+                    .toLowerCase()
+                    .includes(searchValue);
+
+            const matchesStatus =
+                status === '' || payslip.status === status;
+
+            const matchesPayPeriod =
+                payPeriod === '' ||
+                payslip.pay_period === payPeriod;
+
+            return (
+                matchesSearch &&
+                matchesStatus &&
+                matchesPayPeriod
+            );
+        });
+    }, [search, status, payPeriod]);
+
+    const totalPayslips = payslips.length;
+
+    const paidPayslips = payslips.filter(
+        (payslip) => payslip.status === 'paid',
+    ).length;
+
+    const pendingPayslips = payslips.filter(
+        (payslip) => payslip.status === 'pending',
+    ).length;
+
+    const totalNetPay = payslips.reduce(
+        (total, payslip) => total + payslip.net_pay,
+        0,
+    );
+
+    const clearFilters = () => {
+        setSearch('');
+        setStatus('');
+        setPayPeriod('');
+    };
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Payslips" />
+
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+
+                {/* =====================================================
+                    HEADER
+                ====================================================== */}
+
+                <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
+                    <div className="relative flex flex-wrap items-center justify-between gap-4">
+
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-[#b98a2e]" />
+
+                                <h1 className="text-xl font-semibold text-white">
+                                    Payslips
+                                </h1>
+                            </div>
+
+                            <p className="mt-1 text-sm text-white/55">
+                                Manage and review employee payroll statements.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
+                        >
+                            <FileText className="h-4 w-4" />
+                            Generate Payslip
+                        </button>
+
+                    </div>
+                </div>
+
+                {/* =====================================================
+                    STATISTICS
+                ====================================================== */}
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+                    {/* Total Payslips */}
+
+                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
+                            <FileText className="h-4.5 w-4.5" />
+                        </span>
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+                            {totalPayslips}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+                            Total payslips
+                        </p>
+
+                    </div>
+
+                    {/* Paid */}
+
+                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
+                            <CircleCheck className="h-4.5 w-4.5 text-[#16A34A]" />
+                        </span>
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+                            {paidPayslips}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+                            Paid
+                        </p>
+
+                    </div>
+
+                    {/* Pending */}
+
+                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
+                            <Clock className="h-4.5 w-4.5 text-amber-600" />
+                        </span>
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+                            {pendingPayslips}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+                            Pending
+                        </p>
+
+                    </div>
+
+                    {/* Total Net Pay */}
+
+                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#b98a2e]/15">
+                            <Wallet className="h-4.5 w-4.5 text-[#b98a2e]" />
+                        </span>
+
+                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+                            {formatCurrency(totalNetPay)}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+                            Total net pay
+                        </p>
+
+                    </div>
+
+                </div>
+
+                {/* =====================================================
+                    FILTERS
+                ====================================================== */}
+
+                <div className="flex flex-wrap items-center gap-3">
+
+                    {/* Search */}
+
+                    <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
+
+                        <Search className="h-4 w-4 text-[#14172B]/40 dark:text-white/40" />
+
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(event) =>
+                                setSearch(event.target.value)
+                            }
+                            placeholder="Search employee or payslip..."
+                            className="w-full bg-transparent text-sm outline-none placeholder:text-[#14172B]/40 dark:text-white dark:placeholder:text-white/40"
+                        />
+
+                    </div>
+
+                    {/* Pay Period */}
+
+                    <div className="relative">
+
+                        <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40" />
+
+                        <select
+                            value={payPeriod}
+                            onChange={(event) =>
+                                setPayPeriod(event.target.value)
+                            }
+                            className="rounded-lg border border-[#14172B]/10 bg-white py-2 pl-9 pr-8 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                        >
+                            <option value="">
+                                All pay periods
+                            </option>
+
+                            <option value="Aug 1 - Aug 15, 2026">
+                                Aug 1 - Aug 15, 2026
+                            </option>
+
+                            <option value="Jul 16 - Jul 31, 2026">
+                                Jul 16 - Jul 31, 2026
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    {/* Status */}
+
+                    <select
+                        value={status}
+                        onChange={(event) =>
+                            setStatus(event.target.value)
+                        }
+                        className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                    >
+                        <option value="">
+                            All statuses
+                        </option>
+
+                        <option value="paid">
+                            Paid
+                        </option>
+
+                        <option value="pending">
+                            Pending
+                        </option>
+
+                        <option value="draft">
+                            Draft
+                        </option>
+                    </select>
+
+                    {/* Clear */}
+
+                    {(search || status || payPeriod) && (
+                        <button
+                            type="button"
+                            onClick={clearFilters}
+                            className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm text-[#14172B] transition hover:bg-[#14172B]/5 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
+                        >
+                            Clear
+                        </button>
+                    )}
+
+                </div>
+
+                {/* =====================================================
+                    PAYSLIPS TABLE
+                ====================================================== */}
+
+                <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
+
+                    <div className="overflow-x-auto">
+
+                        <table className="w-full text-left text-sm">
+
+                            <thead>
+
+                                <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Employee
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Pay Period
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Gross Pay
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Deductions
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Net Pay
+                                    </th>
+
+                                    <th className="px-4 py-3 font-medium">
+                                        Status
+                                    </th>
+
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Actions
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {filteredPayslips.length > 0 ? (
+                                    filteredPayslips.map((payslip) => (
+
+                                        <tr
+                                            key={payslip.id}
+                                            className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
+                                        >
+
+                                            {/* Employee */}
+
+                                            <td className="px-4 py-4">
+
+                                                <div className="flex items-center gap-3">
+
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
+                                                        {initialsOf(
+                                                            payslip.employee_name,
+                                                        )}
+                                                    </span>
+
+                                                    <div>
+
+                                                        <p className="font-medium text-[#14172B] dark:text-white">
+                                                            {payslip.employee_name}
+                                                        </p>
+
+                                                        <p className="text-xs text-[#14172B]/45 dark:text-white/45">
+                                                            {payslip.employee_code}
+                                                        </p>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </td>
+
+                                            {/* Pay Period */}
+
+                                            <td className="px-4 py-4">
+
+                                                <p className="text-sm text-[#14172B]/70 dark:text-white/70">
+                                                    {payslip.pay_period}
+                                                </p>
+
+                                                <p className="mt-0.5 text-xs text-[#14172B]/40 dark:text-white/40">
+                                                    Pay date: {payslip.pay_date}
+                                                </p>
+
+                                            </td>
+
+                                            {/* Gross Pay */}
+
+                                            <td className="px-4 py-4 font-medium text-[#14172B] dark:text-white">
+                                                {formatCurrency(
+                                                    payslip.gross_pay,
+                                                )}
+                                            </td>
+
+                                            {/* Deductions */}
+
+                                            <td className="px-4 py-4 text-red-500">
+                                                - {formatCurrency(
+                                                    payslip.total_deductions,
+                                                )}
+                                            </td>
+
+                                            {/* Net Pay */}
+
+                                            <td className="px-4 py-4">
+
+                                                <span className="font-semibold text-[#16241c] dark:text-white">
+                                                    {formatCurrency(
+                                                        payslip.net_pay,
+                                                    )}
+                                                </span>
+
+                                            </td>
+
+                                            {/* Status */}
+
+                                            <td className="px-4 py-4">
+
+                                                <span
+                                                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClass(
+                                                        payslip.status,
+                                                    )}`}
+                                                >
+                                                    {getStatusLabel(
+                                                        payslip.status,
+                                                    )}
+                                                </span>
+
+                                            </td>
+
+                                            {/* Actions */}
+
+                                            <td className="px-4 py-4">
+
+                                                <div className="flex justify-end gap-1">
+
+                                                    {/* View */}
+
+                                                    <button
+                                                        type="button"
+                                                        title="View payslip"
+                                                        className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+
+                                                    {/* Download */}
+
+                                                    <button
+                                                        type="button"
+                                                        title="Download payslip"
+                                                        className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                    </button>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+                                ) : (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan={7}
+                                            className="px-4 py-12 text-center"
+                                        >
+
+                                            <div className="flex flex-col items-center">
+
+                                                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#16241c]/10 dark:bg-white/10">
+                                                    <FileText className="h-5 w-5 text-[#16241c]/60 dark:text-white/60" />
+                                                </span>
+
+                                                <p className="mt-3 text-sm font-medium text-[#14172B] dark:text-white">
+                                                    No payslips found
+                                                </p>
+
+                                                <p className="mt-1 text-xs text-[#14172B]/45 dark:text-white/45">
+                                                    Try changing your search or filters.
+                                                </p>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    {/* =================================================
+                        PAGINATION
+                    ================================================== */}
+
+                    <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+
+                        <p className="text-sm text-[#14172B]/50 dark:text-white/50">
+
+                            Showing{' '}
+
+                            <span className="font-medium text-[#14172B] dark:text-white">
+                                {filteredPayslips.length}
+                            </span>
+
+                            {' '}of{' '}
+
+                            <span className="font-medium text-[#14172B] dark:text-white">
+                                {payslips.length}
+                            </span>
+
+                            {' '}payslips
+
+                        </p>
+
+                        <div className="flex items-center gap-1">
+
+                            <button
+                                type="button"
+                                disabled
+                                className="rounded-lg p-2 text-[#14172B]/40 opacity-50 dark:text-white/40"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+
+                            <button
+                                type="button"
+                                className="rounded-lg bg-[#16241c] px-3 py-1.5 text-sm text-white"
+                            >
+                                1
+                            </button>
+
+                            <button
+                                type="button"
+                                className="rounded-lg px-3 py-1.5 text-sm text-[#14172B]/60 transition hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10"
+                            >
+                                2
+                            </button>
+
+                            <button
+                                type="button"
+                                className="rounded-lg px-3 py-2 text-[#14172B]/60 transition hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </AppLayout>
+    );
+}
