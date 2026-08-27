@@ -23,7 +23,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-type PayslipStatus = 'paid' | 'pending' | 'draft';
+type PayslipStatus =
+    | 'paid'
+    | 'pending'
+    | 'draft';
 
 type Payslip = {
     id: number;
@@ -34,135 +37,24 @@ type Payslip = {
     department: string;
     position: string;
     pay_period: string;
-    pay_date: string;
+    pay_date: string | null;
     gross_pay: number;
     total_deductions: number;
     net_pay: number;
     status: PayslipStatus;
 };
 
-const payslips: Payslip[] = [
-    {
-        id: 1,
-        payslip_number: 'PS-2026-0001',
-        employee_code: 'EMP-0001',
-        employee_name: 'Juan Dela Cruz',
-        email: 'juan@example.com',
-        department: 'Information Technology',
-        position: 'Software Developer',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 48144.37,
-        total_deductions: 8307.81,
-        net_pay: 39836.56,
-        status: 'paid',
-    },
-    {
-        id: 2,
-        payslip_number: 'PS-2026-0002',
-        employee_code: 'EMP-0002',
-        employee_name: 'Maria Santos',
-        email: 'maria@example.com',
-        department: 'Human Resources',
-        position: 'HR Specialist',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 42500.0,
-        total_deductions: 7290.0,
-        net_pay: 35210.0,
-        status: 'paid',
-    },
-    {
-        id: 3,
-        payslip_number: 'PS-2026-0003',
-        employee_code: 'EMP-0003',
-        employee_name: 'Pedro Reyes',
-        email: 'pedro@example.com',
-        department: 'Finance',
-        position: 'Accountant',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 36800.0,
-        total_deductions: 6350.0,
-        net_pay: 30450.0,
-        status: 'pending',
-    },
-    {
-        id: 4,
-        payslip_number: 'PS-2026-0004',
-        employee_code: 'EMP-0004',
-        employee_name: 'Angela Garcia',
-        email: 'angela@example.com',
-        department: 'Operations',
-        position: 'Operations Officer',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 39500.0,
-        total_deductions: 6900.0,
-        net_pay: 32600.0,
-        status: 'paid',
-    },
-    {
-        id: 5,
-        payslip_number: 'PS-2026-0005',
-        employee_code: 'EMP-0005',
-        employee_name: 'Michael Tan',
-        email: 'michael@example.com',
-        department: 'Sales',
-        position: 'Sales Representative',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 35000.0,
-        total_deductions: 5900.0,
-        net_pay: 29100.0,
-        status: 'pending',
-    },
-    {
-        id: 6,
-        payslip_number: 'PS-2026-0006',
-        employee_code: 'EMP-0006',
-        employee_name: 'Sofia Ramos',
-        email: 'sofia@example.com',
-        department: 'Marketing',
-        position: 'Marketing Specialist',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 41000.0,
-        total_deductions: 7100.0,
-        net_pay: 33900.0,
-        status: 'draft',
-    },
-    {
-        id: 7,
-        payslip_number: 'PS-2026-0007',
-        employee_code: 'EMP-0007',
-        employee_name: 'Daniel Cruz',
-        email: 'daniel@example.com',
-        department: 'Information Technology',
-        position: 'System Administrator',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 45000.0,
-        total_deductions: 7800.0,
-        net_pay: 37200.0,
-        status: 'paid',
-    },
-    {
-        id: 8,
-        payslip_number: 'PS-2026-0008',
-        employee_code: 'EMP-0008',
-        employee_name: 'Lisa Mendoza',
-        email: 'lisa@example.com',
-        department: 'Administration',
-        position: 'Administrative Assistant',
-        pay_period: 'Aug 1 - Aug 15, 2026',
-        pay_date: 'Aug 15, 2026',
-        gross_pay: 32000.0,
-        total_deductions: 5200.0,
-        net_pay: 26800.0,
-        status: 'paid',
-    },
-];
+type Stats = {
+    total_payslips: number;
+    paid_payslips: number;
+    pending_payslips: number;
+    total_net_pay: number;
+};
+
+type Props = {
+    payslips: Payslip[];
+    stats: Stats;
+};
 
 function formatCurrency(value: number) {
     return `₱ ${value.toLocaleString('en-PH', {
@@ -171,7 +63,9 @@ function formatCurrency(value: number) {
     })}`;
 }
 
-function getStatusClass(status: PayslipStatus) {
+function getStatusClass(
+    status: PayslipStatus
+) {
     switch (status) {
         case 'paid':
             return 'bg-[#22C55E]/10 text-[#16A34A]';
@@ -187,7 +81,9 @@ function getStatusClass(status: PayslipStatus) {
     }
 }
 
-function getStatusLabel(status: PayslipStatus) {
+function getStatusLabel(
+    status: PayslipStatus
+) {
     switch (status) {
         case 'paid':
             return 'Paid';
@@ -206,36 +102,69 @@ function getStatusLabel(status: PayslipStatus) {
 function initialsOf(name: string) {
     return name
         .split(' ')
+        .filter(Boolean)
         .map((word) => word[0])
         .slice(0, 2)
-        .join('');
+        .join('')
+        .toUpperCase();
 }
 
-export default function Payslips() {
+export default function Payslips({
+    payslips,
+    stats,
+}: Props) {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
 
+    /*
+    |--------------------------------------------------------------------------
+    | PAY PERIOD OPTIONS
+    |--------------------------------------------------------------------------
+    */
+
+    const payPeriods = useMemo(() => {
+        return Array.from(
+            new Set(
+                payslips.map(
+                    (payslip) =>
+                        payslip.pay_period
+                )
+            )
+        );
+    }, [payslips]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTER
+    |--------------------------------------------------------------------------
+    */
+
     const filteredPayslips = useMemo(() => {
         return payslips.filter((payslip) => {
-            const searchValue = search.toLowerCase();
+            const searchValue =
+                search.toLowerCase().trim();
 
             const matchesSearch =
                 payslip.employee_name
                     .toLowerCase()
                     .includes(searchValue) ||
+
                 payslip.employee_code
                     .toLowerCase()
                     .includes(searchValue) ||
+
                 payslip.payslip_number
                     .toLowerCase()
                     .includes(searchValue) ||
+
                 payslip.department
                     .toLowerCase()
                     .includes(searchValue);
 
             const matchesStatus =
-                status === '' || payslip.status === status;
+                status === '' ||
+                payslip.status === status;
 
             const matchesPayPeriod =
                 payPeriod === '' ||
@@ -247,22 +176,18 @@ export default function Payslips() {
                 matchesPayPeriod
             );
         });
-    }, [search, status, payPeriod]);
+    }, [
+        payslips,
+        search,
+        status,
+        payPeriod,
+    ]);
 
-    const totalPayslips = payslips.length;
-
-    const paidPayslips = payslips.filter(
-        (payslip) => payslip.status === 'paid',
-    ).length;
-
-    const pendingPayslips = payslips.filter(
-        (payslip) => payslip.status === 'pending',
-    ).length;
-
-    const totalNetPay = payslips.reduce(
-        (total, payslip) => total + payslip.net_pay,
-        0,
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | CLEAR FILTERS
+    |--------------------------------------------------------------------------
+    */
 
     const clearFilters = () => {
         setSearch('');
@@ -276,20 +201,20 @@ export default function Payslips() {
 
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
 
-                {/* =====================================================
-                    HEADER
-                ====================================================== */}
+                {/* HEADER */}
 
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
                     <div className="relative flex flex-wrap items-center justify-between gap-4">
 
                         <div>
                             <div className="flex items-center gap-2">
+
                                 <FileText className="h-5 w-5 text-[#b98a2e]" />
 
                                 <h1 className="text-xl font-semibold text-white">
                                     Payslips
                                 </h1>
+
                             </div>
 
                             <p className="mt-1 text-sm text-white/55">
@@ -308,22 +233,22 @@ export default function Payslips() {
                     </div>
                 </div>
 
-                {/* =====================================================
-                    STATISTICS
-                ====================================================== */}
+                {/* STATISTICS */}
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-                    {/* Total Payslips */}
+                    {/* TOTAL */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
+
                             <FileText className="h-4.5 w-4.5" />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {totalPayslips}
+                            {stats.total_payslips}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
@@ -332,16 +257,18 @@ export default function Payslips() {
 
                     </div>
 
-                    {/* Paid */}
+                    {/* PAID */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
+
                             <CircleCheck className="h-4.5 w-4.5 text-[#16A34A]" />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {paidPayslips}
+                            {stats.paid_payslips}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
@@ -350,16 +277,18 @@ export default function Payslips() {
 
                     </div>
 
-                    {/* Pending */}
+                    {/* PENDING */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
+
                             <Clock className="h-4.5 w-4.5 text-amber-600" />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {pendingPayslips}
+                            {stats.pending_payslips}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
@@ -368,16 +297,22 @@ export default function Payslips() {
 
                     </div>
 
-                    {/* Total Net Pay */}
+                    {/* NET PAY */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#b98a2e]/15">
+
                             <Wallet className="h-4.5 w-4.5 text-[#b98a2e]" />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {formatCurrency(totalNetPay)}
+                            {formatCurrency(
+                                Number(
+                                    stats.total_net_pay
+                                )
+                            )}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
@@ -388,13 +323,11 @@ export default function Payslips() {
 
                 </div>
 
-                {/* =====================================================
-                    FILTERS
-                ====================================================== */}
+                {/* FILTERS */}
 
                 <div className="flex flex-wrap items-center gap-3">
 
-                    {/* Search */}
+                    {/* SEARCH */}
 
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
 
@@ -404,7 +337,9 @@ export default function Payslips() {
                             type="text"
                             value={search}
                             onChange={(event) =>
-                                setSearch(event.target.value)
+                                setSearch(
+                                    event.target.value
+                                )
                             }
                             placeholder="Search employee or payslip..."
                             className="w-full bg-transparent text-sm outline-none placeholder:text-[#14172B]/40 dark:text-white dark:placeholder:text-white/40"
@@ -412,7 +347,7 @@ export default function Payslips() {
 
                     </div>
 
-                    {/* Pay Period */}
+                    {/* PAY PERIOD */}
 
                     <div className="relative">
 
@@ -421,35 +356,44 @@ export default function Payslips() {
                         <select
                             value={payPeriod}
                             onChange={(event) =>
-                                setPayPeriod(event.target.value)
+                                setPayPeriod(
+                                    event.target.value
+                                )
                             }
                             className="rounded-lg border border-[#14172B]/10 bg-white py-2 pl-9 pr-8 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                         >
+
                             <option value="">
                                 All pay periods
                             </option>
 
-                            <option value="Aug 1 - Aug 15, 2026">
-                                Aug 1 - Aug 15, 2026
-                            </option>
-
-                            <option value="Jul 16 - Jul 31, 2026">
-                                Jul 16 - Jul 31, 2026
-                            </option>
+                            {payPeriods.map(
+                                (period) => (
+                                    <option
+                                        key={period}
+                                        value={period}
+                                    >
+                                        {period}
+                                    </option>
+                                )
+                            )}
 
                         </select>
 
                     </div>
 
-                    {/* Status */}
+                    {/* STATUS */}
 
                     <select
                         value={status}
                         onChange={(event) =>
-                            setStatus(event.target.value)
+                            setStatus(
+                                event.target.value
+                            )
                         }
                         className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
+
                         <option value="">
                             All statuses
                         </option>
@@ -465,11 +409,14 @@ export default function Payslips() {
                         <option value="draft">
                             Draft
                         </option>
+
                     </select>
 
-                    {/* Clear */}
+                    {/* CLEAR */}
 
-                    {(search || status || payPeriod) && (
+                    {(search ||
+                        status ||
+                        payPeriod) && (
                         <button
                             type="button"
                             onClick={clearFilters}
@@ -481,9 +428,7 @@ export default function Payslips() {
 
                 </div>
 
-                {/* =====================================================
-                    PAYSLIPS TABLE
-                ====================================================== */}
+                {/* TABLE */}
 
                 <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
 
@@ -530,132 +475,175 @@ export default function Payslips() {
                             <tbody>
 
                                 {filteredPayslips.length > 0 ? (
-                                    filteredPayslips.map((payslip) => (
 
-                                        <tr
-                                            key={payslip.id}
-                                            className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
-                                        >
+                                    filteredPayslips.map(
+                                        (payslip) => (
 
-                                            {/* Employee */}
+                                            <tr
+                                                key={
+                                                    payslip.id
+                                                }
+                                                className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
+                                            >
 
-                                            <td className="px-4 py-4">
+                                                {/* EMPLOYEE */}
 
-                                                <div className="flex items-center gap-3">
+                                                <td className="px-4 py-4">
 
-                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
-                                                        {initialsOf(
-                                                            payslip.employee_name,
-                                                        )}
-                                                    </span>
+                                                    <div className="flex items-center gap-3">
 
-                                                    <div>
+                                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
 
-                                                        <p className="font-medium text-[#14172B] dark:text-white">
-                                                            {payslip.employee_name}
-                                                        </p>
+                                                            {initialsOf(
+                                                                payslip.employee_name
+                                                            )}
 
-                                                        <p className="text-xs text-[#14172B]/45 dark:text-white/45">
-                                                            {payslip.employee_code}
-                                                        </p>
+                                                        </span>
+
+                                                        <div>
+
+                                                            <p className="font-medium text-[#14172B] dark:text-white">
+
+                                                                {
+                                                                    payslip.employee_name
+                                                                }
+
+                                                            </p>
+
+                                                            <p className="text-xs text-[#14172B]/45 dark:text-white/45">
+
+                                                                {
+                                                                    payslip.employee_code
+                                                                }
+
+                                                            </p>
+
+                                                        </div>
 
                                                     </div>
 
-                                                </div>
+                                                </td>
 
-                                            </td>
+                                                {/* PERIOD */}
 
-                                            {/* Pay Period */}
+                                                <td className="px-4 py-4">
 
-                                            <td className="px-4 py-4">
+                                                    <p className="text-sm text-[#14172B]/70 dark:text-white/70">
 
-                                                <p className="text-sm text-[#14172B]/70 dark:text-white/70">
-                                                    {payslip.pay_period}
-                                                </p>
+                                                        {
+                                                            payslip.pay_period
+                                                        }
 
-                                                <p className="mt-0.5 text-xs text-[#14172B]/40 dark:text-white/40">
-                                                    Pay date: {payslip.pay_date}
-                                                </p>
+                                                    </p>
 
-                                            </td>
+                                                    <p className="mt-0.5 text-xs text-[#14172B]/40 dark:text-white/40">
 
-                                            {/* Gross Pay */}
+                                                        Pay date:{' '}
 
-                                            <td className="px-4 py-4 font-medium text-[#14172B] dark:text-white">
-                                                {formatCurrency(
-                                                    payslip.gross_pay,
-                                                )}
-                                            </td>
+                                                        {
+                                                            payslip.pay_date ??
+                                                            'N/A'
+                                                        }
 
-                                            {/* Deductions */}
+                                                    </p>
 
-                                            <td className="px-4 py-4 text-red-500">
-                                                - {formatCurrency(
-                                                    payslip.total_deductions,
-                                                )}
-                                            </td>
+                                                </td>
 
-                                            {/* Net Pay */}
+                                                {/* GROSS */}
 
-                                            <td className="px-4 py-4">
+                                                <td className="px-4 py-4 font-medium text-[#14172B] dark:text-white">
 
-                                                <span className="font-semibold text-[#16241c] dark:text-white">
                                                     {formatCurrency(
-                                                        payslip.net_pay,
+                                                        Number(
+                                                            payslip.gross_pay
+                                                        )
                                                     )}
-                                                </span>
 
-                                            </td>
+                                                </td>
 
-                                            {/* Status */}
+                                                {/* DEDUCTIONS */}
 
-                                            <td className="px-4 py-4">
+                                                <td className="px-4 py-4 text-red-500">
 
-                                                <span
-                                                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClass(
-                                                        payslip.status,
-                                                    )}`}
-                                                >
-                                                    {getStatusLabel(
-                                                        payslip.status,
+                                                    -{' '}
+
+                                                    {formatCurrency(
+                                                        Number(
+                                                            payslip.total_deductions
+                                                        )
                                                     )}
-                                                </span>
 
-                                            </td>
+                                                </td>
 
-                                            {/* Actions */}
+                                                {/* NET */}
 
-                                            <td className="px-4 py-4">
+                                                <td className="px-4 py-4">
 
-                                                <div className="flex justify-end gap-1">
+                                                    <span className="font-semibold text-[#16241c] dark:text-white">
 
-                                                    {/* View */}
+                                                        {formatCurrency(
+                                                            Number(
+                                                                payslip.net_pay
+                                                            )
+                                                        )}
 
-                                                    <button
-                                                        type="button"
-                                                        title="View payslip"
-                                                        className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                    </span>
+
+                                                </td>
+
+                                                {/* STATUS */}
+
+                                                <td className="px-4 py-4">
+
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClass(
+                                                            payslip.status
+                                                        )}`}
                                                     >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
 
-                                                    {/* Download */}
+                                                        {getStatusLabel(
+                                                            payslip.status
+                                                        )}
 
-                                                    <button
-                                                        type="button"
-                                                        title="Download payslip"
-                                                        className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
-                                                    >
-                                                        <Download className="h-4 w-4" />
-                                                    </button>
+                                                    </span>
 
-                                                </div>
+                                                </td>
 
-                                            </td>
+                                                {/* ACTIONS */}
 
-                                        </tr>
+                                                <td className="px-4 py-4">
 
-                                    ))
+                                                    <div className="flex justify-end gap-1">
+
+                                                        <button
+                                                            type="button"
+                                                            title="View payslip"
+                                                            className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                        >
+
+                                                            <Eye className="h-4 w-4" />
+
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            title="Download payslip"
+                                                            className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                        >
+
+                                                            <Download className="h-4 w-4" />
+
+                                                        </button>
+
+                                                    </div>
+
+                                                </td>
+
+                                            </tr>
+
+                                        )
+                                    )
+
                                 ) : (
 
                                     <tr>
@@ -668,7 +656,9 @@ export default function Payslips() {
                                             <div className="flex flex-col items-center">
 
                                                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#16241c]/10 dark:bg-white/10">
+
                                                     <FileText className="h-5 w-5 text-[#16241c]/60 dark:text-white/60" />
+
                                                 </span>
 
                                                 <p className="mt-3 text-sm font-medium text-[#14172B] dark:text-white">
@@ -693,9 +683,7 @@ export default function Payslips() {
 
                     </div>
 
-                    {/* =================================================
-                        PAGINATION
-                    ================================================== */}
+                    {/* PAGINATION */}
 
                     <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
 
