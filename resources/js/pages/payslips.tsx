@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
 import {
@@ -32,7 +32,8 @@ type Payslip = {
     id: number;
     payslip_number: string;
     employee_code: string;
-    employee_name: string;
+    employee_firstname: string;
+    employee_lastname: string;
     email: string;
     department: string;
     position: string;
@@ -51,8 +52,25 @@ type Stats = {
     total_net_pay: number;
 };
 
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+type PayslipPagination = {
+    data: Payslip[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: PaginationLink[];
+};
+
 type Props = {
-    payslips: Payslip[];
+    payslips: PayslipPagination;
     stats: Stats;
 };
 
@@ -63,9 +81,7 @@ function formatCurrency(value: number) {
     })}`;
 }
 
-function getStatusClass(
-    status: PayslipStatus
-) {
+function getStatusClass(status: PayslipStatus) {
     switch (status) {
         case 'paid':
             return 'bg-[#22C55E]/10 text-[#16A34A]';
@@ -81,9 +97,7 @@ function getStatusClass(
     }
 }
 
-function getStatusLabel(
-    status: PayslipStatus
-) {
+function getStatusLabel(status: PayslipStatus) {
     switch (status) {
         case 'paid':
             return 'Paid';
@@ -97,6 +111,10 @@ function getStatusLabel(
         default:
             return status;
     }
+}
+
+function getFullName(payslip: Payslip): string {
+    return `${payslip.employee_firstname} ${payslip.employee_lastname}`;
 }
 
 function initialsOf(name: string) {
@@ -126,13 +144,12 @@ export default function Payslips({
     const payPeriods = useMemo(() => {
         return Array.from(
             new Set(
-                payslips.map(
-                    (payslip) =>
-                        payslip.pay_period
+                payslips.data.map(
+                    (payslip) => payslip.pay_period
                 )
             )
         );
-    }, [payslips]);
+    }, [payslips.data]);
 
     /*
     |--------------------------------------------------------------------------
@@ -141,12 +158,12 @@ export default function Payslips({
     */
 
     const filteredPayslips = useMemo(() => {
-        return payslips.filter((payslip) => {
+        return payslips.data.filter((payslip) => {
             const searchValue =
                 search.toLowerCase().trim();
 
             const matchesSearch =
-                payslip.employee_name
+                payslip.employee_firstname
                     .toLowerCase()
                     .includes(searchValue) ||
 
@@ -177,7 +194,7 @@ export default function Payslips({
             );
         });
     }, [
-        payslips,
+        payslips.data,
         search,
         status,
         payPeriod,
@@ -193,6 +210,27 @@ export default function Payslips({
         setSearch('');
         setStatus('');
         setPayPeriod('');
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAGINATION
+    |--------------------------------------------------------------------------
+    */
+
+    const goToPage = (url: string | null) => {
+        if (!url) {
+            return;
+        }
+
+        router.get(
+            url,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
     };
 
     return (
@@ -242,9 +280,7 @@ export default function Payslips({
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
-
                             <FileText className="h-4.5 w-4.5" />
-
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
@@ -262,9 +298,7 @@ export default function Payslips({
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
-
                             <CircleCheck className="h-4.5 w-4.5 text-[#16A34A]" />
-
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
@@ -282,9 +316,7 @@ export default function Payslips({
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
-
                             <Clock className="h-4.5 w-4.5 text-amber-600" />
-
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
@@ -302,16 +334,12 @@ export default function Payslips({
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#b98a2e]/15">
-
                             <Wallet className="h-4.5 w-4.5 text-[#b98a2e]" />
-
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
                             {formatCurrency(
-                                Number(
-                                    stats.total_net_pay
-                                )
+                                Number(stats.total_net_pay)
                             )}
                         </p>
 
@@ -480,9 +508,7 @@ export default function Payslips({
                                         (payslip) => (
 
                                             <tr
-                                                key={
-                                                    payslip.id
-                                                }
+                                                key={payslip.id}
                                                 className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
                                             >
 
@@ -495,7 +521,7 @@ export default function Payslips({
                                                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
 
                                                             {initialsOf(
-                                                                payslip.employee_name
+                                                                getFullName(payslip)
                                                             )}
 
                                                         </span>
@@ -503,19 +529,11 @@ export default function Payslips({
                                                         <div>
 
                                                             <p className="font-medium text-[#14172B] dark:text-white">
-
-                                                                {
-                                                                    payslip.employee_name
-                                                                }
-
+                                                                {getFullName(payslip)}
                                                             </p>
 
                                                             <p className="text-xs text-[#14172B]/45 dark:text-white/45">
-
-                                                                {
-                                                                    payslip.employee_code
-                                                                }
-
+                                                                {payslip.employee_code}
                                                             </p>
 
                                                         </div>
@@ -529,22 +547,12 @@ export default function Payslips({
                                                 <td className="px-4 py-4">
 
                                                     <p className="text-sm text-[#14172B]/70 dark:text-white/70">
-
-                                                        {
-                                                            payslip.pay_period
-                                                        }
-
+                                                        {payslip.pay_period}
                                                     </p>
 
                                                     <p className="mt-0.5 text-xs text-[#14172B]/40 dark:text-white/40">
-
                                                         Pay date:{' '}
-
-                                                        {
-                                                            payslip.pay_date ??
-                                                            'N/A'
-                                                        }
-
+                                                        {payslip.pay_date ?? 'N/A'}
                                                     </p>
 
                                                 </td>
@@ -692,13 +700,19 @@ export default function Payslips({
                             Showing{' '}
 
                             <span className="font-medium text-[#14172B] dark:text-white">
-                                {filteredPayslips.length}
+                                {payslips.from ?? 0}
+                            </span>
+
+                            {' '}to{' '}
+
+                            <span className="font-medium text-[#14172B] dark:text-white">
+                                {payslips.to ?? 0}
                             </span>
 
                             {' '}of{' '}
 
                             <span className="font-medium text-[#14172B] dark:text-white">
-                                {payslips.length}
+                                {payslips.total}
                             </span>
 
                             {' '}payslips
@@ -707,34 +721,82 @@ export default function Payslips({
 
                         <div className="flex items-center gap-1">
 
-                            <button
-                                type="button"
-                                disabled
-                                className="rounded-lg p-2 text-[#14172B]/40 opacity-50 dark:text-white/40"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </button>
+                            {payslips.links.map(
+                                (link, index) => {
 
-                            <button
-                                type="button"
-                                className="rounded-lg bg-[#16241c] px-3 py-1.5 text-sm text-white"
-                            >
-                                1
-                            </button>
+                                    /*
+                                    |--------------------------------------------------------------------------
+                                    | PREVIOUS
+                                    |--------------------------------------------------------------------------
+                                    */
 
-                            <button
-                                type="button"
-                                className="rounded-lg px-3 py-1.5 text-sm text-[#14172B]/60 transition hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10"
-                            >
-                                2
-                            </button>
+                                    if (index === 0) {
+                                        return (
+                                            <button
+                                                key={index}
+                                                type="button"
+                                                disabled={!link.url}
+                                                onClick={() =>
+                                                    goToPage(link.url)
+                                                }
+                                                className="rounded-lg p-2 text-[#14172B]/60 transition hover:bg-[#14172B]/5 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white/60 dark:hover:bg-white/10"
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </button>
+                                        );
+                                    }
 
-                            <button
-                                type="button"
-                                className="rounded-lg px-3 py-2 text-[#14172B]/60 transition hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </button>
+                                    /*
+                                    |--------------------------------------------------------------------------
+                                    | NEXT
+                                    |--------------------------------------------------------------------------
+                                    */
+
+                                    if (
+                                        index ===
+                                        payslips.links.length - 1
+                                    ) {
+                                        return (
+                                            <button
+                                                key={index}
+                                                type="button"
+                                                disabled={!link.url}
+                                                onClick={() =>
+                                                    goToPage(link.url)
+                                                }
+                                                className="rounded-lg p-2 text-[#14172B]/60 transition hover:bg-[#14172B]/5 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white/60 dark:hover:bg-white/10"
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                            </button>
+                                        );
+                                    }
+
+                                    /*
+                                    |--------------------------------------------------------------------------
+                                    | PAGE NUMBERS
+                                    |--------------------------------------------------------------------------
+                                    */
+
+                                    return (
+                                        <button
+                                            key={index}
+                                            type="button"
+                                            disabled={!link.url}
+                                            onClick={() =>
+                                                goToPage(link.url)
+                                            }
+                                            className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                                                link.active
+                                                    ? 'bg-[#16241c] text-white'
+                                                    : 'text-[#14172B]/60 hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10'
+                                            }`}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
+                                    );
+                                }
+                            )}
 
                         </div>
 

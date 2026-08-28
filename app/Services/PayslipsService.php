@@ -35,16 +35,23 @@ class PayslipsService
     /**
      * Get all payslips for admin page.
      */
-  
     public function getPayslips()
-{
-    return Payslip::with([
-        'employee',
-        'payrollRun',
-    ])
-        ->latest()
-        ->get()
-        ->map(function ($payslip) {
+    {
+        $payslips = Payslip::with([
+            'employee',
+            'payrollRun',
+        ])
+            ->join(
+                'employees',
+                'payslips.employee_id',
+                '=',
+                'employees.id'
+            )
+            ->orderBy('employees.last_name', 'asc')
+            ->select('payslips.*')
+            ->paginate(10);
+
+        $payslips->through(function ($payslip) {
 
             $employee = $payslip->employee;
             $payrollRun = $payslip->payrollRun;
@@ -52,13 +59,17 @@ class PayslipsService
             return [
                 'id' => $payslip->id,
 
-                'payslip_number' => $payslip->payslip_number,
+                'payslip_number' =>
+                    $payslip->payslip_number,
 
                 'employee_code' =>
                     $employee?->employee_code ?? 'N/A',
 
-                'employee_name' =>
-                    $employee?->full_name ?? 'N/A',
+                'employee_firstname' =>
+                    $employee?->first_name ?? 'N/A',
+
+                'employee_lastname' =>
+                    $employee?->last_name ?? 'N/A',
 
                 'email' =>
                     $employee?->email ?? '',
@@ -71,11 +82,11 @@ class PayslipsService
 
                 // PAY PERIOD
                 'pay_period' =>
-                    ($payrollRun?->pay_period_start &&
-                     $payrollRun?->pay_period_end)
-                        ? $payrollRun->pay_period_start->format('M d')
+                    ($payrollRun?->period_start &&
+                     $payrollRun?->period_end)
+                        ? $payrollRun->period_start->format('M d')
                             . ' - ' .
-                            $payrollRun->pay_period_end->format('M d, Y')
+                            $payrollRun->period_end->format('M d, Y')
                         : 'N/A',
 
                 // PAY DATE
@@ -88,7 +99,7 @@ class PayslipsService
                     (float) $payslip->gross_pay,
 
                 'total_deductions' =>
-                    (float) $payslip->total_deductions,
+                    (float) $payslip->other_deductions,
 
                 'net_pay' =>
                     (float) $payslip->net_pay,
@@ -98,5 +109,7 @@ class PayslipsService
                     $payrollRun?->status ?? 'draft',
             ];
         });
-}
+
+        return $payslips;
+    }
 }
