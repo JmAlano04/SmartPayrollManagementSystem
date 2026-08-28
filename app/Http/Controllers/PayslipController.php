@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\PayslipsService;
+use App\Service\Employee;
 
 class PayslipController extends Controller
 {
@@ -19,7 +20,11 @@ class PayslipController extends Controller
                 $this->payslipsService->getStats(),
 
             'payslips' =>
-                $this->payslipsService->getPayslips(),
+                $this->payslipsService->getPayslips($request),
+
+            'filters' => [
+                'search' => $request->search,
+            ]
         ]);
     }
 }

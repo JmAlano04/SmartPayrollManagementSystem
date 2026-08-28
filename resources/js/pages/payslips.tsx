@@ -3,6 +3,8 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
+import GeneratePayslipModal from '@/components/GeneratePayslipModal';
+
 import {
     CalendarDays,
     ChevronLeft,
@@ -134,6 +136,7 @@ export default function Payslips({
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
+    const [showGenerateModal, setShowGenerateModal] = useState(false);
 
     /*
     |--------------------------------------------------------------------------
@@ -166,16 +169,11 @@ export default function Payslips({
                 payslip.employee_firstname
                     .toLowerCase()
                     .includes(searchValue) ||
+                payslip.employee_lastname
+                    .toLowerCase()
+                    .includes(searchValue) ||
 
                 payslip.employee_code
-                    .toLowerCase()
-                    .includes(searchValue) ||
-
-                payslip.payslip_number
-                    .toLowerCase()
-                    .includes(searchValue) ||
-
-                payslip.department
                     .toLowerCase()
                     .includes(searchValue);
 
@@ -262,6 +260,7 @@ export default function Payslips({
 
                         <button
                             type="button"
+                            onClick={() => setShowGenerateModal(true)}
                             className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
                         >
                             <FileText className="h-4 w-4" />
@@ -270,6 +269,20 @@ export default function Payslips({
 
                     </div>
                 </div>
+
+                {/* Generate payslip modal */}
+                <GeneratePayslipModal
+                    open={showGenerateModal}
+                    onClose={() => setShowGenerateModal(false)}
+                    title="Generate Payslip"
+                    description="Create a new payslip."
+                >
+                    <>
+                    <div>
+                        asdasdasd
+                    </div>
+                    </>
+                </GeneratePayslipModal>
 
                 {/* STATISTICS */}
 
