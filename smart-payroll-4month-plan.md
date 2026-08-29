@@ -31,7 +31,7 @@ Day 9
 •	Backend Task: Attendance migration/model/factory.
 •	UI/UX Task: Design Attendance page.
 Day 10
-•	Backend Task: Payroll Runs, Payslips, Logs.
+•	Backend Task: Payroll Runs, Payslips, Logs.--------------CURRENTLY
 •	UI/UX Task: Design Payroll Dashboard.
 Week 3 — Payroll Engine
 Day 11

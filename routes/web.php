@@ -27,7 +27,7 @@ Route::middleware(['auth'])->group(function () {
 
 
     //  Payroll Runs ROUTE
-    Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
+    // Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
 });
 
 require __DIR__.'/settings.php';
