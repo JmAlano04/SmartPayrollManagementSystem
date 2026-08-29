@@ -4,9 +4,13 @@ import { Head, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
 import GeneratePayslipModal from '@/components/GeneratePayslipModal';
+import GeneratePayslipForm from '@/components/payslips/GeneratePayslipForm';
+
 
 import {
     CalendarDays,
+    // CheckSquare,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     CircleCheck,
@@ -14,9 +18,15 @@ import {
     Download,
     Eye,
     FileText,
+    FileUp,
+    // Printer,
     Search,
+    // Square,
+    Upload,
     Wallet,
+    // X,
 } from 'lucide-react';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -240,7 +250,7 @@ export default function Payslips({
                 {/* HEADER */}
 
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
-                    <div className="relative flex flex-wrap items-center justify-between gap-4">
+                    <div className="relative flex flex-wrap items-center justify-between">
 
                         <div>
                             <div className="flex items-center gap-2">
@@ -258,15 +268,49 @@ export default function Payslips({
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => setShowGenerateModal(true)}
-                            className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
-                        >
-                            <FileText className="h-4 w-4" />
-                            Generate Payslip
-                        </button>
+                        <div className="relative flex flex-wrap items-center justify-between gap-7">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGenerateModal(true)}
+                                    className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
+                                >
+                                    <Upload className="h-4 w-4" />
+                                    Import
+                                </button>
 
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGenerateModal(true)}
+                                     className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
+                                >
+                                    <FileUp className="h-4 w-4" />
+                                    Export
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGenerateModal(true)}
+                                     className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Download all
+                                    <ChevronDown/>
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGenerateModal(true)}
+                                    className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    Generate Payslip
+                                </button>
+
+
+                        </div>
+
+                       
                     </div>
                 </div>
 
@@ -277,11 +321,10 @@ export default function Payslips({
                     title="Generate Payslip"
                     description="Create a new payslip."
                 >
-                    <>
-                    <div>
-                        asdasdasd
-                    </div>
-                    </>
+                    <GeneratePayslipForm
+                         onCancel={() => setShowGenerateModal(false)}
+                        onSuccess={() => setShowGenerateModal(false)}                    
+                    />
                 </GeneratePayslipModal>
 
                 {/* STATISTICS */}
