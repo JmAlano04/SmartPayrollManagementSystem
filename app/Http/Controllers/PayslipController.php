@@ -15,6 +15,7 @@ class PayslipController extends Controller
 
     public function index(Request $request)
     {
+
         return Inertia::render('payslips', [
             'stats' =>
                 $this->payslipsService->getStats(),
