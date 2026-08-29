@@ -166,16 +166,11 @@ export default function Payslips({
                 payslip.employee_firstname
                     .toLowerCase()
                     .includes(searchValue) ||
+                payslip.employee_lastname
+                    .toLowerCase()
+                    .includes(searchValue) ||
 
                 payslip.employee_code
-                    .toLowerCase()
-                    .includes(searchValue) ||
-
-                payslip.payslip_number
-                    .toLowerCase()
-                    .includes(searchValue) ||
-
-                payslip.department
                     .toLowerCase()
                     .includes(searchValue);
 
