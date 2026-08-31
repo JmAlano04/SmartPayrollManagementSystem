@@ -81,9 +81,21 @@ type PayslipPagination = {
     links: PaginationLink[];
 };
 
+type Employee = {
+    id: number;
+    [key: string]: unknown;
+};
+
+type PayrollRun = {
+    id: number;
+    [key: string]: unknown;
+};
+
 type Props = {
     payslips: PayslipPagination;
     stats: Stats;
+    employees: Employee[];
+    payrollRuns: PayrollRun[];
 };
 
 function formatCurrency(value: number) {
@@ -142,6 +154,8 @@ function initialsOf(name: string) {
 export default function Payslips({
     payslips,
     stats,
+    employees,
+    payrollRuns,
 }: Props) {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -323,7 +337,9 @@ export default function Payslips({
                 >
                     <GeneratePayslipForm
                          onCancel={() => setShowGenerateModal(false)}
-                        onSuccess={() => setShowGenerateModal(false)}                    
+                         onSuccess={() => setShowGenerateModal(false)}
+                         employees={employees}
+                         payrollRuns={payrollRuns}
                     />
                 </GeneratePayslipModal>
 
