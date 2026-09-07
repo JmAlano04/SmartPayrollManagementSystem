@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
+use App\Exports\PayslipsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Services\PayslipsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -224,5 +226,16 @@ class PayslipController extends Controller
                 'success',
                 'Payslip generated successfully.'
             );
+    }
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new PayslipsExport(
+                $request->input('search'),
+                $request->input('status'),
+                $request->input('pay_period'),
+            ),
+            'payslips.xlsx'
+        );
     }
 }

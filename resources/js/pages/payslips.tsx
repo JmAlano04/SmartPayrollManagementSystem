@@ -83,11 +83,17 @@ type PayslipPagination = {
 
 type Employee = {
     id: number;
+    employee_code: string;
+    first_name: string;
+    last_name: string;
     [key: string]: unknown;
 };
 
 type PayrollRun = {
     id: number;
+    period_start: string;
+    period_end: string;
+    status: string;
     [key: string]: unknown;
 };
 
@@ -255,6 +261,19 @@ export default function Payslips({
         );
     };
 
+
+    const handleExportCsv = () => {
+    const params = new URLSearchParams();
+
+    if (search) params.set('search', search);
+    if (status) params.set('status', status);
+    if (payPeriod) params.set('pay_period', payPeriod);
+
+
+    window.location.href =
+        `${route('payslips.export')}?${params.toString()}`;
+};
+   
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Payslips" />
@@ -294,7 +313,7 @@ export default function Payslips({
 
                                 <button
                                     type="button"
-                                    onClick={() => setShowGenerateModal(true)}
+                                    onClick={ handleExportCsv}
                                      className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
                                 >
                                     <FileUp className="h-4 w-4" />
@@ -361,6 +380,7 @@ export default function Payslips({
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
                             Total payslips
+                           
                         </p>
 
                     </div>
@@ -620,6 +640,8 @@ export default function Payslips({
 
                                                     <p className="text-sm text-[#14172B]/70 dark:text-white/70">
                                                         {payslip.pay_period}
+
+                                                        
                                                     </p>
 
                                                     <p className="mt-0.5 text-xs text-[#14172B]/40 dark:text-white/40">
