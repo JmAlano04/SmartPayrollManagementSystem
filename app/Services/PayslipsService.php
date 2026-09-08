@@ -84,7 +84,7 @@ class PayslipsService
                 'pay_period' =>
                     ($payrollRun?->period_start &&
                      $payrollRun?->period_end)
-                        ? $payrollRun->period_start->format('M d')
+                        ? $payrollRun->period_start->format('M d, Y')
                             . ' - ' .
                             $payrollRun->period_end->format('M d, Y')
                         : 'N/A',

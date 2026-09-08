@@ -24,7 +24,9 @@ Route::middleware(['auth'])->group(function () {
 
       //  Payslips ROUTE
     Route::get('/payroll/payslips', [PayslipController::class, 'index'])->name('payslips.index');
-
+    Route::post('/payroll/payslips/generate-payslips', [PayslipController::class, 'store'])->name('payslips.store');
+    Route::get('/payslips/export', [PayslipController::class, 'export'])
+    ->name('payslips.export');
 
     //  Payroll Runs ROUTE
     // Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
