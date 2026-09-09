@@ -6,10 +6,8 @@ import { useMemo, useState } from 'react';
 import GeneratePayslipModal from '@/components/GeneratePayslipModal';
 import GeneratePayslipForm from '@/components/payslips/GeneratePayslipForm';
 
-
 import {
     CalendarDays,
-    // CheckSquare,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -19,14 +17,10 @@ import {
     Eye,
     FileText,
     FileUp,
-    // Printer,
     Search,
-    // Square,
     Upload,
     Wallet,
-    // X,
 } from 'lucide-react';
-
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -166,7 +160,12 @@ export default function Payslips({
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
-    const [showGenerateModal, setShowGenerateModal] = useState(false);
+
+    const [showGenerateModal, setShowGenerateModal] =
+        useState(false);
+
+    // IMPORT STATE
+    const [importing, setImporting] = useState(false);
 
     /*
     |--------------------------------------------------------------------------
@@ -202,7 +201,6 @@ export default function Payslips({
                 payslip.employee_lastname
                     .toLowerCase()
                     .includes(searchValue) ||
-
                 payslip.employee_code
                     .toLowerCase()
                     .includes(searchValue);
@@ -261,21 +259,104 @@ export default function Payslips({
         );
     };
 
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT CSV
+    |--------------------------------------------------------------------------
+    */
 
     const handleExportCsv = () => {
-    const params = new URLSearchParams();
+        const params = new URLSearchParams();
 
-    if (search) params.set('search', search);
-    if (status) params.set('status', status);
-    if (payPeriod) params.set('pay_period', payPeriod);
+        if (search) {
+            params.set('search', search);
+        }
 
+        if (status) {
+            params.set('status', status);
+        }
 
-    window.location.href =
-        `${route('payslips.export')}?${params.toString()}`;
-};
-   
+        if (payPeriod) {
+            params.set('pay_period', payPeriod);
+        }
+
+        window.location.href =
+            `${route('payslips.export')}?${params.toString()}`;
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORT CSV
+    |--------------------------------------------------------------------------
+    */
+
+    const handleImportCsv = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        // Check file extension
+        if (!file.name.toLowerCase().endsWith('.xlsx')) {
+            alert('Please select a valid file.');
+            event.target.value = '';
+            return;
+        }
+
+        setImporting(true);
+
+        const formData = new FormData();
+
+        formData.append('file', file);
+
+        router.post(
+            route('payslips.import'),
+            formData,
+            {
+                forceFormData: true,
+
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    alert(
+                        'Payslips imported successfully!'
+                    );
+
+                    event.target.value = '';
+                },
+
+                onError: (errors) => {
+                    console.error(
+                        'Import errors:',
+                        errors
+                    );
+
+                    alert(
+                        'Failed to import CSV. Please check the file.'
+                    );
+
+                    event.target.value = '';
+                },
+
+                onFinish: () => {
+                    setImporting(false);
+                },
+            }
+        );
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | RENDER
+    |--------------------------------------------------------------------------
+    */
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+
             <Head title="Payslips" />
 
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
@@ -283,12 +364,16 @@ export default function Payslips({
                 {/* HEADER */}
 
                 <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
+
                     <div className="relative flex flex-wrap items-center justify-between">
 
                         <div>
+
                             <div className="flex items-center gap-2">
 
-                                <FileText className="h-5 w-5 text-[#b98a2e]" />
+                                <FileText
+                                    className="h-5 w-5 text-[#b98a2e]"
+                                />
 
                                 <h1 className="text-xl font-semibold text-white">
                                     Payslips
@@ -299,70 +384,143 @@ export default function Payslips({
                             <p className="mt-1 text-sm text-white/55">
                                 Manage and review employee payroll statements.
                             </p>
+
                         </div>
 
                         <div className="relative flex flex-wrap items-center justify-between gap-7">
+
+                            {/* =====================================================
+                                IMPORT CSV
+                            ====================================================== */}
+
+                            <>
+
+                                {/* Hidden file input */}
+
+                                <input
+                                    id="csv-import"
+                                    type="file"
+                                    accept=".xlsx,.xls,.csv,text/csv"
+                                    className="hidden"
+                                    onChange={handleImportCsv}
+                                />
+
+                                {/* Import button */}
+
                                 <button
                                     type="button"
-                                    onClick={() => setShowGenerateModal(true)}
-                                    className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
+                                    disabled={importing}
+                                    onClick={() =>
+                                        document
+                                            .getElementById(
+                                                'csv-import'
+                                            )
+                                            ?.click()
+                                    }
+                                    className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
+
                                     <Upload className="h-4 w-4" />
-                                    Import
-                                </button>
 
-                                <button
-                                    type="button"
-                                    onClick={ handleExportCsv}
-                                     className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
-                                >
-                                    <FileUp className="h-4 w-4" />
-                                    Export
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setShowGenerateModal(true)}
-                                     className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Download all
-                                    <ChevronDown/>
+                                    {importing
+                                        ? 'Importing...'
+                                        : 'Import'}
 
                                 </button>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setShowGenerateModal(true)}
-                                    className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
-                                >
-                                    <FileText className="h-4 w-4" />
-                                    Generate Payslip
-                                </button>
+                            </>
 
+                            {/* =====================================================
+                                EXPORT CSV
+                            ====================================================== */}
+
+                            <button
+                                type="button"
+                                onClick={handleExportCsv}
+                                className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
+                            >
+
+                                <FileUp className="h-4 w-4" />
+
+                                Export
+
+                            </button>
+
+                            {/* =====================================================
+                                DOWNLOAD ALL
+                            ====================================================== */}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowGenerateModal(true)
+                                }
+                                className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
+                            >
+
+                                <Download className="h-4 w-4" />
+
+                                Download all
+
+                                <ChevronDown className="h-4 w-4" />
+
+                            </button>
+
+                            {/* =====================================================
+                                GENERATE PAYSLIP
+                            ====================================================== */}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowGenerateModal(true)
+                                }
+                                className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
+                            >
+
+                                <FileText className="h-4 w-4" />
+
+                                Generate Payslip
+
+                            </button>
 
                         </div>
 
-                       
                     </div>
+
                 </div>
 
-                {/* Generate payslip modal */}
+
+                {/* ================================================================
+                    GENERATE PAYSLIP MODAL
+                ================================================================= */}
+
                 <GeneratePayslipModal
                     open={showGenerateModal}
-                    onClose={() => setShowGenerateModal(false)}
+                    onClose={() =>
+                        setShowGenerateModal(false)
+                    }
                     title="Generate Payslip"
                     description="Create a new payslip."
                 >
+
                     <GeneratePayslipForm
-                         onCancel={() => setShowGenerateModal(false)}
-                         onSuccess={() => setShowGenerateModal(false)}
-                         employees={employees}
-                         payrollRuns={payrollRuns}
+                        onCancel={() =>
+                            setShowGenerateModal(false)
+                        }
+                        onSuccess={() =>
+                            setShowGenerateModal(false)
+                        }
+                        employees={employees}
+                        payrollRuns={payrollRuns}
                     />
+
                 </GeneratePayslipModal>
 
-                {/* STATISTICS */}
+
+                {/* ================================================================
+                    STATISTICS
+                ================================================================= */}
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -371,79 +529,116 @@ export default function Payslips({
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
+
                             <FileText className="h-4.5 w-4.5" />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
                             {stats.total_payslips}
+
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
                             Total payslips
-                           
+
                         </p>
 
                     </div>
+
 
                     {/* PAID */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
-                            <CircleCheck className="h-4.5 w-4.5 text-[#16A34A]" />
+
+                            <CircleCheck
+                                className="h-4.5 w-4.5 text-[#16A34A]"
+                            />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
                             {stats.paid_payslips}
+
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
                             Paid
+
                         </p>
 
                     </div>
+
 
                     {/* PENDING */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
-                            <Clock className="h-4.5 w-4.5 text-amber-600" />
+
+                            <Clock
+                                className="h-4.5 w-4.5 text-amber-600"
+                            />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
                             {stats.pending_payslips}
+
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
                             Pending
+
                         </p>
 
                     </div>
+
 
                     {/* NET PAY */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#b98a2e]/15">
-                            <Wallet className="h-4.5 w-4.5 text-[#b98a2e]" />
+
+                            <Wallet
+                                className="h-4.5 w-4.5 text-[#b98a2e]"
+                            />
+
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
+
                             {formatCurrency(
-                                Number(stats.total_net_pay)
+                                Number(
+                                    stats.total_net_pay
+                                )
                             )}
+
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
+
                             Total net pay
+
                         </p>
 
                     </div>
 
                 </div>
 
-                {/* FILTERS */}
+
+                {/* ================================================================
+                    FILTERS
+                ================================================================= */}
 
                 <div className="flex flex-wrap items-center gap-3">
 
@@ -451,7 +646,9 @@ export default function Payslips({
 
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
 
-                        <Search className="h-4 w-4 text-[#14172B]/40 dark:text-white/40" />
+                        <Search
+                            className="h-4 w-4 text-[#14172B]/40 dark:text-white/40"
+                        />
 
                         <input
                             type="text"
@@ -467,11 +664,14 @@ export default function Payslips({
 
                     </div>
 
+
                     {/* PAY PERIOD */}
 
                     <div className="relative">
 
-                        <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40" />
+                        <CalendarDays
+                            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40"
+                        />
 
                         <select
                             value={payPeriod}
@@ -501,6 +701,7 @@ export default function Payslips({
                         </select>
 
                     </div>
+
 
                     {/* STATUS */}
 
@@ -532,23 +733,31 @@ export default function Payslips({
 
                     </select>
 
+
                     {/* CLEAR */}
 
                     {(search ||
                         status ||
                         payPeriod) && (
+
                         <button
                             type="button"
                             onClick={clearFilters}
                             className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm text-[#14172B] transition hover:bg-[#14172B]/5 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
                         >
+
                             Clear
+
                         </button>
+
                     )}
 
                 </div>
 
-                {/* TABLE */}
+
+                {/* ================================================================
+                    TABLE
+                ================================================================= */}
 
                 <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
 
@@ -613,7 +822,9 @@ export default function Payslips({
                                                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
 
                                                             {initialsOf(
-                                                                getFullName(payslip)
+                                                                getFullName(
+                                                                    payslip
+                                                                )
                                                             )}
 
                                                         </span>
@@ -621,11 +832,19 @@ export default function Payslips({
                                                         <div>
 
                                                             <p className="font-medium text-[#14172B] dark:text-white">
-                                                                {getFullName(payslip)}
+
+                                                                {getFullName(
+                                                                    payslip
+                                                                )}
+
                                                             </p>
 
                                                             <p className="text-xs text-[#14172B]/45 dark:text-white/45">
-                                                                {payslip.employee_code}
+
+                                                                {
+                                                                    payslip.employee_code
+                                                                }
+
                                                             </p>
 
                                                         </div>
@@ -634,22 +853,32 @@ export default function Payslips({
 
                                                 </td>
 
+
                                                 {/* PERIOD */}
 
                                                 <td className="px-4 py-4">
 
                                                     <p className="text-sm text-[#14172B]/70 dark:text-white/70">
-                                                        {payslip.pay_period}
 
-                                                        
+                                                        {
+                                                            payslip.pay_period
+                                                        }
+
                                                     </p>
 
                                                     <p className="mt-0.5 text-xs text-[#14172B]/40 dark:text-white/40">
+
                                                         Pay date:{' '}
-                                                        {payslip.pay_date ?? 'N/A'}
+
+                                                        {
+                                                            payslip.pay_date ??
+                                                            'N/A'
+                                                        }
+
                                                     </p>
 
                                                 </td>
+
 
                                                 {/* GROSS */}
 
@@ -662,6 +891,7 @@ export default function Payslips({
                                                     )}
 
                                                 </td>
+
 
                                                 {/* DEDUCTIONS */}
 
@@ -676,6 +906,7 @@ export default function Payslips({
                                                     )}
 
                                                 </td>
+
 
                                                 {/* NET */}
 
@@ -692,6 +923,7 @@ export default function Payslips({
                                                     </span>
 
                                                 </td>
+
 
                                                 {/* STATUS */}
 
@@ -710,6 +942,7 @@ export default function Payslips({
                                                     </span>
 
                                                 </td>
+
 
                                                 {/* ACTIONS */}
 
@@ -759,16 +992,22 @@ export default function Payslips({
 
                                                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#16241c]/10 dark:bg-white/10">
 
-                                                    <FileText className="h-5 w-5 text-[#16241c]/60 dark:text-white/60" />
+                                                    <FileText
+                                                        className="h-5 w-5 text-[#16241c]/60 dark:text-white/60"
+                                                    />
 
                                                 </span>
 
                                                 <p className="mt-3 text-sm font-medium text-[#14172B] dark:text-white">
+
                                                     No payslips found
+
                                                 </p>
 
                                                 <p className="mt-1 text-xs text-[#14172B]/45 dark:text-white/45">
+
                                                     Try changing your search or filters.
+
                                                 </p>
 
                                             </div>
@@ -785,7 +1024,10 @@ export default function Payslips({
 
                     </div>
 
-                    {/* PAGINATION */}
+
+                    {/* ============================================================
+                        PAGINATION
+                    ============================================================= */}
 
                     <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
 
@@ -794,90 +1036,106 @@ export default function Payslips({
                             Showing{' '}
 
                             <span className="font-medium text-[#14172B] dark:text-white">
+
                                 {payslips.from ?? 0}
+
                             </span>
 
                             {' '}to{' '}
 
                             <span className="font-medium text-[#14172B] dark:text-white">
+
                                 {payslips.to ?? 0}
+
                             </span>
 
                             {' '}of{' '}
 
                             <span className="font-medium text-[#14172B] dark:text-white">
+
                                 {payslips.total}
+
                             </span>
 
                             {' '}payslips
 
                         </p>
 
+
                         <div className="flex items-center gap-1">
 
                             {payslips.links.map(
                                 (link, index) => {
 
-                                    /*
-                                    |--------------------------------------------------------------------------
-                                    | PREVIOUS
-                                    |--------------------------------------------------------------------------
-                                    */
+                                    {/* PREVIOUS */}
 
                                     if (index === 0) {
+
                                         return (
+
                                             <button
                                                 key={index}
                                                 type="button"
                                                 disabled={!link.url}
                                                 onClick={() =>
-                                                    goToPage(link.url)
+                                                    goToPage(
+                                                        link.url
+                                                    )
                                                 }
                                                 className="rounded-lg p-2 text-[#14172B]/60 transition hover:bg-[#14172B]/5 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white/60 dark:hover:bg-white/10"
                                             >
+
                                                 <ChevronLeft className="h-4 w-4" />
+
                                             </button>
+
                                         );
+
                                     }
 
-                                    /*
-                                    |--------------------------------------------------------------------------
-                                    | NEXT
-                                    |--------------------------------------------------------------------------
-                                    */
+
+                                    {/* NEXT */}
 
                                     if (
                                         index ===
                                         payslips.links.length - 1
                                     ) {
+
                                         return (
+
                                             <button
                                                 key={index}
                                                 type="button"
                                                 disabled={!link.url}
                                                 onClick={() =>
-                                                    goToPage(link.url)
+                                                    goToPage(
+                                                        link.url
+                                                    )
                                                 }
                                                 className="rounded-lg p-2 text-[#14172B]/60 transition hover:bg-[#14172B]/5 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white/60 dark:hover:bg-white/10"
                                             >
+
                                                 <ChevronRight className="h-4 w-4" />
+
                                             </button>
+
                                         );
+
                                     }
 
-                                    /*
-                                    |--------------------------------------------------------------------------
-                                    | PAGE NUMBERS
-                                    |--------------------------------------------------------------------------
-                                    */
+
+                                    {/* PAGE NUMBERS */}
 
                                     return (
+
                                         <button
                                             key={index}
                                             type="button"
                                             disabled={!link.url}
                                             onClick={() =>
-                                                goToPage(link.url)
+                                                goToPage(
+                                                    link.url
+                                                )
                                             }
                                             className={`rounded-lg px-3 py-1.5 text-sm transition ${
                                                 link.active
@@ -888,7 +1146,9 @@ export default function Payslips({
                                                 __html: link.label,
                                             }}
                                         />
+
                                     );
+
                                 }
                             )}
 
@@ -899,6 +1159,7 @@ export default function Payslips({
                 </div>
 
             </div>
+
         </AppLayout>
     );
 }

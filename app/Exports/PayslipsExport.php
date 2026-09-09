@@ -43,9 +43,15 @@ class PayslipsExport implements FromCollection, WithHeadings, WithEvents
                 'employees.employee_code',
                 'employees.first_name',
                 'employees.last_name',
+
                 'payroll_runs.period_start',
                 'payroll_runs.period_end',
+
+                'payslips.base_pay',
+                'payslips.overtime_pay',
+                'payslips.allowances_total',
                 'payslips.gross_pay',
+                'payslips.tax_amount',
                 'payslips.other_deductions',
                 'payslips.net_pay',
                 'payroll_runs.status',
@@ -134,7 +140,12 @@ class PayslipsExport implements FromCollection, WithHeadings, WithEvents
                         ' - ' .
                         $payslip->period_end,
 
+
+                    $payslip->base_pay,
+                    $payslip->overtime_pay,
+                    $payslip->allowances_total,
                     $payslip->gross_pay,
+                    $payslip->tax_amount,
                     $payslip->other_deductions,
                     $payslip->net_pay,
 
@@ -153,8 +164,12 @@ class PayslipsExport implements FromCollection, WithHeadings, WithEvents
             'Employee Code',
             'Employee Name',
             'Pay Period',
+            'base Pay',
+            'Overtime Pay',
+            'Allowances Total',
             'Gross Pay',
-            'Total Deductions',
+            'Tax Amount',
+            'Other Deductions',
             'Net Pay',
             'Status',
         ];
@@ -201,7 +216,7 @@ class PayslipsExport implements FromCollection, WithHeadings, WithEvents
                 |--------------------------------------------------------------------------
                 */
 
-                $sheet->getStyle('A1:H1')->applyFromArray([
+                $sheet->getStyle('A1:L1')->applyFromArray([
 
                     'font' => [
                         'bold' => true,
@@ -234,7 +249,7 @@ class PayslipsExport implements FromCollection, WithHeadings, WithEvents
                 |--------------------------------------------------------------------------
                 */
 
-                $sheet->getStyle('A2:H2')->applyFromArray([
+                $sheet->getStyle('A2:L2')->applyFromArray([
 
                     'font' => [
                         'bold' => true,

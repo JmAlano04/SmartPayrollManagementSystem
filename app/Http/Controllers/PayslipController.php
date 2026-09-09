@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Services\PayslipsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Imports\PayslipsImport;
 
 class PayslipController extends Controller
 {
@@ -237,5 +238,29 @@ class PayslipController extends Controller
             ),
             'payslips.xlsx'
         );
+    }
+
+   public function import(Request $request)
+    {
+        $request->validate([
+            'file' => [
+                'required',
+                'file',
+                'mimes:xlsx',
+                'max:10240',
+            ],
+        ]);
+
+        Excel::import(
+            new PayslipsImport(),
+            $request->file('file')
+        );
+
+        return redirect()
+            ->route('payslips.index')
+            ->with(
+                'success',
+                'Payslips imported successfully.'
+            );
     }
 }
