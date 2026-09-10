@@ -17,7 +17,9 @@ import {
     Eye,
     FileText,
     FileUp,
+    Pencil,
     Search,
+    Trash2,
     Upload,
     Wallet,
 } from 'lucide-react';
@@ -286,70 +288,6 @@ export default function Payslips({
 
     /*
     |--------------------------------------------------------------------------
-    | IMPORT CSV
-    |--------------------------------------------------------------------------
-    */
-
-    const handleImportCsv = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const file = event.target.files?.[0];
-
-        if (!file) {
-            return;
-        }
-
-        // Check file extension
-        if (!file.name.toLowerCase().endsWith('.xlsx')) {
-            alert('Please select a valid file.');
-            event.target.value = '';
-            return;
-        }
-
-        setImporting(true);
-
-        const formData = new FormData();
-
-        formData.append('file', file);
-
-        router.post(
-            route('payslips.import'),
-            formData,
-            {
-                forceFormData: true,
-
-                preserveScroll: true,
-
-                onSuccess: () => {
-                    alert(
-                        'Payslips imported successfully!'
-                    );
-
-                    event.target.value = '';
-                },
-
-                onError: (errors) => {
-                    console.error(
-                        'Import errors:',
-                        errors
-                    );
-
-                    alert(
-                        'Failed to import CSV. Please check the file.'
-                    );
-
-                    event.target.value = '';
-                },
-
-                onFinish: () => {
-                    setImporting(false);
-                },
-            }
-        );
-    };
-
-    /*
-    |--------------------------------------------------------------------------
     | RENDER
     |--------------------------------------------------------------------------
     */
@@ -389,46 +327,6 @@ export default function Payslips({
 
                         <div className="relative flex flex-wrap items-center justify-between gap-7">
 
-                            {/* =====================================================
-                                IMPORT CSV
-                            ====================================================== */}
-
-                            <>
-
-                                {/* Hidden file input */}
-
-                                <input
-                                    id="csv-import"
-                                    type="file"
-                                    accept=".xlsx,.xls,.csv,text/csv"
-                                    className="hidden"
-                                    onChange={handleImportCsv}
-                                />
-
-                                {/* Import button */}
-
-                                <button
-                                    type="button"
-                                    disabled={importing}
-                                    onClick={() =>
-                                        document
-                                            .getElementById(
-                                                'csv-import'
-                                            )
-                                            ?.click()
-                                    }
-                                    className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-
-                                    <Upload className="h-4 w-4" />
-
-                                    {importing
-                                        ? 'Importing...'
-                                        : 'Import'}
-
-                                </button>
-
-                            </>
 
                             {/* =====================================================
                                 EXPORT CSV
@@ -942,37 +840,59 @@ export default function Payslips({
                                                     </span>
 
                                                 </td>
+                                            
+                                        {/* ACTIONS */}
+                                        <td className="px-4 py-4">
+                                        
+                                        <div className="flex justify-end gap-1">
 
+                                                {/* VIEW */}
+                                                <button
+                                                    type="button"
+                                                    title="View payslip"
+                                                    className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </button>
 
-                                                {/* ACTIONS */}
-
-                                                <td className="px-4 py-4">
-
-                                                    <div className="flex justify-end gap-1">
-
+                                                {/* EDIT + DELETE
+                                                    Only show when status is NOT paid
+                                                */}
+                                                {payslip.status !== 'paid' && (
+                                                    <>
+                                                        {/* EDIT */}
                                                         <button
                                                             type="button"
-                                                            title="View payslip"
+                                                            title="Edit payslip"
                                                             className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
                                                         >
-
-                                                            <Eye className="h-4 w-4" />
-
+                                                            <Pencil className="h-4 w-4" />
                                                         </button>
 
+                                                        {/* DELETE */}
                                                         <button
                                                             type="button"
-                                                            title="Download payslip"
-                                                            className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                            title="Delete payslip"
+                                                            className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-red-50 hover:text-red-600 dark:text-white/60 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                                                         >
-
-                                                            <Download className="h-4 w-4" />
-
+                                                            <Trash2 className="h-4 w-4" />
                                                         </button>
+                                                    </>
+                                                )}
 
-                                                    </div>
+                                                {/* DOWNLOAD */}
+                                                <button
+                                                    type="button"
+                                                    title="Download payslip"
+                                                    className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                </button>
 
-                                                </td>
+                                            </div>
+                                        </td>
+
+                                                
 
                                             </tr>
 
