@@ -20,7 +20,6 @@ import {
     Pencil,
     Search,
     Trash2,
-    Upload,
     Wallet,
 } from 'lucide-react';
 
@@ -166,9 +165,6 @@ export default function Payslips({
     const [showGenerateModal, setShowGenerateModal] =
         useState(false);
 
-    // IMPORT STATE
-    const [importing, setImporting] = useState(false);
-
     /*
     |--------------------------------------------------------------------------
     | PAY PERIOD OPTIONS
@@ -286,6 +282,26 @@ export default function Payslips({
             `${route('payslips.export')}?${params.toString()}`;
     };
 
+
+    const handleDownloadAll = () => {
+        const params = new URLSearchParams();
+
+        if (search) {
+            params.set('search', search);
+        }
+
+        if (status) {
+            params.set('status', status);
+        }
+
+        if (payPeriod) {
+            params.set('pay_period', payPeriod);
+        }
+
+        window.location.href =
+            `${route('payslips.downloadAll')}?${params.toString()}`;
+    };
+
     /*
     |--------------------------------------------------------------------------
     | RENDER
@@ -350,17 +366,13 @@ export default function Payslips({
 
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setShowGenerateModal(true)
-                                }
+                                onClick={ handleDownloadAll }
                                 className="flex items-center gap-2 rounded-full border border-white bg-transparent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black/50"
                             >
 
                                 <Download className="h-4 w-4" />
 
                                 Download all
-
-                                <ChevronDown className="h-4 w-4" />
 
                             </button>
 

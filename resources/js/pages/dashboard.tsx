@@ -40,7 +40,7 @@ interface PayRun {
     id: number;
     period_start: string;
     period_end: string;
-    total_gross: number;
+    total_net: number;
     status: string;
 }
 
@@ -48,7 +48,7 @@ interface TrendItem {
     id: number;
     period_start: string;
     period_end: string;
-    total_gross: number;
+    total_net: number;
 }
 
 interface NeedsReviewItem {
@@ -109,7 +109,7 @@ export default function Dashboard({
             ).toLocaleString('en-US', {
                 month: 'short',
             }),
-            value: Number(item.total_gross ?? 0),
+            value: Number(item.total_net ?? 0),
         };
     });
 
@@ -457,7 +457,7 @@ export default function Dashboard({
                                         <td className="py-3 font-['IBM_Plex_Mono'] text-[#14172B] dark:text-white">
                                             ₱
                                             {Number(
-                                                run.total_gross ?? 0,
+                                                run.total_net ?? 0,
                                             ).toLocaleString('en-PH', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,

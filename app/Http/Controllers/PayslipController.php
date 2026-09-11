@@ -11,6 +11,9 @@ use App\Services\PayslipsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Imports\PayslipsImport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use ZipArchive;
+
 
 class PayslipController extends Controller
 {
@@ -238,6 +241,79 @@ class PayslipController extends Controller
             ),
             'payslips.xlsx'
         );
+    }
+
+
+    // Download all payslips as a zip file
+    public function downloadAll(Request $request)
+    {
+        $query = Payslip::with(['employee', 'payrollRun'])
+            ->join('employees', 'payslips.employee_id', '=', 'employees.id')
+            ->select('payslips.*')
+            ->whereHas('payrollRun', fn ($q) => $q->where('status', 'paid'));
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('employees.first_name',      'like', "%{$search}%")
+                ->orWhere('employees.last_name',     'like', "%{$search}%")
+                ->orWhere('employees.employee_code', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->status) {
+            $status = $request->status;
+            $query->whereHas('payrollRun', fn ($q) => $q->where('status', $status));
+        }
+
+        if ($request->pay_period) {
+            [$start, $end] = explode(' - ', $request->pay_period);
+            $query->whereHas('payrollRun', function ($q) use ($start, $end) {
+                $q->where('period_start', trim($start))
+                ->where('period_end',   trim($end));
+            });
+        }
+
+        $payslips = $query->orderBy('employees.last_name')->get();
+
+        if ($payslips->isEmpty()) {
+            return back()->withErrors(['error' => 'No payslips found.']);
+        }
+
+        // Temp directory
+        $tempDir = storage_path('app/temp');
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        // Create ZIP
+        $zipFileName = 'payslips-' . now()->format('Y-m-d-His') . '.zip';
+        $zipPath     = $tempDir . '/' . $zipFileName;
+
+        $zip = new ZipArchive();
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        foreach ($payslips as $payslip) {
+            $employee   = $payslip->employee;
+            $payrollRun = $payslip->payrollRun;
+
+            if (!$employee || !$payrollRun) continue;
+
+            $pdf = Pdf::loadView('receipt', compact(
+                'payslip',
+                'employee',
+                'payrollRun'
+            ))->setPaper([0, 0, 420, 700]);
+
+            $fileName = "payslip-{$employee->employee_code}-{$payslip->payslip_number}.pdf";
+            $zip->addFromString($fileName, $pdf->output());
+        }
+
+        $zip->close();
+
+        return response()
+            ->download($zipPath, $zipFileName)
+            ->deleteFileAfterSend(true);
     }
 
    

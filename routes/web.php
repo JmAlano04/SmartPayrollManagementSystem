@@ -39,6 +39,10 @@ Route::middleware(['auth'])->group(function () {
     ->name('payslips.export');
     Route::post('/payslips/import', [PayslipController::class, 'import'])
     ->name('payslips.import');
+    Route::get('/payslips/download/{payslip}', [PayslipController::class, 'downloadPayslip'])
+    ->name('payslips.download');
+    Route::get('/payslips/download-all', [PayslipController::class, 'downloadAll'])
+    ->name('payslips.downloadAll');
 
 
     //  Payroll Runs ROUTE

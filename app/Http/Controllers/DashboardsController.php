@@ -16,14 +16,15 @@ class DashboardsController extends Controller
 
             // Stats for dashboard
             'stats' => [
-                'employees' => Employee::count('id'),
+                'employees' => Employee::count(),
 
                 'payrollRuns' => PayrollRun::where('status', 'pending')
                     ->count(),
 
                 'payslips' => Payslip::count(),
 
-                'totalPayroll' => Payslip::sum('net_pay'),
+                'totalPayroll' => PayrollRun::where('status', 'paid')
+                    ->sum('total_net'),
             ],
 
             // Recent employees
@@ -50,9 +51,9 @@ class DashboardsController extends Controller
                 ->get(),
 
                 
-            // Total gross payroll from paid payroll runs
+            // Total net payroll from paid payroll runs
             'totalPayroll' => PayrollRun::where('status', 'paid')
-                ->sum('total_gross'),
+                ->sum('total_net'),
 
             // Trend data for payroll chart
             'trend' => PayrollRun::query()
@@ -61,7 +62,7 @@ class DashboardsController extends Controller
                     'id',
                     'period_start',
                     'period_end',
-                    'total_gross',
+                    'total_net',
                 ])
                 ->orderBy('period_start','asc')
                 ->get(),
