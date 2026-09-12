@@ -231,6 +231,11 @@ class PayslipController extends Controller
                 'Payslip generated successfully.'
             );
     }
+
+
+
+
+    // Export payslips to Excel
     public function export(Request $request)
     {
         return Excel::download(

@@ -1,11 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 
 import {
-    AlertTriangle,
     CalendarClock,
     Home,
     // LogOut,
-    Percent,
     ScrollText,
     Settings,
     TrendingUp,
@@ -42,8 +40,7 @@ const overviewItems: NavItem[] = [{ title: 'Dashboard', href: '/dashboard', icon
 const payrollItems: NavItem[] = [
     { title: 'Pay runs', href: '/payroll/runs', icon: Wallet },
     { title: 'Payslips', href: '/payroll/payslips', icon: ScrollText },
-    { title: 'Tax & deductions', href: '/payroll/tax', icon: Percent },
-    { title: 'Anomalies', href: '/payroll/anomalies', icon: AlertTriangle, badge: '3' },
+
 ];
 
 const peopleItems: NavItem[] = [
