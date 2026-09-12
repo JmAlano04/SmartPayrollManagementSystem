@@ -9,6 +9,7 @@ use App\Exports\PayslipsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\PayslipsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Imports\PayslipsImport;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -232,6 +233,16 @@ class PayslipController extends Controller
             );
     }
 
+     public function destroy (Payslip $payslip) 
+    {
+         DB::table($payslip->getTable())
+            ->where($payslip->getKeyName(), $payslip->getKey())
+            ->delete();
+
+        return redirect()
+        ->back()
+        ->with('success', 'Payslip Deleted successfully');
+    }
 
 
 
