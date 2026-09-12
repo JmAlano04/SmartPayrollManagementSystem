@@ -318,6 +318,12 @@ export default function Payslips({
             `${route('payslips.downloadAll')}?${params.toString()}`;
     };
 
+
+
+    const handleDownload = (payslipId) => {
+    window.location.href = route('payslips.download', payslipId);
+    };
+
     /*
     |--------------------------------------------------------------------------
     | DELETE PAYSLIP
@@ -925,6 +931,7 @@ export default function Payslips({
 
                                                     <button
                                                         type="button"
+                                                        onClick={() => handleDownload(payslip.id)}
                                                         title="Download payslip"
                                                         className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
                                                     >

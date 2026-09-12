@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     ->name('payslips.downloadAll');
     Route::Delete('/payslips/destroy/{payslip}', [PayslipController::class, 'destroy'])
     ->name('payslips.destroy');
+    Route::get('/payslips/download/{payslip}', [PayslipController::class, 'downloadPayslip'])
+    ->name('payslips.download');
 
 
     //  Payroll Runs ROUTE

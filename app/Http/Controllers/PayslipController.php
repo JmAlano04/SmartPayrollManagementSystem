@@ -332,5 +332,39 @@ class PayslipController extends Controller
             ->deleteFileAfterSend(true);
     }
 
+    public function downloadPayslip(Payslip $payslip)
+    {
+        $employee = $payslip->employee;
+        $payrollRun = $payslip->payrollRun;
+
+        if (!$employee || !$payrollRun) {
+            return back()->withErrors([
+                'error' => 'Payslip data is incomplete.',
+            ]);
+        }
+
+        $pdf = Pdf::loadView('receipt', [
+            'payslip' => $payslip,
+            'employee' => $employee,
+            'payrollRun' => $payrollRun,
+        ])->setPaper([0, 0, 420, 700]);
+
+        $fileName = sprintf(
+            'payslip-%s-%s.pdf',
+            $employee->employee_code,
+            $payslip->payslip_number
+        );
+
+        return response()->streamDownload(
+            function () use ($pdf) {
+                echo $pdf->output();
+            },
+            $fileName,
+            [
+                'Content-Type' => 'application/pdf',
+            ]
+        );
+    }
+
    
 }
