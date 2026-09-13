@@ -95,6 +95,14 @@ class PayslipsService
                         ? $payrollRun->pay_date->format('M d, Y')
                         : 'N/A',
 
+                'base_pay' =>
+                    (float) $payslip->base_pay,
+                'overtime_pay' =>
+                    (float) $payslip->overtime_pay,
+                'allowances_total' =>
+                    (float) $payslip->allowances_total,
+                'tax_amount' =>
+                    (float) $payslip->tax_amount,
                 'gross_pay' =>
                     (float) $payslip->gross_pay,
 

@@ -510,7 +510,7 @@
                                                     <div className="flex justify-end gap-1">
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleEdit(employee)} // 👈
+                                                            onClick={() => handleEdit(employee)} // 
                                                             className="rounded-md p-1.5 hover:bg-[#16241c]/10"
                                                         >
                                                             <Pencil className="h-4 w-4" />
