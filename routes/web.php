@@ -39,14 +39,17 @@ Route::middleware(['auth'])->group(function () {
     ->name('payslips.export');
     Route::post('/payslips/import', [PayslipController::class, 'import'])
     ->name('payslips.import');
+    Route::put('/payslips/update/{payslip}', [PayslipController::class, 'update'])
+    ->name('payslips.update');
+
     Route::get('/payslips/download/{payslip}', [PayslipController::class, 'downloadPayslip'])
     ->name('payslips.download');
     Route::get('/payslips/download-all', [PayslipController::class, 'downloadAll'])
     ->name('payslips.downloadAll');
-    Route::Delete('/payslips/destroy/{payslip}', [PayslipController::class, 'destroy'])
-    ->name('payslips.destroy');
     Route::get('/payslips/download/{payslip}', [PayslipController::class, 'downloadPayslip'])
     ->name('payslips.download');
+  
+
 
 
     //  Payroll Runs ROUTE

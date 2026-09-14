@@ -203,7 +203,7 @@ export default function UpdatePayslipForm({
         setProcessing(true);
         setErrors({});
 
-        router.put(`/payslips/${payslip.id}`, form, {
+        router.put(`/payslips/update/${payslip.id}`, form, {
             preserveScroll: true,
 
             onSuccess: () => {
