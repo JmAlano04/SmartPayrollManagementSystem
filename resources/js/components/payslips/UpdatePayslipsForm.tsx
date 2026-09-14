@@ -64,20 +64,6 @@ export default function UpdatePayslipForm({
 
 
 
-      console.log('=== UPDATE PAYSLIP DEBUG ===');
-    console.log('Selected Payslip:', payslip);
-    console.log('Payslip ID:', payslip?.id);
-    console.log('Employee:', payslip?.employee_firstname, payslip?.employee_lastname);
-    console.log('Pay Period:', payslip?.pay_period);
-    console.log('Base Pay:', payslip?.base_pay);
-    console.log('Overtime Pay:', payslip?.overtime_pay);
-    console.log('Allowances:', payslip?.allowances_total);
-    console.log('Gross Pay:', payslip?.gross_pay);
-    console.log('Tax:', payslip?.tax_amount);
-    console.log('Total Deductions:', payslip?.total_deductions);
-    console.log('Net Pay:', payslip?.net_pay);
-    console.log('Status:', payslip?.status);
-
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -228,6 +214,24 @@ export default function UpdatePayslipForm({
     const readOnlyInput =
         'rounded-none border-0 border-b border-[#16241C]/20 bg-[#16241C]/5 px-0 font-semibold shadow-none dark:border-white/20 dark:bg-white/5 dark:text-white';
 
+
+
+
+        
+
+      console.log('=== UPDATE PAYSLIP DEBUG ===');
+    console.log('Selected Payslip:', payslip);
+    console.log('Payslip ID:', payslip?.id);
+    console.log('Employee:', payslip?.employee_firstname, payslip?.employee_lastname);
+    console.log('Pay Period:', payslip?.pay_period);
+    console.log('Base Pay:', payslip?.base_pay);
+    console.log('Overtime Pay:', payslip?.overtime_pay);
+    console.log('Allowances:', payslip?.allowances_total);
+    console.log('Gross Pay:', payslip?.gross_pay);
+    console.log('Tax:', payslip?.tax_amount);
+    console.log('Total Deductions:', payslip?.total_deductions);
+    console.log('Net Pay:', payslip?.net_pay);
+    console.log('Status:', payslip?.status);
     return (
         <form onSubmit={handleSubmit}>
             <div className="grid gap-6 sm:grid-cols-2">
@@ -414,7 +418,7 @@ export default function UpdatePayslipForm({
                         name="total_deductions"
                         type="number"
                         min="0"
-                        step="0.01"
+                        step="1"
                         value={form.total_deductions}
                         onChange={handleChange}
                         disabled={processing}

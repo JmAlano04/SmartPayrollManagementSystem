@@ -234,56 +234,56 @@ class PayslipController extends Controller
     }
 
     public function update(Request $request, Payslip $payslip)
-    {
-        $employee = $payslip->employee;
-        $payrollRun = $payslip->payrollRun;
+{
+    $employee = $payslip->employee;
+    $payrollRun = $payslip->payrollRun;
 
-        // Make sure the payslip has related data
-        if (!$employee || !$payrollRun) {
-            return back()->withErrors([
-                'error' => 'Payslip data is incomplete.',
-            ]);
-        }
-
-        // Validate submitted data
-        $validated = $request->validate([
-            'base_pay' => ['required', 'numeric', 'min:0'],
-            'overtime_pay' => ['nullable', 'numeric', 'min:0'],
-            'allowances_total' => ['nullable', 'numeric', 'min:0'],
-            'tax_amount' => ['nullable', 'numeric', 'min:0'],
-            'total_deductions' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', 'in:draft,pending,paid'],
+    // Make sure the payslip has related data
+    if (!$employee || !$payrollRun) {
+        return back()->withErrors([
+            'error' => 'Payslip data is incomplete.',
         ]);
-
-        // Convert empty values to 0
-        $basePay = (float) ($validated['base_pay'] ?? 0);
-        $overtimePay = (float) ($validated['overtime_pay'] ?? 0);
-        $allowances = (float) ($validated['allowances_total'] ?? 0);
-        $tax = (float) ($validated['tax_amount'] ?? 0);
-        $deductions = (float) ($validated['total_deductions'] ?? 0);
-
-        // Calculate Gross Pay
-        $grossPay = $basePay + $overtimePay + $allowances;
-
-        // Calculate Net Pay
-        $netPay = max($grossPay - $tax - $deductions, 0);
-
-        // Update payslip
-        $payslip->update([
-            'base_pay' => $basePay,
-            'overtime_pay' => $overtimePay,
-            'allowances_total' => $allowances,
-            'gross_pay' => $grossPay,
-            'tax_amount' => $tax,
-            'total_deductions' => $deductions,
-            'net_pay' => $netPay,
-            'status' => $validated['status'],
-        ]);
-
-        return redirect()
-            ->route('payslips.index')
-            ->with('success', 'Payslip updated successfully.');
     }
+
+    // Validate submitted data
+    $validated = $request->validate([
+        'base_pay' => ['required', 'numeric', 'min:0'],
+        'overtime_pay' => ['nullable', 'numeric', 'min:0'],
+        'allowances_total' => ['nullable', 'numeric', 'min:0'],
+        'tax_amount' => ['nullable', 'numeric', 'min:0'],
+        'total_deductions' => ['nullable', 'numeric', 'min:0'],
+        'status' => ['required', 'in:draft,pending,paid'],
+    ]);
+
+    // Convert empty values to 0
+    $basePay = (float) ($validated['base_pay'] ?? 0);
+    $overtimePay = (float) ($validated['overtime_pay'] ?? 0);
+    $allowances = (float) ($validated['allowances_total'] ?? 0);
+    $tax = (float) ($validated['tax_amount'] ?? 0);
+    $deductions = (float) ($validated['total_deductions'] ?? 0);
+
+    // Calculate Gross Pay
+    $grossPay = $basePay + $overtimePay + $allowances;
+
+    // Calculate Net Pay
+    $netPay = max($grossPay - $tax - $deductions, 0);
+
+    // Update payslip
+    $payslip->update([
+        'base_pay' => $basePay,
+        'overtime_pay' => $overtimePay,
+        'allowances_total' => $allowances,
+        'gross_pay' => $grossPay,
+        'tax_amount' => $tax,
+        'other_deductions' => $deductions,
+        'net_pay' => $netPay,
+        'status' => $validated['status'],
+    ]);
+
+    return redirect()
+        ->route('payslips.index')
+        ->with('success', 'Payslip updated successfully.');
+}
 
      public function destroy (Payslip $payslip) 
     {
