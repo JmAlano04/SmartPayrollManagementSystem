@@ -11,6 +11,7 @@ import DeleteModal from '@/components/DeleteModal';
 
 import UpdateModal from '@/components/UpdateModal';
 import UpdatePayslipForm from '@/components/payslips/UpdatePayslipsForm';
+import ViewPayslip from '@/components/payslips/ViewPayslips';
 
 import {
     CalendarDays,
@@ -62,6 +63,7 @@ type Payslip = {
    
    
 };
+
 
 type Stats = {
     total_payslips: number;
@@ -183,6 +185,7 @@ export default function Payslips({
         useState(false);
 
     const [showUpdatePayslipModal, setShowUpdatePayslipModal] = useState(false);
+    const [showViewPayslipModal, setShowViewPayslipModal] = useState(false);
 
     const [selectedPayslip, setSelectedPayslip] =
         useState<Payslip | null>(null);
@@ -456,6 +459,17 @@ export default function Payslips({
                             />
                         </UpdateModal>
                     )}
+
+                {selectedPayslip && (
+                    <ViewPayslip
+                        open={showViewPayslipModal}
+                        payslip={selectedPayslip}
+                        onClose={() => {
+                            setShowViewPayslipModal(false);
+                            setSelectedPayslip(null);
+                        }}
+                    />
+                )}
                     
 
                 {/* DELETE PAYSLIP MODAL */}
@@ -759,6 +773,10 @@ export default function Payslips({
                                                     <button
                                                         type="button"
                                                         title="View payslip"
+                                                        onClick={() => {
+                                                            setSelectedPayslip(payslip);
+                                                            setShowViewPayslipModal(true);
+                                                        }}
                                                         className="rounded-md p-1.5 text-[#14172B]/60 transition hover:bg-[#16241c]/10 hover:text-[#16241c] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
                                                     >
                                                         <Eye className="h-4 w-4" />
