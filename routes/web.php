@@ -48,7 +48,10 @@ Route::middleware(['auth'])->group(function () {
     ->name('payslips.downloadAll');
     Route::get('/payslips/download/{payslip}', [PayslipController::class, 'downloadPayslip'])
     ->name('payslips.download');
-  
+    
+    // Payrun ROUTE
+    Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
+    
 
 
 
