@@ -214,24 +214,6 @@ export default function UpdatePayslipForm({
     const readOnlyInput =
         'rounded-none border-0 border-b border-[#16241C]/20 bg-[#16241C]/5 px-0 font-semibold shadow-none dark:border-white/20 dark:bg-white/5 dark:text-white';
 
-
-
-
-        
-
-      console.log('=== UPDATE PAYSLIP DEBUG ===');
-    console.log('Selected Payslip:', payslip);
-    console.log('Payslip ID:', payslip?.id);
-    console.log('Employee:', payslip?.employee_firstname, payslip?.employee_lastname);
-    console.log('Pay Period:', payslip?.pay_period);
-    console.log('Base Pay:', payslip?.base_pay);
-    console.log('Overtime Pay:', payslip?.overtime_pay);
-    console.log('Allowances:', payslip?.allowances_total);
-    console.log('Gross Pay:', payslip?.gross_pay);
-    console.log('Tax:', payslip?.tax_amount);
-    console.log('Total Deductions:', payslip?.total_deductions);
-    console.log('Net Pay:', payslip?.net_pay);
-    console.log('Status:', payslip?.status);
     return (
         <form onSubmit={handleSubmit}>
             <div className="grid gap-6 sm:grid-cols-2">
@@ -456,42 +438,7 @@ export default function UpdatePayslipForm({
                     </p>
                 </div>
 
-                {/* Status */}
-                <div className="grid gap-2">
-                    <label
-                        htmlFor="status"
-                        className="text-sm font-medium text-[#16241C] dark:text-white"
-                    >
-                        Status
-                    </label>
-
-                    <select
-                        id="status"
-                        name="status"
-                        value={form.status}
-                        onChange={handleChange}
-                        disabled={processing}
-                        className={ledgerInput}
-                    >
-                        <option value="draft">
-                            Draft
-                        </option>
-
-                        <option value="pending">
-                            Pending
-                        </option>
-
-                        <option value="paid">
-                            Paid
-                        </option>
-                    </select>
-
-                    {errors.status && (
-                        <p className="text-sm text-red-500">
-                            {errors.status}
-                        </p>
-                    )}
-                </div>
+            
             </div>
 
             {/* Buttons */}

@@ -252,7 +252,7 @@ class PayslipController extends Controller
         'allowances_total' => ['nullable', 'numeric', 'min:0'],
         'tax_amount' => ['nullable', 'numeric', 'min:0'],
         'total_deductions' => ['nullable', 'numeric', 'min:0'],
-        'status' => ['required', 'in:draft,pending,paid'],
+        'status' => ['required', 'in:draft,under_review,paid'],
     ]);
 
     // Convert empty values to 0
@@ -279,6 +279,8 @@ class PayslipController extends Controller
         'net_pay' => $netPay,
         'status' => $validated['status'],
     ]);
+   
+   
 
     return redirect()
         ->route('payslips.index')
