@@ -20,6 +20,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// NOTE: only 'pending' | 'paid' are confirmed against the backend
+// (PayrollService::getStats() only queries those two). Add more
+// values here if payroll_runs.status has others (e.g. 'draft', 'cancelled').
 type PayRun = {
     id: number;
     name: string;
@@ -29,81 +32,38 @@ type PayRun = {
     employees_count: number;
     gross_pay: number;
     net_pay: number;
-    status: 'draft' | 'processing' | 'completed' | 'cancelled';
+    status: 'pending' | 'paid';
 };
 
-/*
-|--------------------------------------------------------------------------
-| HARD-CODED DATA
-|--------------------------------------------------------------------------
-*/
+type Stats = {
+    total_payroll_runs: number;
+    paid_payroll_runs: number;
+    pending_payroll_runs: number;
+};
 
-const payRuns: PayRun[] = [
-    {
-        id: 1,
-        name: 'July 2026 Payroll',
-        period_start: 'July 1, 2026',
-        period_end: 'July 15, 2026',
-        pay_date: 'July 15, 2026',
-        employees_count: 24,
-        gross_pay: 985000,
-        net_pay: 872500,
-        status: 'completed',
-    },
-    {
-        id: 2,
-        name: 'July 2026 Payroll',
-        period_start: 'July 16, 2026',
-        period_end: 'July 31, 2026',
-        pay_date: 'July 31, 2026',
-        employees_count: 24,
-        gross_pay: 1025000,
-        net_pay: 908750,
-        status: 'completed',
-    },
-    {
-        id: 3,
-        name: 'August 2026 Payroll',
-        period_start: 'August 1, 2026',
-        period_end: 'August 15, 2026',
-        pay_date: 'August 15, 2026',
-        employees_count: 26,
-        gross_pay: 1105000,
-        net_pay: 976300,
-        status: 'processing',
-    },
-    {
-        id: 4,
-        name: 'August 2026 Payroll',
-        period_start: 'August 16, 2026',
-        period_end: 'August 31, 2026',
-        pay_date: 'August 31, 2026',
-        employees_count: 26,
-        gross_pay: 0,
-        net_pay: 0,
-        status: 'draft',
-    },
-];
+type PayrunsIndexProps = {
+    payRuns: PayRun[];
+    stats: Stats;
+};
 
-export default function PayrunsIndex() {
+export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
     const [search, setSearch] = useState('');
 
     /*
     |--------------------------------------------------------------------------
-    | Stats
+    | Stats — sourced from the server (stats prop), not derived from the
+    | locally-loaded payRuns array, so the cards stay correct even if
+    | payRuns is ever paginated or filtered.
     |--------------------------------------------------------------------------
     */
 
-    const totalPayRuns = payRuns.length;
+    const totalPayRuns = stats.total_payroll_runs;
+    const paidPayRuns = stats.paid_payroll_runs;
+    const pendingPayRuns = stats.pending_payroll_runs;
 
-    const completedPayRuns = payRuns.filter(
-        (payrun) => payrun.status === 'completed',
-    ).length;
-
-    const processingPayRuns = payRuns.filter(
-        (payrun) => payrun.status === 'processing',
-    ).length;
-
+    // Net pay total for currently-loaded runs only. If you need an
+    // all-time total independent of what's loaded on this page, add
+    // a stats.total_net_pay field on the backend and use that instead.
     const totalNetPay = payRuns.reduce(
         (total, payrun) => total + payrun.net_pay,
         0,
@@ -134,30 +94,24 @@ export default function PayrunsIndex() {
 
     const formatStatus = (status: PayRun['status']) => {
         switch (status) {
-            case 'completed':
-                return 'Completed';
+            case 'paid':
+                return 'Paid';
 
-            case 'processing':
-                return 'Processing';
-
-            case 'cancelled':
-                return 'Cancelled';
+            case 'pending':
+                return 'Draft';
 
             default:
-                return 'Draft';
+                return status;
         }
     };
 
     const statusClass = (status: PayRun['status']) => {
         switch (status) {
-            case 'completed':
+            case 'paid':
                 return 'bg-[#22C55E]/10 text-[#16A34A]';
 
-            case 'processing':
+            case 'pending':
                 return 'bg-amber-100 text-amber-600';
-
-            case 'cancelled':
-                return 'bg-red-100 text-red-600';
 
             default:
                 return 'bg-gray-100 text-gray-600';
@@ -222,7 +176,7 @@ export default function PayrunsIndex() {
 
                     </div>
 
-                    {/* Completed */}
+                    {/* Paid */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
@@ -231,16 +185,16 @@ export default function PayrunsIndex() {
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {completedPayRuns}
+                            {paidPayRuns}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                            Completed
+                            Paid
                         </p>
 
                     </div>
 
-                    {/* Processing */}
+                    {/* Pending */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
@@ -249,11 +203,11 @@ export default function PayrunsIndex() {
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {processingPayRuns}
+                            {pendingPayRuns}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                            Processing
+                            Draft
                         </p>
 
                     </div>
