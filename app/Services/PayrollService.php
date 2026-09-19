@@ -52,7 +52,7 @@ class PayrollService
                     // if this column doesn't actually exist / is null
                     'pay_date' =>
                         $run->pay_date
-                            ? $run->pay_date->format('M d, Y')
+                            ? \Carbon\Carbon::parse($run->pay_date)->format('M d, Y')
                             : 'N/A',
 
                     'employees_count' => $run->employees_count,
