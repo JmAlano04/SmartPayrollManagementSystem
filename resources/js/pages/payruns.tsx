@@ -20,9 +20,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// NOTE: only 'pending' | 'paid' are confirmed against the backend
-// (PayrollService::getStats() only queries those two). Add more
-// values here if payroll_runs.status has others (e.g. 'draft', 'cancelled').
+// NOTE: DB/backend status values are 'pending' | 'paid' (see
+// PayrollService::getStats()). 'pending' is displayed as "Draft" in the UI —
+// that's a display-label choice, not a third status value. Add more values
+// here if payroll_runs.status ever gets others (e.g. 'cancelled').
 type PayRun = {
     id: number;
     name: string;
@@ -38,7 +39,7 @@ type PayRun = {
 type Stats = {
     total_payroll_runs: number;
     paid_payroll_runs: number;
-    pending_payroll_runs: number;
+    pending_payroll_runs: number; // shown in the UI as "Draft" count
 };
 
 type PayrunsIndexProps = {
@@ -59,7 +60,9 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
     const totalPayRuns = stats.total_payroll_runs;
     const paidPayRuns = stats.paid_payroll_runs;
-    const pendingPayRuns = stats.pending_payroll_runs;
+
+    // Backend field is "pending" — displayed here as "Draft" runs.
+    const draftPayRuns = stats.pending_payroll_runs;
 
     // Net pay total for currently-loaded runs only. If you need an
     // all-time total independent of what's loaded on this page, add
@@ -92,6 +95,7 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
         });
     };
 
+    // Backend value 'pending' is intentionally displayed as "Draft".
     const formatStatus = (status: PayRun['status']) => {
         switch (status) {
             case 'paid':
@@ -111,7 +115,7 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                 return 'bg-[#22C55E]/10 text-[#16A34A]';
 
             case 'pending':
-                return 'bg-amber-100 text-amber-600';
+                return 'bg-gray-100 text-gray-600'; // neutral styling to match "Draft" framing
 
             default:
                 return 'bg-gray-100 text-gray-600';
@@ -194,16 +198,16 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
                     </div>
 
-                    {/* Pending */}
+                    {/* Draft */}
 
                     <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
 
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100">
                             <Clock3 className="h-4.5 w-4.5" />
                         </span>
 
                         <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {pendingPayRuns}
+                            {draftPayRuns}
                         </p>
 
                         <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
@@ -251,6 +255,52 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                         />
 
                     </div>
+  <div className="relative">
+                        <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40" />
+
+                        <select
+                            value=""
+                          
+                            className="rounded-lg border border-[#14172B]/10 bg-white py-2 pl-9 pr-8 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                        >
+                            <option value="">
+                                All pay periods
+                            </option>
+
+                        </select>
+                    </div>
+
+                    {/* STATUS */}
+                    <select
+                        className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                    >
+                        <option value="">
+                            All statuses
+                        </option>
+
+                        <option value="paid">
+                            Paid
+                        </option>
+
+                        <option value="pending">
+                            Pending
+                        </option>
+
+                        <option value="draft">
+                            Draft
+                        </option>
+                    </select>
+
+                    {/* CLEAR */}
+                   
+                        <button
+                            className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm text-[#14172B] transition hover:bg-[#14172B]/5 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
+                        >
+                            Clear
+                        </button>
+                
+
+                    
 
                 </div>
 

@@ -57,9 +57,9 @@ class PayrollService
 
                     'employees_count' => $run->employees_count,
 
-                    'gross_pay' => (float) ($run->payslips()->sum('gross_pay') ?? 0),
+                    'gross_pay' => (float) ($run->total_gross ?? 0),
 
-                    'net_pay' => (float) ($run->payslips()->sum('net_pay') ?? 0),
+                    'net_pay' => (float) ($run->total_net ?? 0),
 
                     'status' => $run->status ?? 'draft',
                 ];
