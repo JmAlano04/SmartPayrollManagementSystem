@@ -11,7 +11,7 @@ import {
     Plus,
     Search,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,7 +48,34 @@ type PayrunsIndexProps = {
 };
 
 export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
+    const [searchInput, setSearchInput] = useState('');
     const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
+    const [payPeriod, setPayPeriod] = useState('');
+
+    const payPeriods = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    payRuns.map(
+                        (payrun) =>
+                            `${payrun.period_start} — ${payrun.period_end}`,
+                    ),
+                ),
+            ).sort((a, b) => a.localeCompare(b)),
+        [payRuns],
+    );
+
+    const applySearch = () => {
+        setSearch(searchInput.trim());
+    };
+
+    const clearFilters = () => {
+        setSearchInput('');
+        setSearch('');
+        setStatus('');
+        setPayPeriod('');
+    };
 
     /*
     |--------------------------------------------------------------------------
@@ -61,12 +88,9 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
     const totalPayRuns = stats.total_payroll_runs;
     const paidPayRuns = stats.paid_payroll_runs;
 
-    // Backend field is "pending" — displayed here as "Draft" runs.
     const draftPayRuns = stats.pending_payroll_runs;
 
-    // Net pay total for currently-loaded runs only. If you need an
-    // all-time total independent of what's loaded on this page, add
-    // a stats.total_net_pay field on the backend and use that instead.
+    
     const totalNetPay = payRuns.reduce(
         (total, payrun) => total + payrun.net_pay,
         0,
@@ -78,9 +102,20 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
     |--------------------------------------------------------------------------
     */
 
-    const filteredPayRuns = payRuns.filter((payrun) =>
-        payrun.name.toLowerCase().includes(search.toLowerCase()),
-    );
+    const filteredPayRuns = payRuns.filter((payrun) => {
+        const payrunPeriod = `${payrun.period_start} — ${payrun.period_end}`;
+        const matchesSearch =
+            !search ||
+            payrun.name.toLowerCase().includes(search.toLowerCase()) ||
+            payrunPeriod.toLowerCase().includes(search.toLowerCase());
+        const matchesStatus =
+            !status ||
+            (status === 'draft' && payrun.status === 'pending') ||
+            payrun.status === status;
+        const matchesPayPeriod = !payPeriod || payrunPeriod === payPeriod;
+
+        return matchesSearch && matchesStatus && matchesPayPeriod;
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -240,38 +275,59 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                     SEARCH
                 ====================================================== */}
 
-                <div className="flex flex-wrap items-center gap-3">
-
+                <form
+                    className="flex flex-wrap items-center gap-3"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        applySearch();
+                    }}
+                >
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
 
                         <Search className="h-4 w-4 text-[#14172B]/40" />
 
                         <input
                             type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
                             placeholder="Search pay run..."
                             className="w-full bg-transparent text-sm outline-none"
                         />
 
                     </div>
-  <div className="relative">
+
+                    <button
+                        type="submit"
+                        className="inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-3 py-2 text-sm font-medium text-white transition hover:bg-[#1d2f25]"
+                    >
+                        <Search className="h-4 w-4" />
+                        Search
+                    </button>
+
+                    <div className="relative">
                         <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40" />
 
                         <select
-                            value=""
-                          
+                            value={payPeriod}
+                            onChange={(event) => setPayPeriod(event.target.value)}
                             className="rounded-lg border border-[#14172B]/10 bg-white py-2 pl-9 pr-8 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                         >
                             <option value="">
                                 All pay periods
                             </option>
 
+                            {payPeriods.map((period) => (
+                                <option key={period} value={period}>
+                                    {period}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
                     {/* STATUS */}
                     <select
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
                         className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
                         <option value="">
@@ -291,18 +347,16 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                         </option>
                     </select>
 
-                    {/* CLEAR */}
-                   
+                    {(search || searchInput || status || payPeriod) && (
                         <button
+                            type="button"
+                            onClick={clearFilters}
                             className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm text-[#14172B] transition hover:bg-[#14172B]/5 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
                         >
                             Clear
                         </button>
-                
-
-                    
-
-                </div>
+                    )}
+                </form>
 
                 {/* =====================================================
                     PAY RUN TABLE

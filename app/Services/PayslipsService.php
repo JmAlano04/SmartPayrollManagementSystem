@@ -92,7 +92,7 @@ class PayslipsService
                 // PAY DATE
                 'pay_date' =>
                     $payrollRun?->pay_date
-                        ? $payrollRun->pay_date->format('M d, Y')
+                        ? \Carbon\Carbon::parse($payrollRun->pay_date)->format('M d, Y')
                         : 'N/A',
 
                 'base_pay' =>

@@ -27,15 +27,13 @@ class PayrollService
      */
     public function getPayRuns(): Collection
     {
-        return PayrollRun::withCount('payslips as employees_count')
+        return PayrollRun::withCount('payslips')
             ->orderByDesc('created_at') // 'pay_date' isn't a confirmed real column — see note below
             ->get()
             ->map(function (PayrollRun $run) {
 
                 return [
                     'id' => $run->id,
-
-                    'name' => $run->name ?? 'N/A',
 
                     // PAY PERIOD — null-safe, same pattern as PayslipsService
                     'period_start' =>
@@ -57,9 +55,9 @@ class PayrollService
 
                     'employees_count' => $run->employees_count,
 
-                    'gross_pay' => (float) ($run->total_gross ?? 0),
+                    'gross_pay' => (float) ($run->payslips->sum('gross_pay') ?? 0),
 
-                    'net_pay' => (float) ($run->total_net ?? 0),
+                    'net_pay' => (float) ($run->payslips->sum('net_pay') ?? 0),
 
                     'status' => $run->status ?? 'draft',
                 ];
