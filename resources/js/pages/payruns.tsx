@@ -296,14 +296,6 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
                     </div>
 
-                    <button
-                        type="submit"
-                        className="inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-3 py-2 text-sm font-medium text-white transition hover:bg-[#1d2f25]"
-                    >
-                        <Search className="h-4 w-4" />
-                        Search
-                    </button>
-
                     <div className="relative">
                         <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40" />
 
@@ -384,10 +376,6 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                                     </th>
 
                                     <th className="px-4 py-3 font-medium">
-                                        Employees
-                                    </th>
-
-                                    <th className="px-4 py-3 font-medium">
                                         Gross Pay
                                     </th>
 
@@ -429,7 +417,7 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
                                                     <div>
                                                         <p className="font-medium text-[#14172B] dark:text-white">
-                                                            {payrun.name}
+                                                            {payrun.id}
                                                         </p>
 
                                                         <p className="text-xs text-[#14172B]/45 dark:text-white/45">
@@ -469,11 +457,6 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                                                 {payrun.pay_date}
                                             </td>
 
-                                            {/* Employees */}
-
-                                            <td className="px-4 py-4">
-                                                {payrun.employees_count}
-                                            </td>
 
                                             {/* Gross */}
 
