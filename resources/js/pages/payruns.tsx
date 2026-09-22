@@ -1,29 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import {
-    CalendarDays,
-    CheckCircle2,
-    Clock3,
-    DollarSign,
-    Eye,
-    FileText,
-    Plus,
-    Search,
-} from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Pay Runs',
-        href: '/payruns',
-    },
-];
-
-// NOTE: DB/backend status values are 'pending' | 'paid' (see
-// PayrollService::getStats()). 'pending' is displayed as "Draft" in the UI —
-// that's a display-label choice, not a third status value. Add more values
-// here if payroll_runs.status ever gets others (e.g. 'cancelled').
 type PayRun = {
     id: number;
     name: string;
@@ -39,31 +18,183 @@ type PayRun = {
 type Stats = {
     total_payroll_runs: number;
     paid_payroll_runs: number;
-    pending_payroll_runs: number; // shown in the UI as "Draft" count
+    pending_payroll_runs: number;
 };
 
-type PayrunsIndexProps = {
+type Props = {
     payRuns: PayRun[];
     stats: Stats;
 };
 
-export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
+export default function PayRuns({ payRuns, stats }: Props) {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
 
-    const payPeriods = useMemo(
-        () =>
-            Array.from(
-                new Set(
-                    payRuns.map(
-                        (payrun) =>
-                            `${payrun.period_start} — ${payrun.period_end}`,
-                    ),
-                ),
-            ).sort((a, b) => a.localeCompare(b)),
-        [payRuns],
+    /*
+    |--------------------------------------------------------------------------
+    | Pay Period Options
+    |--------------------------------------------------------------------------
+    */
+
+    const payPeriods = useMemo(() => {
+        const periods = payRuns.map(
+            (payrun) =>
+                `${payrun.period_start} — ${payrun.period_end}`,
+        );
+
+        return [...new Set(periods)];
+    }, [payRuns]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search + Filter
+    |--------------------------------------------------------------------------
+    */
+
+    const filteredPayRuns = useMemo(() => {
+        const searchTerm = search.trim().toLowerCase();
+
+        return payRuns.filter((payrun) => {
+            /*
+            |--------------------------------------------------------------------------
+            | Pay Run ID
+            |--------------------------------------------------------------------------
+            */
+
+            const payrunId = String(payrun.id).toLowerCase();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Formatted Pay Run ID
+            | Example: PR-0001
+            |--------------------------------------------------------------------------
+            */
+
+            const payrunNumber = `pr-${String(payrun.id)
+                .padStart(4, '0')
+                .toLowerCase()}`;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pay Period
+            |--------------------------------------------------------------------------
+            */
+
+            const period =
+                `${payrun.period_start} — ${payrun.period_end}`.toLowerCase();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pay Date
+            |--------------------------------------------------------------------------
+            */
+
+            const payDate = String(
+                payrun.pay_date ?? '',
+            ).toLowerCase();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Gross Pay
+            |--------------------------------------------------------------------------
+            */
+
+            const grossPay = String(
+                payrun.gross_pay ?? '',
+            ).toLowerCase();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Net Pay
+            |--------------------------------------------------------------------------
+            */
+
+            const netPay = String(
+                payrun.net_pay ?? '',
+            ).toLowerCase();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Status
+            |
+            | Backend:
+            | pending = Draft
+            | paid    = Paid
+            |--------------------------------------------------------------------------
+            */
+
+            const statusText =
+                payrun.status === 'pending'
+                    ? 'draft'
+                    : payrun.status.toLowerCase();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Search Matching
+            |--------------------------------------------------------------------------
+            */
+
+            const matchesSearch =
+                !searchTerm ||
+                payrunId.includes(searchTerm) ||
+                payrunNumber.includes(searchTerm) ||
+                period.includes(searchTerm) ||
+                payDate.includes(searchTerm) ||
+                grossPay.includes(searchTerm) ||
+                netPay.includes(searchTerm) ||
+                statusText.includes(searchTerm);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Status Filter
+            |--------------------------------------------------------------------------
+            */
+
+            const matchesStatus =
+                !status ||
+                (status === 'draft' &&
+                    payrun.status === 'pending') ||
+                payrun.status === status;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pay Period Filter
+            |--------------------------------------------------------------------------
+            */
+
+            const payrunPeriod =
+                `${payrun.period_start} — ${payrun.period_end}`;
+
+            const matchesPayPeriod =
+                !payPeriod ||
+                payrunPeriod === payPeriod;
+
+            return (
+                matchesSearch &&
+                matchesStatus &&
+                matchesPayPeriod
+            );
+        });
+    }, [payRuns, search, status, payPeriod]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Total Net Pay
+    |--------------------------------------------------------------------------
+    */
+
+    const totalNetPay = filteredPayRuns.reduce(
+        (total, payrun) =>
+            total + Number(payrun.net_pay || 0),
+        0,
     );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clear Filters
+    |--------------------------------------------------------------------------
+    */
 
     const clearFilters = () => {
         setSearch('');
@@ -71,315 +202,278 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
         setPayPeriod('');
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Stats — sourced from the server (stats prop), not derived from the
-    | locally-loaded payRuns array, so the cards stay correct even if
-    | payRuns is ever paginated or filtered.
-    |--------------------------------------------------------------------------
-    */
-
-    const totalPayRuns = stats.total_payroll_runs;
-    const paidPayRuns = stats.paid_payroll_runs;
-
-    const draftPayRuns = stats.pending_payroll_runs;
-
-    const totalNetPay = payRuns.reduce(
-        (total, payrun) => total + payrun.net_pay,
-        0,
-    );
+    const hasFilters =
+        search !== '' ||
+        status !== '' ||
+        payPeriod !== '';
 
     /*
     |--------------------------------------------------------------------------
-    | Search — filters live as the user types, no submit/apply step needed.
+    | Format Currency
     |--------------------------------------------------------------------------
     */
 
-    const filteredPayRuns = payRuns.filter((payrun) => {
-        const payrunPeriod = `${payrun.period_start} — ${payrun.period_end}`;
-        const matchesSearch =
-            !search ||
-            payrun.name.toLowerCase().includes(search.toLowerCase()) ||
-            payrunPeriod.toLowerCase().includes(search.toLowerCase());
-        const matchesStatus =
-            !status ||
-            (status === 'draft' && payrun.status === 'pending') ||
-            payrun.status === status;
-        const matchesPayPeriod = !payPeriod || payrunPeriod === payPeriod;
-
-        return matchesSearch && matchesStatus && matchesPayPeriod;
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Helpers
-    |--------------------------------------------------------------------------
-    */
-
-    const formatMoney = (value: number) => {
-        return value.toLocaleString('en-PH', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(amount);
     };
 
-    // Backend value 'pending' is intentionally displayed as "Draft".
-    const formatStatus = (status: PayRun['status']) => {
-        switch (status) {
-            case 'paid':
-                return 'Paid';
+    /*
+    |--------------------------------------------------------------------------
+    | Format Date
+    |--------------------------------------------------------------------------
+    */
 
-            case 'pending':
-                return 'Draft';
-
-            default:
-                return status;
+    const formatDate = (date: string) => {
+        if (!date) {
+            return '—';
         }
-    };
 
-    const statusClass = (status: PayRun['status']) => {
-        switch (status) {
-            case 'paid':
-                return 'bg-[#22C55E]/10 text-[#16A34A]';
-
-            case 'pending':
-                return 'bg-gray-100 text-gray-600'; // neutral styling to match "Draft" framing
-
-            default:
-                return 'bg-gray-100 text-gray-600';
-        }
+        return new Date(date).toLocaleDateString(
+            'en-US',
+            {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            },
+        );
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout>
             <Head title="Pay Runs" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="space-y-6 p-6">
 
-                {/* =====================================================
+                {/* =========================================================
                     HEADER
-                ====================================================== */}
+                ========================================================== */}
 
-                <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-[#16241c]">
+                        Pay Runs
+                    </h1>
 
-                        <div>
-                            <h1 className="text-xl font-semibold text-white">
-                                Pay runs
-                            </h1>
-
-                            <p className="text-sm text-white/55">
-                                Create, process, and manage employee payroll.
-                            </p>
-                        </div>
-
-                        <button
-                            type="button"
-                            className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c] transition hover:bg-[#a97d28]"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Create pay run
-                        </button>
-
-                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Manage and monitor payroll runs.
+                    </p>
                 </div>
 
-                {/* =====================================================
+                {/* =========================================================
                     STATS
-                ====================================================== */}
+                ========================================================== */}
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
-                    {/* Total */}
+                    {/* Total Payroll Runs */}
 
-                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
-                            <FileText className="h-4.5 w-4.5" />
-                        </span>
-
-                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {totalPayRuns}
+                    <div className="rounded-xl border bg-white p-5 shadow-sm">
+                        <p className="text-sm text-gray-500">
+                            Total Payroll Runs
                         </p>
 
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                            Total pay runs
+                        <p className="mt-2 text-2xl font-bold text-[#16241c]">
+                            {stats.total_payroll_runs}
                         </p>
-
                     </div>
 
                     {/* Paid */}
 
-                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
-                            <CheckCircle2 className="h-4.5 w-4.5" />
-                        </span>
-
-                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {paidPayRuns}
+                    <div className="rounded-xl border bg-white p-5 shadow-sm">
+                        <p className="text-sm text-gray-500">
+                            Paid Payroll Runs
                         </p>
 
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                            Paid
+                        <p className="mt-2 text-2xl font-bold text-green-600">
+                            {stats.paid_payroll_runs}
                         </p>
-
                     </div>
 
                     {/* Draft */}
 
-                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100">
-                            <Clock3 className="h-4.5 w-4.5" />
-                        </span>
-
-                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            {draftPayRuns}
+                    <div className="rounded-xl border bg-white p-5 shadow-sm">
+                        <p className="text-sm text-gray-500">
+                            Draft Payroll Runs
                         </p>
 
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                            Draft
+                        <p className="mt-2 text-2xl font-bold text-yellow-600">
+                            {stats.pending_payroll_runs}
                         </p>
-
                     </div>
-
-                    {/* Net Pay */}
-
-                    <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#b98a2e]/10">
-                            <DollarSign className="h-4.5 w-4.5" />
-                        </span>
-
-                        <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                            ₱{formatMoney(totalNetPay)}
-                        </p>
-
-                        <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                            Total net pay
-                        </p>
-
-                    </div>
-
                 </div>
 
-                {/* =====================================================
-                    SEARCH
-                ====================================================== */}
+                {/* =========================================================
+                    FILTERS
+                ========================================================== */}
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                <div className="rounded-xl border bg-white p-5 shadow-sm">
 
-                       <Search className="h-4 w-4 text-[#14172B]/40 dark:text-white/40" />
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
 
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(event) =>
-                                setSearch(event.target.value)
-                            }
-                            placeholder="Search employee or payslip..."
-                            className="w-full bg-transparent text-sm outline-none placeholder:text-[#14172B]/40 dark:text-white dark:placeholder:text-white/40"
-                        />
+                        {/* SEARCH */}
 
-                    </div>
+                        <div className="relative flex-1">
 
-                    <div className="relative">
-                        <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#14172B]/40 dark:text-white/40" />
+                            <Search
+                                size={18}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            />
+
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                placeholder="Search pay run, period, date, or status..."
+                                className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e]"
+                            />
+
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearch('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* STATUS */}
+
+                        <div className="flex items-center gap-2">
+
+                            <Filter
+                                size={17}
+                                className="text-gray-400"
+                            />
+
+                            <select
+                                value={status}
+                                onChange={(event) =>
+                                    setStatus(event.target.value)
+                                }
+                                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e]"
+                            >
+                                <option value="">
+                                    All statuses
+                                </option>
+
+                                <option value="paid">
+                                    Paid
+                                </option>
+
+                                <option value="draft">
+                                    Draft
+                                </option>
+                            </select>
+                        </div>
+
+                        {/* PAY PERIOD */}
 
                         <select
                             value={payPeriod}
-                            onChange={(event) => setPayPeriod(event.target.value)}
-                            className="rounded-lg border border-[#14172B]/10 bg-white py-2 pl-9 pr-8 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                            onChange={(event) =>
+                                setPayPeriod(event.target.value)
+                            }
+                            className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e]"
                         >
                             <option value="">
                                 All pay periods
                             </option>
 
                             {payPeriods.map((period) => (
-                                <option key={period} value={period}>
+                                <option
+                                    key={period}
+                                    value={period}
+                                >
                                     {period}
                                 </option>
                             ))}
                         </select>
+
+                        {/* CLEAR */}
+
+                        {hasFilters && (
+                            <button
+                                type="button"
+                                onClick={clearFilters}
+                                className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+                            >
+                                Clear
+                            </button>
+                        )}
                     </div>
 
-                    {/* STATUS */}
-                    <select
-                        value={status}
-                        onChange={(event) => setStatus(event.target.value)}
-                        className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
-                    >
-                        <option value="">
-                            All statuses
-                        </option>
+                    {/* SEARCH RESULT COUNT */}
 
-                        <option value="paid">
-                            Paid
-                        </option>
+                    <div className="mt-4 flex flex-col gap-2 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
 
-                        <option value="draft">
-                            Draft
-                        </option>
-                    </select>
+                        <span>
+                            Showing{' '}
+                            <strong className="text-gray-700">
+                                {filteredPayRuns.length}
+                            </strong>{' '}
+                            of{' '}
+                            <strong className="text-gray-700">
+                                {payRuns.length}
+                            </strong>{' '}
+                            pay runs
+                        </span>
 
-                    {(search || status || payPeriod) && (
-                        <button
-                            type="button"
-                            onClick={clearFilters}
-                            className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm text-[#14172B] transition hover:bg-[#14172B]/5 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
-                        >
-                            Clear
-                        </button>
-                    )}
+                        <span>
+                            Total Net Pay:{' '}
+                            <strong className="text-[#16241c]">
+                                {formatCurrency(totalNetPay)}
+                            </strong>
+                        </span>
+                    </div>
                 </div>
 
-                {/* =====================================================
+                {/* =========================================================
                     PAY RUN TABLE
-                ====================================================== */}
+                ========================================================== */}
 
-                <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
+                <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
 
                     <div className="overflow-x-auto">
 
-                        <table className="w-full text-left text-sm">
+                        <table className="w-full min-w-[900px]">
 
-                            <thead>
-                                <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
+                            <thead className="border-b bg-gray-50">
 
-                                    <th className="px-4 py-3 font-medium">
-                                        Pay Run
+                                <tr>
+                                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        Pay Run ID
                                     </th>
 
-                                    <th className="px-4 py-3 font-medium">
+                                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Pay Period
                                     </th>
 
-                                    <th className="px-4 py-3 font-medium">
+                                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Pay Date
                                     </th>
 
-                                    <th className="px-4 py-3 font-medium">
+                                    <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Gross Pay
                                     </th>
 
-                                    <th className="px-4 py-3 font-medium">
+                                    <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Net Pay
                                     </th>
 
-                                    <th className="px-4 py-3 font-medium">
+                                    <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Status
                                     </th>
-
-                                    <th className="px-4 py-3 text-right font-medium">
-                                        Actions
-                                    </th>
-
                                 </tr>
+
                             </thead>
 
-                            <tbody>
+                            <tbody className="divide-y">
 
                                 {filteredPayRuns.length > 0 ? (
 
@@ -387,103 +481,95 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
                                         <tr
                                             key={payrun.id}
-                                            className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
+                                            className="transition hover:bg-gray-50"
                                         >
 
-                                            {/* Pay Run */}
+                                            {/* PAY RUN ID */}
 
-                                            <td className="px-4 py-4">
+                                            <td className="px-5 py-4">
 
-                                                <div className="flex items-center gap-3">
+                                                <div className="font-semibold text-[#16241c]">
+                                                    PR-
+                                                    {String(
+                                                        payrun.id,
+                                                    ).padStart(
+                                                        4,
+                                                        '0',
+                                                    )}
+                                                </div>
 
-                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#16241c]/10">
-                                                        <FileText className="h-4 w-4" />
-                                                    </span>
-
-                                                    <div>
-                                                        <p className="font-medium text-[#14172B] dark:text-white">
-                                                            {payrun.id}
-                                                        </p>
-
-                                                        <p className="text-xs text-[#14172B]/45 dark:text-white/45">
-                                                            PR-
-                                                            {String(payrun.id).padStart(
-                                                                4,
-                                                                '0',
-                                                            )}
-                                                        </p>
-                                                    </div>
-
+                                                <div className="text-xs text-gray-400">
+                                                    {payrun.name}
                                                 </div>
 
                                             </td>
 
-                                            {/* Period */}
+                                            {/* PERIOD */}
 
-                                            <td className="px-4 py-4">
+                                            <td className="px-5 py-4 text-sm text-gray-700">
 
-                                                <div className="flex items-center gap-2 text-[#14172B]/70 dark:text-white/70">
+                                                {formatDate(
+                                                    payrun.period_start,
+                                                )}
 
-                                                    <CalendarDays className="h-4 w-4 text-[#14172B]/40" />
-
-                                                    <span>
-                                                        {payrun.period_start}
-                                                        {' — '}
-                                                        {payrun.period_end}
-                                                    </span>
-
-                                                </div>
-
-                                            </td>
-
-                                            {/* Pay Date */}
-
-                                            <td className="px-4 py-4 text-[#14172B]/70 dark:text-white/70">
-                                                {payrun.pay_date}
-                                            </td>
-
-
-                                            {/* Gross */}
-
-                                            <td className="px-4 py-4">
-                                                ₱{formatMoney(payrun.gross_pay)}
-                                            </td>
-
-                                            {/* Net */}
-
-                                            <td className="px-4 py-4 font-medium">
-                                                ₱{formatMoney(payrun.net_pay)}
-                                            </td>
-
-                                            {/* Status */}
-
-                                            <td className="px-4 py-4">
-
-                                                <span
-                                                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(
-                                                        payrun.status,
-                                                    )}`}
-                                                >
-                                                    {formatStatus(payrun.status)}
+                                                <span className="mx-2 text-gray-400">
+                                                    —
                                                 </span>
 
+                                                {formatDate(
+                                                    payrun.period_end,
+                                                )}
+
                                             </td>
 
-                                            {/* Actions */}
+                                            {/* PAY DATE */}
 
-                                            <td className="px-4 py-4">
+                                            <td className="px-5 py-4 text-sm text-gray-700">
+                                                {formatDate(
+                                                    payrun.pay_date,
+                                                )}
+                                            </td>
 
-                                                <div className="flex justify-end gap-1">
+                                            {/* GROSS PAY */}
 
-                                                    <button
-                                                        type="button"
-                                                        className="rounded-md p-1.5 hover:bg-[#16241c]/10"
-                                                        title="View"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
+                                            <td className="px-5 py-4 text-right text-sm font-medium text-gray-700">
+                                                {formatCurrency(
+                                                    Number(
+                                                        payrun.gross_pay ||
+                                                            0,
+                                                    ),
+                                                )}
+                                            </td>
 
-                                                </div>
+                                            {/* NET PAY */}
+
+                                            <td className="px-5 py-4 text-right text-sm font-semibold text-[#16241c]">
+                                                {formatCurrency(
+                                                    Number(
+                                                        payrun.net_pay ||
+                                                            0,
+                                                    ),
+                                                )}
+                                            </td>
+
+                                            {/* STATUS */}
+
+                                            <td className="px-5 py-4 text-center">
+
+                                                {payrun.status ===
+                                                'paid' ? (
+
+                                                    <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                                        Paid
+                                                    </span>
+
+                                                ) : (
+
+                                                    <span className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                                                        Draft
+                                                    </span>
+
+                                                )}
 
                                             </td>
 
@@ -496,21 +582,37 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                                     <tr>
 
                                         <td
-                                            colSpan={8}
-                                            className="px-4 py-12 text-center"
+                                            colSpan={6}
+                                            className="px-5 py-12 text-center"
                                         >
 
-                                            <div className="flex flex-col items-center">
+                                            <div className="flex flex-col items-center justify-center">
 
-                                                <FileText className="mb-3 h-8 w-8 text-[#14172B]/30" />
+                                                <Search
+                                                    size={40}
+                                                    className="mb-3 text-gray-300"
+                                                />
 
-                                                <p className="text-sm font-medium text-[#14172B]/70 dark:text-white/70">
+                                                <h3 className="text-sm font-semibold text-gray-700">
                                                     No pay runs found
+                                                </h3>
+
+                                                <p className="mt-1 text-sm text-gray-500">
+                                                    Try changing your search
+                                                    or filters.
                                                 </p>
 
-                                                <p className="mt-1 text-xs text-[#14172B]/40">
-                                                    Try another search.
-                                                </p>
+                                                {hasFilters && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            clearFilters
+                                                        }
+                                                        className="mt-4 text-sm font-medium text-[#b98a2e] hover:underline"
+                                                    >
+                                                        Clear filters
+                                                    </button>
+                                                )}
 
                                             </div>
 
@@ -525,7 +627,6 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                         </table>
 
                     </div>
-
                 </div>
 
             </div>

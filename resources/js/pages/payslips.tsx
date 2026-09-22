@@ -561,8 +561,8 @@ export default function Payslips({
                 </div>
 
                 {/* FILTERS */}
-                <div className="flex flex-wrap items-center gap-3">
-
+                  <div className="rounded-xl border bg-white p-5 shadow-sm">
+                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                     {/* SEARCH */}
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
                         <Search className="h-4 w-4 text-[#14172B]/40 dark:text-white/40" />
@@ -640,7 +640,7 @@ export default function Payslips({
                         </button>
                     )}
                 </div>
-
+                    </div>
                 {/* TABLE */}
                 <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
 
