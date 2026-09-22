@@ -48,7 +48,6 @@ type PayrunsIndexProps = {
 };
 
 export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
-    const [searchInput, setSearchInput] = useState('');
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
@@ -66,12 +65,7 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
         [payRuns],
     );
 
-    const applySearch = () => {
-        setSearch(searchInput.trim());
-    };
-
     const clearFilters = () => {
-        setSearchInput('');
         setSearch('');
         setStatus('');
         setPayPeriod('');
@@ -90,7 +84,6 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
     const draftPayRuns = stats.pending_payroll_runs;
 
-    
     const totalNetPay = payRuns.reduce(
         (total, payrun) => total + payrun.net_pay,
         0,
@@ -98,7 +91,7 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
 
     /*
     |--------------------------------------------------------------------------
-    | Search
+    | Search — filters live as the user types, no submit/apply step needed.
     |--------------------------------------------------------------------------
     */
 
@@ -275,23 +268,19 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                     SEARCH
                 ====================================================== */}
 
-                <form
-                    className="flex flex-wrap items-center gap-3"
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        applySearch();
-                    }}
-                >
+                <div className="flex flex-wrap items-center gap-3">
                     <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
 
-                        <Search className="h-4 w-4 text-[#14172B]/40" />
+                       <Search className="h-4 w-4 text-[#14172B]/40 dark:text-white/40" />
 
                         <input
                             type="text"
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            placeholder="Search pay run..."
-                            className="w-full bg-transparent text-sm outline-none"
+                            value={search}
+                            onChange={(event) =>
+                                setSearch(event.target.value)
+                            }
+                            placeholder="Search employee or payslip..."
+                            className="w-full bg-transparent text-sm outline-none placeholder:text-[#14172B]/40 dark:text-white dark:placeholder:text-white/40"
                         />
 
                     </div>
@@ -330,16 +319,12 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                             Paid
                         </option>
 
-                        <option value="pending">
-                            Pending
-                        </option>
-
                         <option value="draft">
                             Draft
                         </option>
                     </select>
 
-                    {(search || searchInput || status || payPeriod) && (
+                    {(search || status || payPeriod) && (
                         <button
                             type="button"
                             onClick={clearFilters}
@@ -348,7 +333,7 @@ export default function PayrunsIndex({ payRuns, stats }: PayrunsIndexProps) {
                             Clear
                         </button>
                     )}
-                </form>
+                </div>
 
                 {/* =====================================================
                     PAY RUN TABLE

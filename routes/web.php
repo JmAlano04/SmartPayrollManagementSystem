@@ -51,8 +51,7 @@ Route::middleware(['auth'])->group(function () {
     
     // Payrun ROUTE
     Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
-    
-
+   
 
 
     //  Payroll Runs ROUTE

@@ -14,57 +14,141 @@ class DashboardsController extends Controller
     {
         return Inertia::render('dashboard', [
 
-            // Stats for dashboard
+            // ==========================================
+            // DASHBOARD STATS
+            // ==========================================
             'stats' => [
+
+                // Total number of employees
                 'employees' => Employee::count(),
 
+                // Total pending payroll runs
                 'payrollRuns' => PayrollRun::where('status', 'pending')
                     ->count(),
 
+                // Total number of payslips
                 'payslips' => Payslip::count(),
 
-                'totalPayroll' => PayrollRun::where('status', 'paid')
-                    ->sum('total_net'),
+                // Total net payroll from paid payroll runs
+                //
+                // payroll_runs.status = paid
+                // payslips.net_pay = actual net pay
+                //
+                'totalPayroll' => PayrollRun::query()
+                    ->where('payroll_runs.status', 'paid')
+                    ->join(
+                        'payslips',
+                        'payslips.payroll_run_id',
+                        '=',
+                        'payroll_runs.id'
+                    )
+                    ->sum('payslips.net_pay'),
             ],
 
-            // Recent employees
-            'employees' => Employee::latest('created_at')
+            // ==========================================
+            // RECENT EMPLOYEES
+            // ==========================================
+            'employees' => Employee::query()
+                ->latest('created_at')
                 ->take(5)
                 ->get(),
 
-            // Recent payroll runs
-            'payRuns' => PayrollRun::latest()
+            // ==========================================
+            // RECENT PAYROLL RUNS
+            // ==========================================
+            //
+            // IMPORTANT:
+            // total_net does NOT come from payroll_runs.
+            // It is calculated from payslips.net_pay.
+            //
+            'payRuns' => PayrollRun::query()
+                ->select([
+                    'payroll_runs.id',
+                    'payroll_runs.period_start',
+                    'payroll_runs.period_end',
+                    'payroll_runs.status',
+                ])
+                ->selectRaw(
+                    'COALESCE(SUM(payslips.net_pay), 0) AS total_net'
+                )
+                ->leftJoin(
+                    'payslips',
+                    'payslips.payroll_run_id',
+                    '=',
+                    'payroll_runs.id'
+                )
+                ->groupBy(
+                    'payroll_runs.id',
+                    'payroll_runs.period_start',
+                    'payroll_runs.period_end',
+                    'payroll_runs.status'
+                )
+                ->orderBy(
+                    'payroll_runs.created_at',
+                    'desc'
+                )
                 ->take(5)
                 ->get(),
 
-            // Recent payslips
-            'payslips' => Payslip::latest()
+            // ==========================================
+            // RECENT PAYSLIPS
+            // ==========================================
+            'payslips' => Payslip::query()
+                ->latest()
                 ->take(5)
                 ->get(),
 
-                // Payslips that need review
-            // Only payslips flagged as anomalies are shown
-            'needsReview' => Payslip::with('employee')
+            // ==========================================
+            // PAYSLIPS THAT NEED REVIEW
+            // ==========================================
+            //
+            // Only flagged anomaly payslips
+            //
+            'needsReview' => Payslip::query()
+                ->with('employee')
                 ->where('is_flagged_anomaly', true)
                 ->latest()
                 ->take(5)
                 ->get(),
 
-                
-            // Total net payroll from paid payroll runs
-            'totalPayroll' => PayrollRun::where('status', 'paid')
-                ->sum('total_net'),
-
-            // Trend data for payroll chart
+            // ==========================================
+            // PAYROLL TREND
+            // ==========================================
+            //
+            // Calculates total net pay for every PAID
+            // payroll run.
+            //
             'trend' => PayrollRun::query()
-                ->where('status', 'paid')
+                ->where('payroll_runs.status', 'paid')
+
+                ->join(
+                    'payslips',
+                    'payslips.payroll_run_id',
+                    '=',
+                    'payroll_runs.id'
+                )
+
                 ->select([
-                    'id',
-                    'period_start',
-                    'period_end',
-                    'total_net',
+                    'payroll_runs.id',
+                    'payroll_runs.period_start',
+                    'payroll_runs.period_end',
                 ])
-                ->orderBy('period_start','asc')
+
+                ->selectRaw(
+                    'COALESCE(SUM(payslips.net_pay), 0) AS total_net'
+                )
+
+                ->groupBy(
+                    'payroll_runs.id',
+                    'payroll_runs.period_start',
+                    'payroll_runs.period_end'
+                )
+
+                ->orderBy(
+                    'payroll_runs.period_start',
+                    'asc'
+                )
+
                 ->get(),
         ]);
     }
