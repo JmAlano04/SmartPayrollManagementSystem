@@ -711,124 +711,93 @@ export default function Payslips({
                     {/* =====================================================
                         FILTERS
                     ====================================================== */}
+<div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
 
-                    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+        {/* Search */}
+        <div className="relative md:col-span-5">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        applyFilters();
+                    }
+                }}
+                placeholder="Search employee, payslip, department, or amount..."
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
+            />
+        </div>
 
-                            {/* Search */}
+        {/* Pay Period */}
+        <div className="relative md:col-span-3">
+            <CalendarDays className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-                            <div className="relative">
+            <select
+                value={payPeriod}
+                onChange={(e) => {
+                    setPayPeriod(e.target.value);
+                }}
+                className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
+            >
+                <option value="">
+                    All Pay Periods
+                </option>
 
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                {payPeriods.map((period) => (
+                    <option
+                        key={period}
+                        value={period}
+                    >
+                        {period}
+                    </option>
+                ))}
+            </select>
+        </div>
 
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) =>
-                                        setSearch(
-                                            e.target.value
-                                        )
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (
-                                            e.key === 'Enter'
-                                        ) {
-                                            applyFilters();
-                                        }
-                                    }}
-                                    placeholder="Search employee, payslip, department, or amount..."
-                                    className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
-                                />
+        {/* Status */}
+        <div className="md:col-span-2">
+            <select
+                value={status}
+                onChange={(e) =>
+                    setStatus(e.target.value)
+                }
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
+            >
+                <option value="">
+                    All Status
+                </option>
 
-                            </div>
+                <option value="paid">
+                    Paid
+                </option>
 
-                            {/* Pay Period */}
+                <option value="pending">
+                    Pending
+                </option>
 
-                            <div className="relative">
+                <option value="draft">
+                    Draft
+                </option>
+            </select>
+        </div>
 
-                                <CalendarDays className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        {/* Buttons */}
+        <div className="flex items-center gap-2 md:col-span-2">
+            <button
+                type="button"
+                onClick={clearFilters}
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+            >
+                Clear
+            </button>
+        </div>
 
-                                <select
-                                    value={payPeriod}
-                                    onChange={(e) => {
-                                        setPayPeriod(
-                                            e.target.value
-                                        );
-                                    }}
-                                    className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
-                                >
-                                    <option value="">
-                                        All Pay Periods
-                                    </option>
-
-                                    {payPeriods.map(
-                                        (period) => (
-                                            <option
-                                                key={period}
-                                                value={period}
-                                            >
-                                                {period}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
-
-                            </div>
-
-                            {/* Status */}
-
-                            <select
-                                value={status}
-                                onChange={(e) =>
-                                    setStatus(
-                                        e.target.value
-                                    )
-                                }
-                                className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
-                            >
-                                <option value="">
-                                    All Status
-                                </option>
-
-                                <option value="paid">
-                                    Paid
-                                </option>
-
-                                <option value="pending">
-                                    Pending
-                                </option>
-
-                                <option value="draft">
-                                    Draft
-                                </option>
-                            </select>
-
-                            {/* Buttons */}
-
-                            <div className="flex gap-2">
-
-                                <button
-                                    type="button"
-                                    onClick={applyFilters}
-                                    className="flex-1 rounded-lg bg-[#16241c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#22362a]"
-                                >
-                                    Search
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={clearFilters}
-                                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
-                                >
-                                    Clear
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+    </div>
+</div>
 
                     {/* =====================================================
                         TABLE
