@@ -110,7 +110,7 @@ type Props = {
 */
 
 function formatCurrency(value: number) {
-    return `₱ ${Number(value || 0).toLocaleString('en-PH', {
+    return `P ${Number(value || 0).toLocaleString('en-PH', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
@@ -664,11 +664,11 @@ export default function Payslips({
 
                                 <div>
                                     <p className="text-sm text-slate-500 dark:text-white/50">
-                                        Pending
+                                        Draft
                                     </p>
 
                                     <h2 className="mt-2 text-2xl font-bold text-amber-600">
-                                        {stats.pending_payslips}
+                                        {stats.draft_payslips}
                                     </h2>
                                 </div>
 
@@ -773,10 +773,6 @@ export default function Payslips({
 
                 <option value="paid">
                     Paid
-                </option>
-
-                <option value="pending">
-                    Pending
                 </option>
 
                 <option value="draft">

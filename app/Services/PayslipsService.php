@@ -21,10 +21,10 @@ class PayslipsService
                 }
             )->count(),
 
-            'pending_payslips' => Payslip::whereHas(
+            'draft_payslips' => Payslip::whereHas(
                 'payrollRun',
                 function ($query) {
-                    $query->where('status', 'pending');
+                    $query->where('status', 'draft');
                 }
             )->count(),
 

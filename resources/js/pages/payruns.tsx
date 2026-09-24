@@ -13,9 +13,8 @@ import {
 } from 'lucide-react';
 
 import { useMemo, useState } from 'react';
-
-import GeneratePayslipModal from '@/components/GeneratePayslipModal';
-import GeneratePayslipForm from '@/components/payslips/GeneratePayslipForm';
+import AddModal from '@/components/AddModal';
+import AddPayrunsForm from '@/components/payruns/AddPayrunsForm';
 
 type PayRun = {
     id: number;
@@ -58,6 +57,8 @@ function formatDate(date: string) {
         year: 'numeric',
     });
 }
+
+
 
 export default function PayRuns({
     payRuns,
@@ -486,9 +487,7 @@ export default function PayRuns({
                                                 Pay Date
                                             </th>
 
-                                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
-                                                Employees
-                                            </th>
+                                 
 
                                             <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
                                                 Gross Pay
@@ -571,15 +570,7 @@ export default function PayRuns({
                                                             </span>
                                                         </td>
 
-                                                        {/* EMPLOYEES */}
-
-                                                        <td className="px-5 py-4 text-center">
-                                                            <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-slate-100 px-2.5 py-1 text-sm font-medium text-slate-700 dark:bg-white/10 dark:text-white/80">
-                                                                {
-                                                                    payrun.employees_count
-                                                                }
-                                                            </span>
-                                                        </td>
+                                                       
 
                                                         {/* GROSS PAY */}
 
@@ -682,23 +673,22 @@ export default function PayRuns({
             {/* ADD PAYROLL / GENERATE PAYSLIP MODAL */}
             {/* ====================================================== */}
 
-            <GeneratePayslipModal
-                open={showGenerateModal}
+            <AddModal
+                 open={showGenerateModal}
+                title="Add Payroll"
+                
                 onClose={() =>
                     setShowGenerateModal(false)
                 }
             >
-                {/* <GeneratePayslipForm
-                    onSuccess={() =>
-                        setShowGenerateModal(false)
-                    }
-                    onCancel={() =>
-                        setShowGenerateModal(false)
-                    }
-                /> */}
-
-                JENMAR ALANO
-            </GeneratePayslipModal>
+                {
+                    <AddPayrunsForm
+                        onCancel={() =>
+                            setShowGenerateModal(false)
+                        }
+                    />
+                }
+            </AddModal>
         </AppLayout>
     );
 }
