@@ -51,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
     
     // Payrun ROUTE
     Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
-   
+    Route::post('/payroll-runs/store', [PayrunsController::class, 'store'])->name('payruns.store');
 
 
     //  Payroll Runs ROUTE
