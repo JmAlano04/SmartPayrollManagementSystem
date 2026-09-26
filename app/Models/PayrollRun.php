@@ -15,13 +15,13 @@ class PayrollRun extends Model
     protected $fillable = [
         'period_start', 'period_end', 'status',
         'total_gross', 'total_net', 'flagged_anomalies_count',
-        'created_by', 'approved_by', 'approved_at',
+        'created_by', 'approved_by', 'approved_at', 'pay_date',
     ];
 
     protected $casts = [
         'period_start' => 'date',
         'period_end' => 'date',
-        'approved_at' => 'datetime',
+        'pay_date' => 'date',
     ];
 
     public function payslips(): HasMany
