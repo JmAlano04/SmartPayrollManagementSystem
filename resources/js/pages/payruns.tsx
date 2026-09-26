@@ -8,6 +8,10 @@ import {
     Clock3,
     Filter,
     Plus,
+    Trash2,
+    Pencil,
+    Eye,
+    Download,
     Search,
     X,
 } from 'lucide-react';
@@ -397,6 +401,9 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                             <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
                                                 Status
                                             </th>
+                                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                                ACTION
+                                            </th>
                                         </tr>
                                     </thead>
 
@@ -491,6 +498,58 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                                 Draft
                                                             </span>
                                                         )}
+                                                    </td>
+
+                                                    {/* Action */}
+                                                    <td className="px-5 py-4 text-center">
+<div className="flex items-center justify-center gap-1">
+
+                                                                {/* View */}
+
+                                                                <button
+                                                                    type="button"
+                                                                   
+                                                                    title="View payslip"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#16241c] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
+                                                                >
+                                                                    <Eye className="h-4 w-4" />
+                                                                </button>
+
+                                                                {/* Edit */}
+
+                                                                <button
+                                                                    type="button"
+                                                                   
+                                                                    
+                                                                    title="Edit payslip"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#b98a2e] dark:text-white/50 dark:hover:bg-white/10"
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </button>
+
+                                                                {/* Download */}
+
+                                                                <button
+                                                                    type="button"
+                                                                   
+                                                                    title="Download payslip"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-white/50 dark:hover:bg-white/10"
+                                                                >
+                                                                    <Download className="h-4 w-4" />
+                                                                </button>
+
+                                                                {/* Delete */}
+
+                                                                <button
+                                                                    type="button"
+                                                                   
+                                                                    title="Delete payslip"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-red-500/10"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+
+                                                            </div>
                                                     </td>
                                                 </tr>
                                             );
