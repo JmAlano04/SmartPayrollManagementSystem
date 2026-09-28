@@ -60,6 +60,7 @@ type Stats = {
     total_payslips: number;
     paid_payslips: number;
     pending_payslips: number;
+    draft_payslips: number;
     total_net_pay: number;
 };
 
@@ -479,8 +480,8 @@ export default function Payslips({
     | Delete Payslip
     |--------------------------------------------------------------------------
     */
-
-    const handleDeletePayslip = () => {
+ 
+    const handleDeletePayslip =() => {
         if (!selectedPayslip) return;
 
         router.delete(
