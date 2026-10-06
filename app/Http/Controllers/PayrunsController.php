@@ -48,4 +48,12 @@ class PayrunsController extends Controller
             ->route('payruns.index')
             ->with('success', 'Payroll run created successfully.');
     }
+    public function destroy(PayrollRun $payrun)
+    {
+        $payrun->delete();
+
+        return redirect()
+            ->route('payruns.index')
+            ->with('success', 'Payroll run deleted successfully.');
+    }
 }
