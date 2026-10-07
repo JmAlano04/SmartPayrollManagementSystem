@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PayrollRun;
 use App\Services\PayrollService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -38,17 +39,13 @@ class PayrunsController extends Controller
             'status' => 'required|in:draft,paid',
         ]);
 
-        PayrollRun::create([
-            'period_start' => $validatedData['period_start'],
-            'period_end' => $validatedData['period_end'],
-            'pay_date' => $validatedData['pay_date'],
-            'status' => $validatedData['status'],
-        ]);
+        PayrollRun::create($validatedData);
 
         return redirect()
             ->route('payruns.index')
             ->with('success', 'Payroll run created successfully.');
     }
+
     public function destroy(PayrollRun $payrun)
     {
         $payrun->delete();
@@ -58,40 +55,36 @@ class PayrunsController extends Controller
             ->with('success', 'Payroll run deleted successfully.');
     }
 
-
-      public function downloadPayrun(PayrollRun $payrun)
+    public function downloadPayrun(PayrollRun $payrun)
     {
-        // Implementation for downloading payrun
-        $period = $payrun->period_start . ' to ' . $payrun->period_end;
-        
+        // Eager load to avoid N+1 queries
+        $payrun->load('payslips.employee');
 
-        if (!$employee || !$payrollRun) {
+        if ($payrun->payslips->isEmpty()) {
             return back()->withErrors([
-                'error' => 'Payroll run data is incomplete.',
+                'error' => 'This payroll run has no payslips to export.',
             ]);
         }
 
-        $pdf = Pdf::loadView('receipt', [
-            'payslip' => $payslip,
-            'employee' => $employee,
-            'payrollRun' => $payrollRun,
-        ])->setPaper([0, 0, 420, 700]);
+        $start = Carbon::parse($payrun->period_start);
+        $end = Carbon::parse($payrun->period_end);
+
+        $pdf = Pdf::loadView('payrun_summary', [
+            'payrollRun' => $payrun,
+            'payslips' => $payrun->payslips,
+            'period' => $start->format('M d, Y') . ' - ' . $end->format('M d, Y'),
+        ])->setPaper('a4', 'landscape');
 
         $fileName = sprintf(
-            'payslip-%s-%s.pdf',
-            $employee->employee_code,
-            $payslip->payslip_number
+            'payrun-%s-to-%s.pdf',
+            $start->format('Ymd'),
+            $end->format('Ymd')
         );
 
         return response()->streamDownload(
-            function () use ($pdf) {
-                echo $pdf->output();
-            },
+            fn () => print($pdf->output()),
             $fileName,
-            [
-                'Content-Type' => 'application/pdf',
-            ]
+            ['Content-Type' => 'application/pdf']
         );
     }
-
 }

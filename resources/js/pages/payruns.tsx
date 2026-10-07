@@ -432,6 +432,8 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                         {filteredPayRuns.map((payrun) => {
                                             const isPaid =
                                                 payrun.status === 'paid';
+                                            const isDraft =
+                                                payrun.status === 'draft';
                                             const payrunNumber =
                                                 getPayrunNumber(payrun);
 
@@ -538,14 +540,20 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                             {/* Download */}
                                                             <button
                                                                 type="button"
+                                                             
                                                                 onClick={() =>
                                                                     handleDownloadPayrun(
                                                                         payrun.id,
                                                                     )
                                                                 }
+                                                                 disabled={
+                                                                    isDraft
+                                                                }
                                                                 title="Download pay run"
                                                                 aria-label={`Download pay run ${payrunNumber}`}
-                                                                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-white/50 dark:hover:bg-white/10"
+                                                                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600
+                                                               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-500 dark:text-white/50 dark:hover:bg-red-500/10
+                                                                "
                                                             >
                                                                 <Download className="h-4 w-4" />
                                                             </button>
