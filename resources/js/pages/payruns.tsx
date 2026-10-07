@@ -174,6 +174,12 @@ export default function PayRuns({ payRuns, stats }: Props) {
         });
     };
 
+
+     const handleDownloadPayrun = (payslipId: number) => {
+        
+        window.location.href = route('payruns.download', payslipId);
+    };
+    
     return (
         <AppLayout>
             <Head title="Pay Runs" />
@@ -532,6 +538,11 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                             {/* Download */}
                                                             <button
                                                                 type="button"
+                                                                onClick={() =>
+                                                                    handleDownloadPayrun(
+                                                                        payrun.id,
+                                                                    )
+                                                                }
                                                                 title="Download pay run"
                                                                 aria-label={`Download pay run ${payrunNumber}`}
                                                                 className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-white/50 dark:hover:bg-white/10"

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PayrollRun;
 use App\Services\PayrollService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -56,4 +57,41 @@ class PayrunsController extends Controller
             ->route('payruns.index')
             ->with('success', 'Payroll run deleted successfully.');
     }
+
+
+      public function downloadPayrun(PayrollRun $payrun)
+    {
+        // Implementation for downloading payrun
+        $period = $payrun->period_start . ' to ' . $payrun->period_end;
+        
+
+        if (!$employee || !$payrollRun) {
+            return back()->withErrors([
+                'error' => 'Payroll run data is incomplete.',
+            ]);
+        }
+
+        $pdf = Pdf::loadView('receipt', [
+            'payslip' => $payslip,
+            'employee' => $employee,
+            'payrollRun' => $payrollRun,
+        ])->setPaper([0, 0, 420, 700]);
+
+        $fileName = sprintf(
+            'payslip-%s-%s.pdf',
+            $employee->employee_code,
+            $payslip->payslip_number
+        );
+
+        return response()->streamDownload(
+            function () use ($pdf) {
+                echo $pdf->output();
+            },
+            $fileName,
+            [
+                'Content-Type' => 'application/pdf',
+            ]
+        );
+    }
+
 }
