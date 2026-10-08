@@ -1267,6 +1267,12 @@ export default function Payslips({
                             );
                             setSelectedPayslip(null);
                         }}
+                        onCancel={() => {
+                            setShowUpdatePayslipModal(
+                                false
+                            );
+                            setSelectedPayslip(null);
+                        }}
                     />
                 </UpdateModal>
             )}
