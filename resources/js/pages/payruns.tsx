@@ -1,8 +1,14 @@
 import AppLayout from '@/layouts/app-layout';
 import AddModal from '@/components/AddModal';
 import AddPayrunsForm from '@/components/payruns/AddPayrunsForm';
+
+import UpdateModal from '@/components/UpdateModal';
+import UpdatePayrunsForm from '@/components/payruns/UpdatePayrunsForm';
+
+
 import DeleteModal from '@/components/DeleteModal';
 import { Head, router } from '@inertiajs/react';
+
 import {
     Banknote,
     CheckCircle2,
@@ -69,13 +75,14 @@ export default function PayRuns({ payRuns, stats }: Props) {
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
     const [showGenerateModal, setShowGenerateModal] = useState(false);
+  
 
-    /*
-    | Delete state
-    | payrunToDelete !== null  ->  the delete modal is open.
-    | One piece of state instead of a boolean + a selected item,
-    | so the two can never get out of sync.
-    */
+    const [showUpdatePayrunsModal, setShowUpdatePayrunsModal] =
+            useState(false);
+            
+    const [selectedPayruns, setSelectedPayruns] =
+            useState<PayRun | null>(null);
+
     const [payrunToDelete, setPayrunToDelete] = useState<PayRun | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -139,6 +146,14 @@ export default function PayRuns({ payRuns, stats }: Props) {
 
     const hasFilters = search !== '' || status !== '' || payPeriod !== '';
 
+    /* Update handlers */
+    const handleEditPayrun = (payrun: PayRun) => {       
+        setSelectedPayruns(payrun);
+        setShowUpdatePayrunsModal(true);
+
+
+        
+    }
     /*
     | Delete handlers
     */
@@ -460,24 +475,24 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                     <td className="px-5 py-4">
                                                         <p className="text-sm text-slate-700 dark:text-white/80">
                                                             {formatDate(
-                                                                payrun.period_start,
+                                                                payrun.period_start
                                                             )}
                                                         </p>
 
                                                         <p className="mt-1 text-xs text-slate-400">
                                                             to{' '}
-                                                            {formatDate(
-                                                                payrun.period_end,
-                                                            )}
+                                                            {
+                                                                payrun.period_end
+                                                            }
                                                         </p>
                                                     </td>
 
                                                     {/* Pay Date */}
                                                     <td className="px-5 py-4">
                                                         <span className="text-sm text-slate-700 dark:text-white/80">
-                                                            {formatDate(
-                                                                payrun.pay_date,
-                                                            )}
+                                                            {
+                                                                payrun.pay_date
+                                                            }
                                                         </span>
                                                     </td>
 
@@ -531,6 +546,9 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                             <button
                                                                 type="button"
                                                                 title="Edit pay run"
+                                                                onClick = {() => 
+                                                                    handleEditPayrun(payrun)
+                                                            }
                                                                 aria-label={`Edit pay run ${payrunNumber}`}
                                                                 className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#b98a2e] dark:text-white/50 dark:hover:bg-white/10"
                                                             >
@@ -641,6 +659,40 @@ export default function PayRuns({ payRuns, stats }: Props) {
                     onSuccess={() => setShowGenerateModal(false)}
                 />
             </AddModal>
+
+
+
+    {/* =============================================================
+                UPDATE PAYSLIP MODAL
+    ============================================================== */}
+
+
+      {selectedPayruns && (
+                    <UpdateModal
+                        open={showUpdatePayrunsModal}
+                        onClose={() => {
+                            setShowUpdatePayrunsModal(
+                                false
+                            );
+                            setSelectedPayruns(null);
+                        }}
+                        title="Update Pay Run"
+                    >
+                     <UpdatePayrunsForm
+                            payrun={selectedPayruns}
+                            onCancel={() => {
+                                setShowUpdatePayrunsModal(false);
+                                setSelectedPayruns(null);
+                            }}
+                            onSuccess={() => {
+                                setShowUpdatePayrunsModal(false);
+                                setSelectedPayruns(null);
+                            }}
+                        />
+                    </UpdateModal>
+            )}
+    
+
 
             {/* Delete Pay Run Modal */}
             {payrunToDelete && (

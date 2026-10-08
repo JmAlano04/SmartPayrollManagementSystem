@@ -190,11 +190,13 @@ export default function Payslips({
         useState(false);
     const [showUpdatePayslipModal, setShowUpdatePayslipModal] =
         useState(false);
+        
+    const [selectedPayslip, setSelectedPayslip] =
+        useState<Payslip | null>(null);
+
     const [showViewPayslipModal, setShowViewPayslipModal] =
         useState(false);
 
-    const [selectedPayslip, setSelectedPayslip] =
-        useState<Payslip | null>(null);
 
     /*
     |--------------------------------------------------------------------------
