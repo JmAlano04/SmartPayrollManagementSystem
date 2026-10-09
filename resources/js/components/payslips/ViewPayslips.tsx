@@ -11,7 +11,7 @@ import {
     type LucideIcon,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-
+type PayslipStatus = 'paid' | 'pending' | 'draft';
 type Payslip = {
     id: number;
     payslip_number: string;
