@@ -60,7 +60,7 @@ class PayslipsService
                 'id' => $payslip->id,
 
                 'payslip_number' =>
-                    $payslip->payslip_number,
+                    $payslip->payroll_run_id,
 
                 'employee_code' =>
                     $employee?->employee_code ?? 'N/A',

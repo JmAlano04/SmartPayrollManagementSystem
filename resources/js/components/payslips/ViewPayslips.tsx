@@ -13,15 +13,26 @@ import {
 import type { ReactNode } from 'react';
 
 type Payslip = {
-    first_name?: string;
-    middle_name?: string;
-    last_name?: string;
-    employee_name?: string;
+    id: number;
     payslip_number: string;
+    employee_code: string;
+    employee_firstname: string;
+    employee_lastname: string;
+    email: string;
+    department: string;
+    position: string;
     pay_period: string;
-    status: string;
-    gross_pay: number | string;
-    net_pay: number | string;
+    pay_date: string | null;
+
+    base_pay: number;
+    overtime_pay: number;
+    allowances_total: number;
+    gross_pay: number;
+    tax_amount: number;
+    total_deductions: number;
+    net_pay: number;
+
+    status: PayslipStatus;
 };
 
 type ViewPayslipsProps = {
@@ -56,10 +67,15 @@ function formatCurrency(amount: number) {
 }
 
 function getFullName(payslip: Payslip) {
-    return (
-        payslip.employee_name ??
-        [payslip.first_name, payslip.middle_name, payslip.last_name].filter(Boolean).join(' ')
-    );
+
+    const fullName = [
+        payslip.employee_firstname,
+        payslip.employee_lastname,
+    ]
+        .filter(Boolean)
+        .join(' ');
+
+    return fullName || 'Unknown employee';
 }
 
 type DetailItemProps = {
@@ -122,7 +138,7 @@ export default function ViewPayslips({ open, payslip, onClose }: ViewPayslipsPro
                     </DetailItem>
 
                     <DetailItem icon={Hash} label="Payslip number">
-                        {payslip.payslip_number}
+                        {payslip.payslip_number ?? '—'}
                     </DetailItem>
 
                     <DetailItem icon={CalendarRange} label="Pay period">
