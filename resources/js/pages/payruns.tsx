@@ -549,6 +549,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                                 onClick = {() => 
                                                                     handleEditPayrun(payrun)
                                                             }
+                                                            
                                                                 aria-label={`Edit pay run ${payrunNumber}`}
                                                                 className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#b98a2e] dark:text-white/50 dark:hover:bg-white/10"
                                                             >

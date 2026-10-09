@@ -45,6 +45,21 @@ class PayrunsController extends Controller
             ->route('payruns.index')
             ->with('success', 'Payroll run created successfully.');
     }
+    public function update(Request $request, PayrollRun $payrun)
+    {
+        $validatedData = $request->validate([
+            'period_start' => 'required|date',
+            'period_end' => 'required|date|after_or_equal:period_start',
+            'pay_date' => 'required|date',
+            'status' => 'required|in:draft,paid',
+        ]);
+
+        $payrun->update($validatedData);
+
+        return redirect()
+            ->route('payruns.index')
+            ->with('success', 'Payroll run updated successfully.');
+    }
 
     public function destroy(PayrollRun $payrun)
     {

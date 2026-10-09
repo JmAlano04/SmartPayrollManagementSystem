@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
     // Payrun ROUTE
     Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
     Route::post('/payroll-runs/store', [PayrunsController::class, 'store'])->name('payruns.store');
+    Route::put('/payroll/runs/update/{payrun}', [PayrunsController::class, 'update'])->name('payruns.update');
     Route::delete('/payroll/runs/destroy/{payrun}', [PayrunsController::class, 'destroy'])->name('payruns.destroy');
     Route::get ('/payroll/runs/download/{payrun}', [PayrunsController::class, 'downloadPayrun'])->name('payruns.download');
 
