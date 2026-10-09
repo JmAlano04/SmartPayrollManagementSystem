@@ -6,6 +6,8 @@ import UpdateModal from '@/components/UpdateModal';
 import UpdatePayrunsForm from '@/components/payruns/UpdatePayrunsForm';
 
 
+import ViewPayruns from '@/components/payruns/ViewPayruns';
+
 import DeleteModal from '@/components/DeleteModal';
 import { Head, router } from '@inertiajs/react';
 
@@ -85,6 +87,11 @@ export default function PayRuns({ payRuns, stats }: Props) {
 
     const [payrunToDelete, setPayrunToDelete] = useState<PayRun | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const [showViewPayrunsModal, setShowViewPayrunsModal] =
+        useState(false);
+
+
 
     const payPeriods = useMemo(() => {
         const periods = payRuns.map(
@@ -536,6 +543,14 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                             <button
                                                                 type="button"
                                                                 title="View pay run"
+                                                                onClick={() => {
+                                                                    setSelectedPayruns(
+                                                                        payrun,
+                                                                    );
+                                                                    setShowViewPayrunsModal(
+                                                                        true,
+                                                                    );
+                                                                }}
                                                                 aria-label={`View pay run ${payrunNumber}`}
                                                                 className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#16241c] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
                                                             >
@@ -692,8 +707,22 @@ export default function PayRuns({ payRuns, stats }: Props) {
                         />
                     </UpdateModal>
             )}
-    
+   {/* =============================================================
+                VIEW PAYSLIP MODAL
+            ============================================================== */}
 
+            {selectedPayruns && (
+                <ViewPayruns
+                    open={showViewPayrunsModal}
+                    payrun={selectedPayruns}
+                    onClose={() => {
+                        setShowViewPayrunsModal(
+                            false
+                        );
+                        setSelectedPayruns(null);
+                    }}
+                />
+            )}
 
             {/* Delete Pay Run Modal */}
             {payrunToDelete && (

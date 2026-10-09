@@ -1,51 +1,39 @@
 import {
     Banknote,
+    CalendarCheck,
     CalendarRange,
     CheckCircle2,
-    Clock,
     FileEdit,
     Hash,
-    User,
+    Users,
     Wallet,
     X,
     type LucideIcon,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-type Payslip = {
-    first_name?: string;
-    middle_name?: string;
-    last_name?: string;
-    employee_name?: string;
-    payslip_number: string;
-    pay_period: string;
-    status: string;
-    gross_pay: number | string;
-    net_pay: number | string;
+type PayRun = {
+    id: number;
+    name: string;
+    period_start: string;
+    period_end: string;
+    pay_date: string;
+    employees_count: number;
+    gross_pay: number;
+    net_pay: number;
+    status: 'draft' | 'paid';
 };
 
-type ViewPayslipsProps = {
+type ViewPayrunsProps = {
     open: boolean;
-    payslip: Payslip | null;
+    payrun: PayRun | null;
     onClose: () => void;
 };
 
-function getStatusLabel(status: Payslip['status']) {
+function getStatusLabel(status: PayRun['status']) {
     return String(status)
         .replace(/[_-]+/g, ' ')
         .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function getStatusStyle(status: Payslip['status']): { icon: LucideIcon; className: string } {
-    switch (String(status).toLowerCase()) {
-        case 'paid':
-        case 'released':
-            return { icon: CheckCircle2, className: 'size-5 text-green-600 dark:text-green-400' };
-        case 'draft':
-            return { icon: FileEdit, className: 'size-5 text-amber-600 dark:text-amber-400' };
-        default:
-            return { icon: Clock, className: 'size-5 text-[#14172B]/70 dark:text-white/70' };
-    }
 }
 
 function formatCurrency(amount: number) {
@@ -55,11 +43,22 @@ function formatCurrency(amount: number) {
     }).format(amount);
 }
 
-function getFullName(payslip: Payslip) {
-    return (
-        payslip.employee_name ??
-        [payslip.first_name, payslip.middle_name, payslip.last_name].filter(Boolean).join(' ')
-    );
+function getPayrunNumber(payrun: PayRun) {
+    return `PR-${String(payrun.id).padStart(4, '0')}`;
+}
+
+function formatDate(value: string) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('en-PH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    }).format(date);
 }
 
 type DetailItemProps = {
@@ -78,7 +77,7 @@ function DetailItem({ icon: Icon, label, children, iconClassName }: DetailItemPr
                     aria-hidden="true"
                 />
             </div>
-            <div className="min-w-0">
+            <div>
                 <p className="text-sm text-[#14172B]/50 dark:text-white/50">{label}</p>
                 <p className="text-lg font-medium text-[#14172B] dark:text-white">{children}</p>
             </div>
@@ -86,12 +85,12 @@ function DetailItem({ icon: Icon, label, children, iconClassName }: DetailItemPr
     );
 }
 
-export default function ViewPayslips({ open, payslip, onClose }: ViewPayslipsProps) {
-    if (!open || !payslip) {
+export default function ViewPayruns({ open, payrun, onClose }: ViewPayrunsProps) {
+    if (!open || !payrun) {
         return null;
     }
 
-    const status = getStatusStyle(payslip.status);
+    const isPaid = payrun.status === 'paid';
 
     return (
         <div
@@ -104,7 +103,7 @@ export default function ViewPayslips({ open, payslip, onClose }: ViewPayslipsPro
             >
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-[#14172B] dark:text-white">
-                        Payslip Details
+                        Payrun Details
                     </h2>
                     <button
                         type="button"
@@ -117,28 +116,42 @@ export default function ViewPayslips({ open, payslip, onClose }: ViewPayslipsPro
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <DetailItem icon={User} label="Employee">
-                        {getFullName(payslip)}
+                    <DetailItem icon={Hash} label="Pay Run">
+                        {getPayrunNumber(payrun)}
                     </DetailItem>
 
-                    <DetailItem icon={Hash} label="Payslip number">
-                        {payslip.payslip_number}
+                    <DetailItem
+                        icon={isPaid ? CheckCircle2 : FileEdit}
+                        label="Status"
+                        iconClassName={
+                            isPaid
+                                ? 'size-5 text-green-600 dark:text-green-400'
+                                : 'size-5 text-amber-600 dark:text-amber-400'
+                        }
+                    >
+                        {getStatusLabel(payrun.status)}
                     </DetailItem>
 
                     <DetailItem icon={CalendarRange} label="Pay period">
-                        {payslip.pay_period}
+                        {formatDate(payrun.period_start)} – {formatDate(payrun.period_end)}
                     </DetailItem>
 
-                    <DetailItem icon={status.icon} label="Status" iconClassName={status.className}>
-                        {getStatusLabel(payslip.status)}
+                    <DetailItem icon={CalendarCheck} label="Pay date">
+                        {formatDate(payrun.pay_date)}
                     </DetailItem>
+
+                    <DetailItem icon={Users} label="Employees">
+                        {payrun.employees_count}
+                    </DetailItem>
+
+                    <div className="hidden sm:block" />
 
                     <DetailItem icon={Banknote} label="Gross pay">
-                        {formatCurrency(Number(payslip.gross_pay))}
+                        {formatCurrency(Number(payrun.gross_pay))}
                     </DetailItem>
 
                     <DetailItem icon={Wallet} label="Net pay">
-                        {formatCurrency(Number(payslip.net_pay))}
+                        {formatCurrency(Number(payrun.net_pay))}
                     </DetailItem>
                 </div>
             </div>
