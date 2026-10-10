@@ -68,6 +68,8 @@ type DetailItemProps = {
     iconClassName?: string;
 };
 
+
+
 function DetailItem({ icon: Icon, label, children, iconClassName }: DetailItemProps) {
     return (
         <div className="flex items-start gap-3">
@@ -115,11 +117,41 @@ export default function ViewPayruns({ open, payrun, onClose }: ViewPayrunsProps)
                     </button>
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="mt-6 grid grid-cols-3 gap-6 sm:grid-cols-2">
+
+                    <DetailItem icon={Users} label="Employees">
+                        {payrun.employees_count}
+                    </DetailItem>
+                    
+
                     <DetailItem icon={Hash} label="Pay Run">
                         {getPayrunNumber(payrun)}
                     </DetailItem>
 
+
+                    <DetailItem icon={CalendarRange} label="Pay period">
+                        {formatDate(payrun.period_start)} – {formatDate(payrun.period_end)}
+                    </DetailItem>
+
+                    
+
+                    <DetailItem icon={CalendarCheck} label="Pay date">
+                        {formatDate(payrun.pay_date)}
+                    </DetailItem>
+
+     
+
+                    <DetailItem icon={Banknote} label="Gross pay">
+                        {formatCurrency(Number(payrun.gross_pay))}
+                    </DetailItem>
+
+                    <DetailItem icon={Wallet} label="Net pay">
+                        {formatCurrency(Number(payrun.net_pay))}
+                    </DetailItem>
+
+
+
+                    
                     <DetailItem
                         icon={isPaid ? CheckCircle2 : FileEdit}
                         label="Status"
@@ -130,28 +162,6 @@ export default function ViewPayruns({ open, payrun, onClose }: ViewPayrunsProps)
                         }
                     >
                         {getStatusLabel(payrun.status)}
-                    </DetailItem>
-
-                    <DetailItem icon={CalendarRange} label="Pay period">
-                        {formatDate(payrun.period_start)} – {formatDate(payrun.period_end)}
-                    </DetailItem>
-
-                    <DetailItem icon={CalendarCheck} label="Pay date">
-                        {formatDate(payrun.pay_date)}
-                    </DetailItem>
-
-                    <DetailItem icon={Users} label="Employees">
-                        {payrun.employees_count}
-                    </DetailItem>
-
-                    <div className="hidden sm:block" />
-
-                    <DetailItem icon={Banknote} label="Gross pay">
-                        {formatCurrency(Number(payrun.gross_pay))}
-                    </DetailItem>
-
-                    <DetailItem icon={Wallet} label="Net pay">
-                        {formatCurrency(Number(payrun.net_pay))}
                     </DetailItem>
                 </div>
             </div>

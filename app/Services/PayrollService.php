@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PayrollService
 {
@@ -27,8 +28,10 @@ class PayrollService
      */
     public function getPayRuns(): Collection
     {
-        return PayrollRun::withCount('payslips')
-            ->orderByDesc('created_at') // 'pay_date' isn't a confirmed real column — see note below
+        return PayrollRun::withCount(['payslips as employees_count' => function ($query) {
+    $query->select(DB::raw('COUNT(DISTINCT employee_id)'));
+}])
+            ->orderByDesc('created_at') 
             ->get()
             ->map(function (PayrollRun $run) {
 
