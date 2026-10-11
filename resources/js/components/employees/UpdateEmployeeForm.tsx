@@ -264,8 +264,38 @@ export default function UpdateEmployeeForm({
                     )}
                 </div>
 
-                {/* Status */}
-                <div className="grid gap-2 sm:col-span-2">
+                {/* Employment Type */}
+                <div className="grid gap-2 sm:col-span-1">
+                    <label
+                        htmlFor="employment_type"
+                        className="text-sm font-medium text-[#16241C] dark:text-white"
+                    >
+                        Employment Type
+                    </label>
+
+                    <select
+                        id="employment_type"
+                        name="employment_type"
+                        value={form.employment_type}
+                        onChange={handleChange}
+                        disabled={processing}
+                        className={ledgerInput}
+                    >
+                        <option value="full_time">Full-time</option>
+                        <option value="part_time">Part-time</option>
+                        <option value="contract">Contract</option>
+                    </select>
+
+                    {errors.employment_type && (
+                        <p className="text-sm text-red-500">
+                            {errors.employment_type}
+                        </p>
+                    )}
+                </div>
+
+
+                     {/* Status */}
+                <div className="grid gap-2 sm:col-span-1">
                     <label
                         htmlFor="status"
                         className="text-sm font-medium text-[#16241C] dark:text-white"

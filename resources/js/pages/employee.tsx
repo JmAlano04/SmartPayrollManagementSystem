@@ -37,7 +37,7 @@ type Employee = {
     email: string;
     department: string;
     position: string;
-    employment_types: string;
+    employment_type: string;
     salary: number;
     status: 'active' | 'terminated' | 'on_leave';
     hire_date: string;
@@ -461,20 +461,24 @@ export default function EmployeesIndex({
                                                 Position
                                             </th>
 
-
-                                            <th className={`${th} text-left`}>
-                                                Employee Type
-                                            </th>
-
                                             <th className={`${th} text-right`}>
                                                 Base Salary
                                             </th>
                                             <th className={`${th} text-left`}>
                                                 Hired
                                             </th>
+
+                                              <th className={`${th} text-left`}>
+                                                Employment Type
+                                            </th>
+                                            
                                             <th className={`${th} text-center`}>
                                                 Status
                                             </th>
+
+                                            
+                                          
+
                                             <th className={`${th} text-center`}>
                                                 Action
                                             </th>
@@ -518,10 +522,7 @@ export default function EmployeesIndex({
                                                     {employee.position}
                                                 </td>
 
-                                                    {/* Employment Type */}
-                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
-                                                    {employee.employment_types} 
-                                                </td>
+                                         
 
                                                 {/* Salary */}
                                                 <td className="px-5 py-4 text-right">
@@ -537,6 +538,11 @@ export default function EmployeesIndex({
                                                     {formatDate(
                                                         employee.hire_date,
                                                     )}
+                                                </td>
+
+                                                {/* Employment Type */}
+                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                    {employee.employment_type} 
                                                 </td>
 
                                                 {/* Status */}

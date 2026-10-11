@@ -57,6 +57,7 @@ class EmployeeService
                 'status' => $employee->status,
                 'hire_date' => $employee->hire_date,
                 'employment_type' => $employee->employment_type,
+
             ];
         });
 
@@ -87,11 +88,12 @@ class EmployeeService
     {
         return Employee::query()
             ->whereNotNull('employment_type')
+            ->where('employment_type', '!=', '')
             ->distinct()
             ->orderBy('employment_type')
             ->pluck('employment_type');
     }
-
+  
     public function getStats()
     {
         return [

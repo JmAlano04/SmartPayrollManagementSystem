@@ -31,6 +31,8 @@ class EmployeesController extends Controller
 
             'statuses' => $this->employeeService->getStatuses(),
 
+            'employment_type' => $this->employeeService->getEmploymentTypes(),
+
             'selectedDepartment' => $request->input(
                 'department',
                 ''
@@ -150,6 +152,15 @@ class EmployeesController extends Controller
             'max:255',
         ],
 
+        'employment_type' => [
+            'required',
+            Rule::in([
+                'full_time',
+                'part_time',
+                'contract',
+            ]),
+        ],
+
         'status' => [
             'required',
             Rule::in([
@@ -187,6 +198,7 @@ class EmployeesController extends Controller
             'last_name' => $lastName,
             'email' => $validated['email'],
             'department' => $validated['department'],
+            'employment_type' => $validated['employment_type'],
             'position' => $validated['position'],
             'status' => $validated['status'],
             'hire_date' => $validated['hire_date'],
