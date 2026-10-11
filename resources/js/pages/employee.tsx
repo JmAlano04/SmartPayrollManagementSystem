@@ -1,461 +1,507 @@
-    import AppLayout from '@/layouts/app-layout';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 
-    import { type BreadcrumbItem } from '@/types';
+import AddModal from '@/components/AddModal';
+import DeleteModal from '@/components/DeleteModal';
+import UpdateModal from '@/components/UpdateModal';
 
-    import { Head, router } from '@inertiajs/react';
+import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
+import UpdateEmployeeForm from '@/components/employees/UpdateEmployeeForm';
 
-    import { useState } from 'react';
+import {
+    CheckCircle2,
+    Clock3,
+    Filter,
+    Pencil,
+    Search,
+    Trash2,
+    UserCheck,
+    UserMinus,
+    UserPlus,
+    Users,
+    X,
+} from 'lucide-react';
 
-    import AddModal from '@/components/AddModal';
-    import UpdateModal from '@/components/UpdateModal';
-    import DeleteModal from '@/components/DeleteModal';
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Employees',
+        href: '/employees',
+    },
+];
 
-    import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
-    import UpdateEmployeeForm from '@/components/employees/UpdateEmployeeForm';
+type Employee = {
+    id: number;
+    name: string;
+    email: string;
+    department: string;
+    position: string;
+    employment_types: string;
+    salary: number;
+    status: 'active' | 'terminated' | 'on_leave';
+    hire_date: string;
+};
 
+type Stats = {
+    totalEmployees: number;
+    activeEmployees: number;
+    terminatedEmployees: number;
+    onLeaveCount: number;
+};
 
-    import {
-        Pencil,
-        Search,
-        Trash2,
-        UserCheck,
-        UserMinus,
-        UserPlus,
-        Users,
-        Clock,
-    } from 'lucide-react';
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
 
-    const breadcrumbs: BreadcrumbItem[] = [
+type EmployeesPagination = {
+    data: Employee[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: PaginationLink[];
+};
+
+type Props = {
+    employees: EmployeesPagination;
+    stats: Stats;
+    departments: string[];
+    statuses: string[];
+    selectedDepartment?: string;
+    selectedStatus?: string;
+    search?: string;
+};
+
+/* Helpers */
+
+function initialsOf(name: string) {
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+}
+
+function formatCurrency(amount: number) {
+    return `₱ ${Number(amount || 0).toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
+}
+
+function formatDate(date: string) {
+    if (!date) {
+        return '—';
+    }
+
+    return new Date(date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+}
+
+const statusLabels: Record<string, string> = {
+    active: 'Active',
+    terminated: 'Terminated',
+    on_leave: 'On Leave',
+};
+
+/* Shared class names */
+
+const inputClass =
+    'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b98a2e] focus:ring-2 focus:ring-[#b98a2e]/20 dark:border-white/10 dark:bg-[#0f1712] dark:text-white dark:placeholder:text-white/30';
+
+const labelClass =
+    'mb-2 block text-xs font-medium text-slate-600 dark:text-white/60';
+
+const th =
+    'px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50';
+
+const actionButton =
+    'rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 dark:text-white/50 dark:hover:bg-white/10';
+
+export default function EmployeesIndex({
+    employees,
+    stats,
+    departments,
+    statuses,
+    selectedDepartment,
+    selectedStatus,
+    search: initialSearch,
+}: Props) {
+    const [search, setSearch] = useState(initialSearch ?? '');
+    const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
+    const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] =
+        useState(false);
+    const [showDeleteEmployeeModal, setDeleteEmployeeModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+        null,
+    );
+
+    const hasFilters = Boolean(search || selectedDepartment || selectedStatus);
+
+    /* Filters */
+
+    const visit = (params: Record<string, string | undefined>) => {
+        router.get('/employees', params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const handleSearch = (value: string) => {
+        setSearch(value);
+
+        visit({
+            search: value || undefined,
+            department: selectedDepartment || undefined,
+            status: selectedStatus || undefined,
+        });
+    };
+
+    const handleDepartmentChange = (
+        event: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        visit({
+            search: search || undefined,
+            department: event.target.value || undefined,
+            status: selectedStatus || undefined,
+        });
+    };
+
+    const handleStatusChange = (
+        event: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        visit({
+            search: search || undefined,
+            department: selectedDepartment || undefined,
+            status: event.target.value || undefined,
+        });
+    };
+
+    const clearFilters = () => {
+        setSearch('');
+        visit({});
+    };
+
+    /* Pagination */
+
+    const goToPage = (url: string | null) => {
+        if (!url) {
+            return;
+        }
+
+        router.get(url, {}, { preserveState: true, preserveScroll: true });
+    };
+
+    /* Update */
+
+    const handleEdit = (employee: Employee) => {
+        setSelectedEmployee(employee);
+        setShowUpdateEmployeeModal(true);
+    };
+
+    /* Delete */
+
+    const handleDeleteClick = (employee: Employee) => {
+        setSelectedEmployee(employee);
+        setDeleteEmployeeModal(true);
+    };
+
+    const handleCloseDeleteModal = () => {
+        if (isDeleting) return;
+
+        setDeleteEmployeeModal(false);
+        setSelectedEmployee(null);
+    };
+
+    const handleDeleteEmployee = () => {
+        if (!selectedEmployee || isDeleting) return;
+
+        router.delete(`/employees/destroy/${selectedEmployee.id}`, {
+            preserveScroll: true,
+            onStart: () => setIsDeleting(true),
+            onSuccess: () => {
+                setDeleteEmployeeModal(false);
+                setSelectedEmployee(null);
+            },
+            onError: (errors) => {
+                console.error('Failed to delete employee:', errors);
+            },
+            onFinish: () => setIsDeleting(false),
+        });
+    };
+
+    /* Stat cards */
+
+    const statCards = [
         {
-            title: 'Employees',
-            href: '/employees',
+            label: 'Total Employees',
+            value: stats.totalEmployees,
+            icon: Users,
+            valueColor: 'text-[#16241c] dark:text-white',
+            iconBg: 'bg-slate-100 dark:bg-white/10',
+            iconColor: 'text-[#16241c] dark:text-white',
+        },
+        {
+            label: 'Active',
+            value: stats.activeEmployees,
+            icon: UserCheck,
+            valueColor: 'text-green-600',
+            iconBg: 'bg-green-50 dark:bg-green-500/10',
+            iconColor: 'text-green-600',
+        },
+        {
+            label: 'Terminated',
+            value: stats.terminatedEmployees,
+            icon: UserMinus,
+            valueColor: 'text-red-600',
+            iconBg: 'bg-red-50 dark:bg-red-500/10',
+            iconColor: 'text-red-600',
+        },
+        {
+            label: 'On Leave',
+            value: stats.onLeaveCount,
+            icon: Clock3,
+            valueColor: 'text-amber-600',
+            iconBg: 'bg-amber-50 dark:bg-amber-500/10',
+            iconColor: 'text-amber-600',
         },
     ];
 
-    type Employee = {
-        id: number;
-        name: string;
-        email: string;
-        department: string;
-        position: string;
-        salary: number;
-        status: 'active' | 'terminated' | 'on_leave';
-        hire_date: string;
-    };
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Employees" />
 
-    type Stats = {
-        totalEmployees: number;
-        activeEmployees: number;
-        terminatedEmployees: number;
-        onLeaveCount: number;
-    };
-
-    type PaginationLink = {
-        url: string | null;
-        label: string;
-        active: boolean;
-    };
-
-    type EmployeesPagination = {
-        data: Employee[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-        from: number | null;
-        to: number | null;
-        links: PaginationLink[];
-    };
-
-    type Props = {
-        employees: EmployeesPagination;
-        stats: Stats;
-        departments: string[];
-        statuses: string[];
-        selectedDepartment?: string;
-        selectedStatus?: string;
-        search?: string;
-    };
-
-    function initialsOf(name: string) {
-        return name
-            .split(' ')
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join('');
-    }
-
-    export default function EmployeesIndex({
-        employees,
-        stats,
-        departments,
-        statuses,
-        selectedDepartment,
-        selectedStatus,
-        search: initialSearch,
-    }: Props) {
-        const [search, setSearch] = useState(initialSearch ?? '');
-        const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
-        const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
-        const [showDeleteEmployeeModal, setDeleteEmployeeModal] = useState(false);
-
-        const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null); // 👈
-
-        // Search
-        const handleSearch = (value: string) => {
-            setSearch(value);
-
-            router.get(
-                '/employees',
-                {
-                    search: value || undefined,
-                    department: selectedDepartment || undefined,
-                    status: selectedStatus || undefined,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                },
-            );
-        };
-
-        // Department filter
-        const handleDepartmentChange = (
-            event: React.ChangeEvent<HTMLSelectElement>,
-        ) => {
-            const department = event.target.value;
-
-            router.get(
-                '/employees',
-                {
-                    search: search || undefined,
-                    department: department || undefined,
-                    status: selectedStatus || undefined,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                },
-            );
-        };
-
-        // Status filter
-        const handleStatusChange = (
-            event: React.ChangeEvent<HTMLSelectElement>,
-        ) => {
-            const status = event.target.value;
-
-            router.get(
-                '/employees',
-                {
-                    search: search || undefined,
-                    department: selectedDepartment || undefined,
-                    status: status || undefined,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                },
-            );
-        };
-
-        // Clear filters
-        const clearFilters = () => {
-            setSearch('');
-
-            router.get(
-                '/employees',
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                },
-            );
-        };
-
-        // Pagination
-        const goToPage = (url: string | null) => {
-            if (!url) {
-                return;
-            }
-
-            router.get(
-                url,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        };
-
-        // Open update modal with selected employee 👈
-        const handleEdit = (employee: Employee) => {
-            setSelectedEmployee(employee);
-            setShowUpdateEmployeeModal(true);
-        };
-
-        return (
-            <AppLayout breadcrumbs={breadcrumbs}>
-                <Head title="Employees" />
-
-                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0f1712]">
+                <div className="mx-auto max-w-7xl space-y-6 p-6">
                     {/* Header */}
-                    <div className="relative overflow-hidden rounded-2xl bg-[#16241c] p-6">
-                        <div className="relative flex flex-wrap items-center justify-between gap-4">
-                            <div>
-                                <h1 className="text-xl font-semibold text-white">
-                                    Employee records
-                                </h1>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-[#16241c] dark:text-white">
+                                Employees
+                            </h1>
 
-                                <p className="text-sm text-white/55">
-                                    Manage your workforce, roles, and pay details.
-                                </p>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => setShowAddEmployeeModal(true)}
-                                className="flex items-center gap-2 rounded-full bg-[#b98a2e] px-5 py-2.5 text-sm font-medium text-[#16241c]"
-                            >
-                                <UserPlus className="h-4 w-4" />
-                                Add employee
-                            </button>
+                            <p className="mt-1 text-sm text-slate-500 dark:text-white/50">
+                                Manage your workforce, roles, and pay details
+                            </p>
                         </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowAddEmployeeModal(true)}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#16241c] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#22362a] focus:outline-none focus:ring-2 focus:ring-[#b98a2e] focus:ring-offset-2 dark:focus:ring-offset-[#0f1712]"
+                        >
+                            <UserPlus className="h-4 w-4" />
+                            Add Employee
+                        </button>
                     </div>
 
-                    {/* Modal Section */}
-
-                    {/* Add employee modal */}
-                    <AddModal
-                        open={showAddEmployeeModal}
-                        onClose={() => setShowAddEmployeeModal(false)}
-                        title="Add New Employee"
-                        description="Create a new employee record."
-                    >
-                        <AddEmployeeForm
-                            onCancel={() => setShowAddEmployeeModal(false)}
-                            onSuccess={() => setShowAddEmployeeModal(false)}
-                        />
-                    </AddModal>
-
-                    {/* Update employee modal 👈 */}
-                    {selectedEmployee && (
-                        <UpdateModal
-                            open={showUpdateEmployeeModal}
-                            onClose={() => {
-                                setShowUpdateEmployeeModal(false);
-                                setSelectedEmployee(null);
-                            }}
-                            title="Update Employee"
-                        >
-                            <UpdateEmployeeForm
-                                employee={selectedEmployee}
-                                onCancel={() => {
-                                    setShowUpdateEmployeeModal(false);
-                                    setSelectedEmployee(null);
-                                }}
-                                onSuccess={() => {
-                                    setShowUpdateEmployeeModal(false);
-                                    setSelectedEmployee(null);
-                                }}
-                            />
-                        </UpdateModal>
-                    )}
-                    
-
-                    {/* Delete Employee Modal */}
-
-                    {selectedEmployee && (
-                        <DeleteModal
-                            open={showDeleteEmployeeModal}
-                            onClose={() => {
-                                setDeleteEmployeeModal(false);
-                                setSelectedEmployee(null);
-                            }}
-                            onConfirm={() => {
-                                if (!selectedEmployee) return;
-
-                                router.delete(`/employees/destroy/${selectedEmployee.id}`, {
-                                    onSuccess: () => {
-                                        setDeleteEmployeeModal(false);
-                                        setSelectedEmployee(null);
-                                    },
-                                });
-                            }}
-                            title="Delete Employee"
-                        >
-                        </DeleteModal>
-                    )}
-
-        {/* ---------------------------------------------------------------------------------------------- */}
-
                     {/* Statistics */}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {/* Total */}
-                        <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#16241c]/10">
-                                <Users className="h-4.5 w-4.5" />
-                            </span>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {statCards.map((stat) => {
+                            const Icon = stat.icon;
 
-                            <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                                {stats.totalEmployees}
-                            </p>
+                            return (
+                                <div
+                                    key={stat.label}
+                                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-slate-500 dark:text-white/50">
+                                                {stat.label}
+                                            </p>
 
-                            <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                                Total employees
-                            </p>
-                        </div>
+                                            <p
+                                                className={`mt-2 text-2xl font-bold ${stat.valueColor}`}
+                                            >
+                                                {stat.value}
+                                            </p>
+                                        </div>
 
-                        {/* Active */}
-                        <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#22C55E]/10">
-                                <UserCheck className="h-4.5 w-4.5" />
-                            </span>
-
-                            <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                                {stats.activeEmployees}
-                            </p>
-
-                            <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                                Active
-                            </p>
-                        </div>
-
-                        {/* Terminated */}
-                        <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#14172B]/8">
-                                <UserMinus className="h-4.5 w-4.5" />
-                            </span>
-
-                            <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                                {stats.terminatedEmployees}
-                            </p>
-
-                            <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                                Terminated
-                            </p>
-                        </div>
-
-                        {/* On leave */}
-                        <div className="rounded-xl border border-[#14172B]/8 bg-white p-5 dark:border-white/10 dark:bg-white/5">
-                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
-                                <Clock className="h-4.5 w-4.5" />
-                            </span>
-
-                            <p className="mt-4 text-2xl font-semibold text-[#14172B] dark:text-white">
-                                {stats.onLeaveCount}
-                            </p>
-
-                            <p className="mt-0.5 text-xs text-[#14172B]/55 dark:text-white/55">
-                                On Leave
-                            </p>
-                        </div>
+                                        <div
+                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.iconBg}`}
+                                        >
+                                            <Icon
+                                                className={`h-5 w-5 ${stat.iconColor}`}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* Filters */}
-                    <div className="flex flex-wrap items-center gap-3">
-                        {/* Search */}
-                        <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5">
-                            <Search className="h-4 w-4 text-[#14172B]/40" />
+                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className="mb-4 flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-[#b98a2e]" />
 
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                placeholder="Search by name, email, or department..."
-                                className="w-full bg-transparent text-sm outline-none"
-                            />
+                            <h2 className="text-sm font-semibold text-[#16241c] dark:text-white">
+                                Filters
+                            </h2>
                         </div>
 
-                        {/* Department */}
-                        <select
-                            value={selectedDepartment ?? ''}
-                            onChange={handleDepartmentChange}
-                            className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
-                        >
-                            <option value="">All departments</option>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            {/* Search */}
+                            <div>
+                                <label className={labelClass}>Search</label>
 
-                            {departments.map((department) => (
-                                <option key={department} value={department}>
-                                    {department}
-                                </option>
-                            ))}
-                        </select>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-                        {/* Status */}
-                        <select
-                            value={selectedStatus ?? ''}
-                            onChange={handleStatusChange}
-                            className="rounded-lg border border-[#14172B]/10 bg-white px-3 py-2 text-sm text-[#14172B] dark:border-white/10 dark:bg-white/5 dark:text-white"
-                        >
-                            <option value="">All statuses</option>
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) =>
+                                            handleSearch(e.target.value)
+                                        }
+                                        placeholder="Search by name, email, or department..."
+                                        className={`${inputClass} pl-9`}
+                                    />
+                                </div>
+                            </div>
 
-                            {statuses.map((status) => (
-                                <option key={status} value={status}>
-                                    {status === 'active'
-                                        ? 'Active'
-                                        : status === 'terminated'
-                                        ? 'Terminated'
-                                        : status === 'on_leave'
-                                            ? 'On Leave'
-                                            : status}
-                                </option>
-                            ))}
-                        </select>
+                            {/* Department */}
+                            <div>
+                                <label className={labelClass}>
+                                    Department
+                                </label>
 
-                        {/* Clear */}
-                        {(search || selectedDepartment || selectedStatus) && (
-                            <button
-                                type="button"
-                                onClick={clearFilters}
-                                className="rounded-lg border border-[#14172B]/10 px-3 py-2 text-sm hover:bg-[#14172B]/5"
-                            >
-                                Clear
-                            </button>
+                                <select
+                                    value={selectedDepartment ?? ''}
+                                    onChange={handleDepartmentChange}
+                                    className={inputClass}
+                                >
+                                    <option value="">All Departments</option>
+
+                                    {departments.map((department) => (
+                                        <option
+                                            key={department}
+                                            value={department}
+                                        >
+                                            {department}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Status */}
+                            <div>
+                                <label className={labelClass}>Status</label>
+
+                                <select
+                                    value={selectedStatus ?? ''}
+                                    onChange={handleStatusChange}
+                                    className={inputClass}
+                                >
+                                    <option value="">All Statuses</option>
+
+                                    {statuses.map((status) => (
+                                        <option key={status} value={status}>
+                                            {statusLabels[status] ?? status}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {hasFilters && (
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                >
+                                    <X className="h-4 w-4" />
+                                    Clear Filters
+                                </button>
+                            </div>
                         )}
                     </div>
 
                     {/* Employee table */}
-                    <div className="overflow-hidden rounded-xl border border-[#14172B]/8 bg-white dark:border-white/10 dark:bg-white/5">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead>
-                                    <tr className="border-b border-[#14172B]/8 text-xs text-[#14172B]/45 dark:border-white/10 dark:text-white/45">
-                                        <th className="px-4 py-3 font-medium">Employee</th>
-                                        <th className="px-4 py-3 font-medium">Department</th>
-                                        <th className="px-4 py-3 font-medium">Position</th>
-                                        <th className="px-4 py-3 font-medium">Base Salary</th>
-                                        <th className="px-4 py-3 font-medium">Hired</th>
-                                        <th className="px-4 py-3 font-medium">Status</th>
-                                        <th className="px-4 py-3 text-right font-medium">Actions</th>
-                                    </tr>
-                                </thead>
+                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h2 className="text-base font-semibold text-[#16241c] dark:text-white">
+                                    Employee Records
+                                </h2>
 
-                                <tbody>
-                                    {employees.data.length > 0 ? (
-                                        employees.data.map((employee) => (
+                                <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
+                                    {employees.total} employee
+                                    {employees.total !== 1 ? 's' : ''} found
+                                </p>
+                            </div>
+                        </div>
+
+                        {employees.data.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[950px]">
+                                    <thead>
+                                        <tr className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                            <th className={`${th} text-left`}>
+                                                Employee
+                                            </th>
+                                            <th className={`${th} text-left`}>
+                                                Department
+                                            </th>
+                                            <th className={`${th} text-left`}>
+                                                Position
+                                            </th>
+
+
+                                            <th className={`${th} text-left`}>
+                                                Employee Type
+                                            </th>
+
+                                            <th className={`${th} text-right`}>
+                                                Base Salary
+                                            </th>
+                                            <th className={`${th} text-left`}>
+                                                Hired
+                                            </th>
+                                            <th className={`${th} text-center`}>
+                                                Status
+                                            </th>
+                                            <th className={`${th} text-center`}>
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                                        {employees.data.map((employee) => (
                                             <tr
                                                 key={employee.id}
-                                                className="border-b border-[#14172B]/6 last:border-0 dark:border-white/10"
+                                                className="transition hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                                             >
                                                 {/* Employee */}
-                                                <td className="px-4 py-3">
+                                                <td className="px-5 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16241c]/10 text-xs font-semibold">
-                                                            {initialsOf(employee.name)}
+                                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
+                                                            {initialsOf(
+                                                                employee.name,
+                                                            )}
                                                         </span>
 
                                                         <div>
-                                                            <p className="font-medium text-[#14172B] dark:text-white">
+                                                            <p className="font-medium text-[#16241c] dark:text-white">
                                                                 {employee.name}
                                                             </p>
 
-                                                            <p className="text-xs text-[#14172B]/45 dark:text-white/45">
+                                                            <p className="mt-1 text-xs text-slate-400">
                                                                 {employee.email}
                                                             </p>
                                                         </div>
@@ -463,101 +509,149 @@
                                                 </td>
 
                                                 {/* Department */}
-                                                <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
+                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
                                                     {employee.department}
                                                 </td>
 
                                                 {/* Position */}
-                                                <td className="px-4 py-3 text-[#14172B]/70 dark:text-white/70">
+                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
                                                     {employee.position}
                                                 </td>
 
+                                                    {/* Employment Type */}
+                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                    {employee.employment_types} 
+                                                </td>
+
                                                 {/* Salary */}
-                                                <td className="px-4 py-3">
-                                                    ₱{' '}
-                                                    {Number(employee.salary).toLocaleString('en-PH', {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </td>
-
-                                                {/* Hire date */}
-                                                <td className="px-4 py-3 text-[#14172B]/60 dark:text-white/60">
-                                                    {employee.hire_date}
-                                                </td>
-
-                                                {/* Status */}
-                                                <td className="px-4 py-3">
-                                                    <span
-                                                        className={
-                                                            employee.status === 'active'
-                                                                ? 'rounded-full bg-[#22C55E]/10 px-2.5 py-1 text-xs font-medium text-[#16A34A]'
-                                                                : employee.status === 'terminated'
-                                                                ? 'rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-600'
-                                                                : 'rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-600'
-                                                        }
-                                                    >
-                                                        {employee.status === 'active'
-                                                            ? 'Active'
-                                                            : employee.status === 'terminated'
-                                                            ? 'Terminated'
-                                                            : 'On Leave'}
+                                                <td className="px-5 py-4 text-right">
+                                                    <span className="text-sm font-semibold text-[#16241c] dark:text-white">
+                                                        {formatCurrency(
+                                                            employee.salary,
+                                                        )}
                                                     </span>
                                                 </td>
 
-                                                {/* Actions */}
-                                                <td className="px-4 py-3">
-                                                    <div className="flex justify-end gap-1">
+                                                {/* Hire date */}
+                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                    {formatDate(
+                                                        employee.hire_date,
+                                                    )}
+                                                </td>
+
+                                                {/* Status */}
+                                                <td className="px-5 py-4 text-center">
+                                                    {employee.status ===
+                                                    'active' ? (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                                            Active
+                                                        </span>
+                                                    ) : employee.status ===
+                                                      'terminated' ? (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400">
+                                                            <UserMinus className="h-3.5 w-3.5" />
+                                                            Terminated
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+                                                            <Clock3 className="h-3.5 w-3.5" />
+                                                            On Leave
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Action */}
+                                                <td className="px-5 py-4 text-center">
+                                                    <div className="flex items-center justify-center gap-1">
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleEdit(employee)} // 
-                                                            className="rounded-md p-1.5 hover:bg-[#16241c]/10"
+                                                            title="Edit employee"
+                                                            aria-label={`Edit ${employee.name}`}
+                                                            onClick={() =>
+                                                                handleEdit(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                            className={`${actionButton} hover:text-[#b98a2e]`}
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </button>
 
                                                         <button
                                                             type="button"
-                                                            onClick={() => {
-                                                                setSelectedEmployee(employee);
-                                                                setDeleteEmployeeModal(true);
-                                                            }}
-                                                            className="rounded-md p-1.5 text-red-500 hover:bg-red-50"
+                                                            title="Delete employee"
+                                                            aria-label={`Delete ${employee.name}`}
+                                                            onClick={() =>
+                                                                handleDeleteClick(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-red-500/10"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td
-                                                colSpan={7}
-                                                className="px-4 py-10 text-center text-sm text-[#14172B]/50"
-                                            >
-                                                No employees found.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10">
+                                    <Users className="h-7 w-7 text-slate-400 dark:text-white/40" />
+                                </div>
+
+                                <h3 className="mt-4 text-base font-semibold text-[#16241c] dark:text-white">
+                                    No employees found
+                                </h3>
+
+                                <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-white/40">
+                                    {hasFilters
+                                        ? 'Try changing your filters or search keywords.'
+                                        : 'Add your first employee to get started.'}
+                                </p>
+
+                                {hasFilters ? (
+                                    <button
+                                        type="button"
+                                        onClick={clearFilters}
+                                        className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
+                                    >
+                                        <X className="h-4 w-4" />
+                                        Clear Filters
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowAddEmployeeModal(true)
+                                        }
+                                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#22362a]"
+                                    >
+                                        <UserPlus className="h-4 w-4" />
+                                        Add Employee
+                                    </button>
+                                )}
+                            </div>
+                        )}
 
                         {/* Pagination */}
                         {employees.last_page > 1 && (
-                            <div className="flex flex-col gap-3 border-t border-[#14172B]/8 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
-                                <p className="text-sm text-[#14172B]/50 dark:text-white/50">
+                            <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-3 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                                <p className="text-sm text-slate-500 dark:text-white/50">
                                     Showing{' '}
-                                    <span className="font-medium text-[#14172B] dark:text-white">
+                                    <span className="font-medium text-[#16241c] dark:text-white">
                                         {employees.from ?? 0}
                                     </span>{' '}
                                     to{' '}
-                                    <span className="font-medium text-[#14172B] dark:text-white">
+                                    <span className="font-medium text-[#16241c] dark:text-white">
                                         {employees.to ?? 0}
                                     </span>{' '}
                                     of{' '}
-                                    <span className="font-medium text-[#14172B] dark:text-white">
+                                    <span className="font-medium text-[#16241c] dark:text-white">
                                         {employees.total}
                                     </span>{' '}
                                     employees
@@ -570,10 +664,10 @@
                                             type="button"
                                             disabled={!link.url}
                                             onClick={() => goToPage(link.url)}
-                                            className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                                            className={`rounded-lg px-3 py-1.5 text-sm transition ${
                                                 link.active
-                                                    ? 'bg-[#16241c] text-white'
-                                                    : 'text-[#14172B]/60 hover:bg-[#14172B]/5 dark:text-white/60 dark:hover:bg-white/10'
+                                                    ? 'bg-[#16241c] text-white dark:bg-[#b98a2e] dark:text-[#16241c]'
+                                                    : 'text-slate-600 hover:bg-slate-100 dark:text-white/60 dark:hover:bg-white/10'
                                             } ${
                                                 !link.url
                                                     ? 'cursor-not-allowed opacity-40'
@@ -589,6 +683,56 @@
                         )}
                     </div>
                 </div>
-            </AppLayout>
-        );
-    }
+            </div>
+
+            {/* Add Employee Modal */}
+            <AddModal
+                open={showAddEmployeeModal}
+                onClose={() => setShowAddEmployeeModal(false)}
+                title="Add New Employee"
+                description="Create a new employee record."
+            >
+                <AddEmployeeForm
+                    onCancel={() => setShowAddEmployeeModal(false)}
+                    onSuccess={() => setShowAddEmployeeModal(false)}
+                />
+            </AddModal>
+
+            {/* Update Employee Modal */}
+            {selectedEmployee && showUpdateEmployeeModal && (
+                <UpdateModal
+                    open={showUpdateEmployeeModal}
+                    onClose={() => {
+                        setShowUpdateEmployeeModal(false);
+                        setSelectedEmployee(null);
+                    }}
+                    title="Update Employee"
+                >
+                    <UpdateEmployeeForm
+                        employee={selectedEmployee}
+                        onCancel={() => {
+                            setShowUpdateEmployeeModal(false);
+                            setSelectedEmployee(null);
+                        }}
+                        onSuccess={() => {
+                            setShowUpdateEmployeeModal(false);
+                            setSelectedEmployee(null);
+                        }}
+                    />
+                </UpdateModal>
+            )}
+
+            {/* Delete Employee Modal */}
+            {selectedEmployee && showDeleteEmployeeModal && (
+                <DeleteModal
+                    open
+                    processing={isDeleting}
+                    onClose={handleCloseDeleteModal}
+                    onConfirm={handleDeleteEmployee}
+                    title="Delete Employee"
+                    description={`Are you sure you want to delete ${selectedEmployee.name}? This action cannot be undone.`}
+                />
+            )}
+        </AppLayout>
+    );
+}

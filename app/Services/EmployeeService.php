@@ -56,6 +56,7 @@ class EmployeeService
                 'salary' => (float) ($salaryStructure->base_salary ?? 0),
                 'status' => $employee->status,
                 'hire_date' => $employee->hire_date,
+                'employment_type' => $employee->employment_type,
             ];
         });
 
@@ -80,6 +81,15 @@ class EmployeeService
             ->distinct()
             ->orderBy('status')
             ->pluck('status');
+    }
+
+    public function getEmploymentTypes()
+    {
+        return Employee::query()
+            ->whereNotNull('employment_type')
+            ->distinct()
+            ->orderBy('employment_type')
+            ->pluck('employment_type');
     }
 
     public function getStats()
