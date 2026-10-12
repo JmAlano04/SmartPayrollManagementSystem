@@ -22,8 +22,8 @@ class DashboardsController extends Controller
                 // Total number of employees
                 'employees' => Employee::count(),
 
-                // Total pending payroll runs
-                'payrollRuns' => PayrollRun::where('status', 'pending')
+                // Total draft payroll runs
+                'payrollRuns' => PayrollRun::where('status', 'draft')
                     ->count(),
 
                 // Total number of payslips

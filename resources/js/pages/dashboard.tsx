@@ -7,8 +7,6 @@ import AddModal from '@/components/AddModal';
 import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
 
 import {
-    ArrowDownRight,
-    ArrowUpRight,
     Banknote,
     CheckCircle2,
     ChevronRight,
@@ -203,8 +201,6 @@ export default function Dashboard({
         {
             label: 'Total Payroll',
             value: formatCurrency(stats?.totalPayroll ?? 0),
-            delta: '4.2%',
-            trend: 'down',
             icon: Banknote,
             iconBg: 'bg-[#b98a2e]/10',
             iconColor: 'text-[#b98a2e]',
@@ -213,18 +209,14 @@ export default function Dashboard({
         {
             label: 'Employees',
             value: stats?.employees ?? 0,
-            delta: '2.1%',
-            trend: 'up',
             icon: Users,
             iconBg: 'bg-slate-100 dark:bg-white/10',
             iconColor: 'text-[#16241c] dark:text-white',
             valueSize: 'text-2xl',
         },
         {
-            label: 'Pending Approvals',
+            label: 'Draft Payroll Runs',
             value: stats?.payrollRuns ?? 0,
-            delta: '1.3%',
-            trend: 'down',
             icon: Clock3,
             iconBg: 'bg-amber-50 dark:bg-amber-500/10',
             iconColor: 'text-amber-600',
@@ -233,8 +225,6 @@ export default function Dashboard({
         {
             label: 'Payslips',
             value: stats?.payslips ?? 0,
-            delta: '0.8%',
-            trend: 'down',
             icon: FileText,
             iconBg: 'bg-green-50 dark:bg-green-500/10',
             iconColor: 'text-green-600',
@@ -315,20 +305,7 @@ export default function Dashboard({
                                                 {stat.value}
                                             </p>
 
-                                            <span
-                                                className={`mt-1 inline-flex items-center gap-0.5 text-xs font-medium ${
-                                                    stat.trend === 'up'
-                                                        ? 'text-green-600'
-                                                        : 'text-amber-600'
-                                                }`}
-                                            >
-                                                {stat.trend === 'up' ? (
-                                                    <ArrowUpRight className="h-3 w-3" />
-                                                ) : (
-                                                    <ArrowDownRight className="h-3 w-3" />
-                                                )}
-                                                {stat.delta}
-                                            </span>
+
                                         </div>
 
                                         <div
