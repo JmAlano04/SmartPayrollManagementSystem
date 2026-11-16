@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { type FormEvent, useState } from 'react';
 
 import AddModal from '@/components/AddModal';
 import DeleteModal from '@/components/DeleteModal';
@@ -9,10 +9,10 @@ import UpdateModal from '@/components/UpdateModal';
 
 import {
     CalendarOff,
-    CheckCircle2,
-    Clock3,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
     Download,
-    Filter,
     Pencil,
     Plus,
     Search,
@@ -20,7 +20,6 @@ import {
     UserCheck,
     UserX,
     X,
-    XCircle,
 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,6 +33,7 @@ type AttendanceStatus = 'present' | 'late' | 'absent' | 'on_leave';
 
 type AttendanceRecord = {
     id: number;
+    employee_id: number;
     employee_name: string;
     employee_code: string;
     department: string;
@@ -45,47 +45,76 @@ type AttendanceRecord = {
     remarks: string | null;
 };
 
-type FormData = Omit<AttendanceRecord, 'id' | 'hours_worked'>;
+type EmployeeOption = {
+    id: number;
+    name: string;
+    code: string;
+    department: string | null;
+};
 
-/* -------------------------------------------------------------------------
-| HARDCODED DATA (palitan na lang ng props galing backend later)
-------------------------------------------------------------------------- */
+type FormData = Pick<AttendanceRecord, 'employee_id' | 'date' | 'time_in' | 'time_out' | 'status' | 'remarks'>;
 
-const DEPARTMENTS = [
-    'Engineering',
-    'Finance',
-    'Human Resources',
-    'Marketing',
-    'Operations',
-];
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
 
-const INITIAL_RECORDS: AttendanceRecord[] = [
-    { id: 1, employee_name: 'Juan Dela Cruz', employee_code: 'EMP-001', department: 'Engineering', date: '2026-10-12', time_in: '07:56', time_out: '17:04', hours_worked: 8.13, status: 'present', remarks: null },
-    { id: 2, employee_name: 'Maria Santos', employee_code: 'EMP-002', department: 'Human Resources', date: '2026-10-12', time_in: '08:02', time_out: '17:00', hours_worked: 7.97, status: 'present', remarks: null },
-    { id: 3, employee_name: 'Jose Reyes', employee_code: 'EMP-003', department: 'Finance', date: '2026-10-12', time_in: '08:41', time_out: '17:30', hours_worked: 7.82, status: 'late', remarks: 'Heavy traffic' },
-    { id: 4, employee_name: 'Ana Villanueva', employee_code: 'EMP-004', department: 'Marketing', date: '2026-10-12', time_in: null, time_out: null, hours_worked: 0, status: 'absent', remarks: 'No call, no show' },
-    { id: 5, employee_name: 'Mark Bautista', employee_code: 'EMP-005', department: 'Engineering', date: '2026-10-12', time_in: '08:00', time_out: '17:00', hours_worked: 8, status: 'present', remarks: null },
-    { id: 6, employee_name: 'Liza Mendoza', employee_code: 'EMP-006', department: 'Operations', date: '2026-10-12', time_in: null, time_out: null, hours_worked: 0, status: 'on_leave', remarks: 'Vacation leave' },
-    { id: 7, employee_name: 'Carlo Ramirez', employee_code: 'EMP-007', department: 'Finance', date: '2026-10-12', time_in: '08:55', time_out: '18:00', hours_worked: 8.08, status: 'late', remarks: null },
-    { id: 8, employee_name: 'Grace Aquino', employee_code: 'EMP-008', department: 'Human Resources', date: '2026-10-12', time_in: '07:48', time_out: '16:52', hours_worked: 8.07, status: 'present', remarks: null },
-    { id: 9, employee_name: 'Juan Dela Cruz', employee_code: 'EMP-001', department: 'Engineering', date: '2026-10-09', time_in: '08:03', time_out: '17:10', hours_worked: 8.12, status: 'present', remarks: null },
-    { id: 10, employee_name: 'Maria Santos', employee_code: 'EMP-002', department: 'Human Resources', date: '2026-10-09', time_in: '08:00', time_out: '17:00', hours_worked: 8, status: 'present', remarks: null },
-    { id: 11, employee_name: 'Jose Reyes', employee_code: 'EMP-003', department: 'Finance', date: '2026-10-09', time_in: null, time_out: null, hours_worked: 0, status: 'absent', remarks: 'Sick, no medical cert' },
-    { id: 12, employee_name: 'Ana Villanueva', employee_code: 'EMP-004', department: 'Marketing', date: '2026-10-09', time_in: '08:32', time_out: '17:00', hours_worked: 7.47, status: 'late', remarks: null },
-];
+type AttendancePagination = {
+    data: AttendanceRecord[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: PaginationLink[];
+};
 
-/* Helpers */
+type Stats = Record<AttendanceStatus, number>;
+
+type Filters = {
+    search: string;
+    status: string;
+    department: string;
+    date: string;
+};
+
+type AttendancePageProps = {
+    records: AttendancePagination;
+    stats: Stats;
+    totalHours: number;
+    employees: EmployeeOption[];
+    departments: string[];
+    filters: Filters;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
 function formatDate(date: string) {
     if (!date) {
         return '—';
     }
 
-    return new Date(date).toLocaleDateString('en-US', {
+    const [year, month, day] = date.split('-').map(Number);
+
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
     });
+}
+
+function todayDate() {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${today.getFullYear()}-${month}-${day}`;
 }
 
 function formatTime(time: string | null) {
@@ -107,27 +136,11 @@ function formatHours(hours: number) {
 function initialsOf(name: string) {
     return name
         .split(' ')
+        .filter(Boolean)
         .map((n) => n[0])
         .slice(0, 2)
         .join('')
         .toUpperCase();
-}
-
-// Hours between time in and time out, minus 1 hour break for long shifts.
-function calcHours(timeIn: string | null, timeOut: string | null) {
-    if (!timeIn || !timeOut) {
-        return 0;
-    }
-
-    const [inH, inM] = timeIn.split(':').map(Number);
-    const [outH, outM] = timeOut.split(':').map(Number);
-    const diff = (outH * 60 + outM - (inH * 60 + inM)) / 60;
-
-    if (diff <= 0) {
-        return 0;
-    }
-
-    return Math.round((diff > 5 ? diff - 1 : diff) * 100) / 100;
 }
 
 const statusLabels: Record<AttendanceStatus, string> = {
@@ -137,299 +150,322 @@ const statusLabels: Record<AttendanceStatus, string> = {
     on_leave: 'On Leave',
 };
 
-/* Shared class names */
+function getStatusClass(status: AttendanceStatus) {
+    switch (status) {
+        case 'present':
+            return 'bg-[#C6F432]/25 text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]';
+
+        case 'late':
+            return 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300';
+
+        case 'absent':
+            return 'bg-red-100 text-red-700 dark:bg-[#FF6B5B]/10 dark:text-[#FF8A7C]';
+
+        case 'on_leave':
+            return 'bg-indigo-100 text-indigo-700 dark:bg-[#9AA3FF]/10 dark:text-[#9AA3FF]';
+
+        default:
+            return 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white/60';
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Shared class names
+|--------------------------------------------------------------------------
+*/
 
 const inputClass =
-    'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b98a2e] focus:ring-2 focus:ring-[#b98a2e]/20 dark:border-white/10 dark:bg-[#0f1712] dark:text-white dark:placeholder:text-white/30';
+    'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30';
 
 const labelClass =
     'mb-2 block text-xs font-medium text-slate-600 dark:text-white/60';
 
 const th =
-    'px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50';
+    "px-5 py-4 font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50";
 
-const pillBase =
-    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium';
+const outlineButton =
+    'inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white';
+
+const primaryButton =
+    'inline-flex items-center justify-center gap-2 rounded-full bg-[#C6F432] px-5 py-2.5 text-sm font-semibold text-[#0B0F1A] transition hover:bg-[#D6FF55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-[#0B0F1A]';
 
 function StatusPill({ status }: { status: AttendanceStatus }) {
-    if (status === 'present') {
-        return (
-            <span className={`${pillBase} bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400`}>
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Present
-            </span>
-        );
-    }
-
-    if (status === 'late') {
-        return (
-            <span className={`${pillBase} bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400`}>
-                <Clock3 className="h-3.5 w-3.5" />
-                Late
-            </span>
-        );
-    }
-
-    if (status === 'absent') {
-        return (
-            <span className={`${pillBase} bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400`}>
-                <XCircle className="h-3.5 w-3.5" />
-                Absent
-            </span>
-        );
-    }
-
     return (
-        <span className={`${pillBase} bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400`}>
-            <CalendarOff className="h-3.5 w-3.5" />
-            On Leave
+        <span
+            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(status)}`}
+        >
+            {statusLabels[status]}
         </span>
     );
 }
 
-/* Form (used by both Add and Update modals) */
-
-const emptyForm: FormData = {
-    employee_name: '',
-    employee_code: '',
-    department: DEPARTMENTS[0],
-    date: '2026-10-12',
-    time_in: '08:00',
-    time_out: '17:00',
-    status: 'present',
-    remarks: '',
-};
+/*
+|--------------------------------------------------------------------------
+| Form (used by both Add and Update modals)
+|--------------------------------------------------------------------------
+*/
 
 function AttendanceForm({
     initial,
+    employees,
     submitLabel,
     onCancel,
-    onSubmit,
 }: {
-    initial?: FormData;
+    initial?: AttendanceRecord;
+    employees: EmployeeOption[];
     submitLabel: string;
     onCancel: () => void;
-    onSubmit: (data: FormData) => void;
 }) {
-    const [data, setData] = useState<FormData>(initial ?? emptyForm);
+    const form = useForm<FormData>({
+        employee_id: initial?.employee_id ?? employees[0]?.id ?? 0,
+        date: initial?.date ?? todayDate(),
+        time_in: initial?.time_in ?? '08:00',
+        time_out: initial?.time_out ?? '17:00',
+        status: initial?.status ?? 'present',
+        remarks: initial?.remarks ?? '',
+    });
 
-    const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
-        setData((current) => ({ ...current, [key]: value }));
+    const noTime = form.data.status === 'absent' || form.data.status === 'on_leave';
 
-    const noTime = data.status === 'absent' || data.status === 'on_leave';
+    const submit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        form.transform((data) => {
+            const hasNoTime = data.status === 'absent' || data.status === 'on_leave';
+
+            return {
+                ...data,
+                time_in: hasNoTime ? null : data.time_in || null,
+                time_out: hasNoTime ? null : data.time_out || null,
+                remarks: data.remarks?.trim() || null,
+            };
+        });
+
+        const options = { onSuccess: onCancel };
+        if (initial) {
+            form.put(`/attendance/${initial.id}`, options);
+        } else {
+            form.post('/attendance', options);
+        }
+    };
 
     return (
-        <form
-            onSubmit={(e) => {
-                e.preventDefault();
-                onSubmit({
-                    ...data,
-                    time_in: noTime ? null : data.time_in,
-                    time_out: noTime ? null : data.time_out,
-                    remarks: data.remarks || null,
-                });
-            }}
-            className="space-y-4"
-        >
+        <form onSubmit={submit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                    <label className={labelClass}>Employee Name</label>
-                    <input required value={data.employee_name} onChange={(e) => set('employee_name', e.target.value)} placeholder="Juan Dela Cruz" className={inputClass} />
-                </div>
-
-                <div>
-                    <label className={labelClass}>Employee ID</label>
-                    <input required value={data.employee_code} onChange={(e) => set('employee_code', e.target.value)} placeholder="EMP-001" className={inputClass} />
+                <div className="sm:col-span-2">
+                    <label className={labelClass}>Employee</label>
+                    <select
+                        required
+                        value={form.data.employee_id}
+                        onChange={(event) => form.setData('employee_id', Number(event.target.value))}
+                        className={inputClass}
+                        disabled={employees.length === 0}
+                    >
+                        {employees.length === 0 ? (
+                            <option value={0}>No employees available</option>
+                        ) : (
+                            employees.map((employee) => (
+                                <option key={employee.id} value={employee.id}>
+                                    {employee.name} ({employee.code}){employee.department ? ` — ${employee.department}` : ''}
+                                </option>
+                            ))
+                        )}
+                    </select>
+                    {form.errors.employee_id && <p className="mt-1 text-xs text-red-500">{form.errors.employee_id}</p>}
                 </div>
 
                 <div>
                     <label className={labelClass}>Department</label>
-                    <select value={data.department} onChange={(e) => set('department', e.target.value)} className={inputClass}>
-                        {DEPARTMENTS.map((item) => (
-                            <option key={item} value={item}>{item}</option>
-                        ))}
-                    </select>
+                    <input
+                        readOnly
+                        value={employees.find((employee) => employee.id === form.data.employee_id)?.department ?? '—'}
+                        className={inputClass}
+                    />
                 </div>
 
                 <div>
                     <label className={labelClass}>Date</label>
-                    <input required type="date" value={data.date} onChange={(e) => set('date', e.target.value)} className={inputClass} />
+                    <input required type="date" value={form.data.date} onChange={(event) => form.setData('date', event.target.value)} className={inputClass} />
+                    {form.errors.date && <p className="mt-1 text-xs text-red-500">{form.errors.date}</p>}
                 </div>
 
                 <div>
                     <label className={labelClass}>Status</label>
-                    <select value={data.status} onChange={(e) => set('status', e.target.value as AttendanceStatus)} className={inputClass}>
+                    <select value={form.data.status} onChange={(event) => form.setData('status', event.target.value as AttendanceStatus)} className={inputClass}>
                         {(Object.keys(statusLabels) as AttendanceStatus[]).map((key) => (
                             <option key={key} value={key}>{statusLabels[key]}</option>
                         ))}
                     </select>
+                    {form.errors.status && <p className="mt-1 text-xs text-red-500">{form.errors.status}</p>}
                 </div>
 
                 <div className="hidden sm:block" />
 
                 <div>
                     <label className={labelClass}>Time In</label>
-                    <input type="time" disabled={noTime} value={data.time_in ?? ''} onChange={(e) => set('time_in', e.target.value)} className={`${inputClass} disabled:opacity-40`} />
+                    <input type="time" disabled={noTime} value={form.data.time_in ?? ''} onChange={(event) => form.setData('time_in', event.target.value)} className={inputClass} />
+                    {form.errors.time_in && <p className="mt-1 text-xs text-red-500">{form.errors.time_in}</p>}
                 </div>
 
                 <div>
                     <label className={labelClass}>Time Out</label>
-                    <input type="time" disabled={noTime} value={data.time_out ?? ''} onChange={(e) => set('time_out', e.target.value)} className={`${inputClass} disabled:opacity-40`} />
+                    <input type="time" disabled={noTime} value={form.data.time_out ?? ''} onChange={(event) => form.setData('time_out', event.target.value)} className={inputClass} />
+                    {form.errors.time_out && <p className="mt-1 text-xs text-red-500">{form.errors.time_out}</p>}
                 </div>
             </div>
 
             <div>
                 <label className={labelClass}>Remarks</label>
-                <input value={data.remarks ?? ''} onChange={(e) => set('remarks', e.target.value)} placeholder="Optional" className={inputClass} />
+                <input value={form.data.remarks ?? ''} onChange={(event) => form.setData('remarks', event.target.value)} placeholder="Optional" className={inputClass} />
+                {form.errors.remarks && <p className="mt-1 text-xs text-red-500">{form.errors.remarks}</p>}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5">
+                <button type="button" onClick={onCancel} className={outlineButton}>
                     Cancel
                 </button>
 
-                <button type="submit" className="rounded-lg bg-[#16241c] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#22362a] focus:outline-none focus:ring-2 focus:ring-[#b98a2e] focus:ring-offset-2">
-                    {submitLabel}
+                <button type="submit" disabled={form.processing || employees.length === 0} className={primaryButton}>
+                    {form.processing ? 'Saving…' : submitLabel}
                 </button>
             </div>
         </form>
     );
 }
 
-/* Page */
+/*
+|--------------------------------------------------------------------------
+| Page
+|--------------------------------------------------------------------------
+*/
 
-export default function Attendance() {
-    const [records, setRecords] = useState<AttendanceRecord[]>(INITIAL_RECORDS);
+export default function Attendance({ records, stats, totalHours, employees, departments, filters }: AttendancePageProps) {
+    const [search, setSearch] = useState(filters.search ?? '');
 
-    const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('');
-    const [department, setDepartment] = useState('');
-    const [date, setDate] = useState('');
+    const status = filters.status ?? '';
+    const department = filters.department ?? '';
+    const date = filters.date ?? '';
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
     const [recordToDelete, setRecordToDelete] = useState<AttendanceRecord | null>(null);
-
-    const stats = useMemo(
-        () => ({
-            present: records.filter((r) => r.status === 'present').length,
-            late: records.filter((r) => r.status === 'late').length,
-            absent: records.filter((r) => r.status === 'absent').length,
-            on_leave: records.filter((r) => r.status === 'on_leave').length,
-        }),
-        [records],
-    );
-
-    const filteredRecords = useMemo(() => {
-        const searchTerm = search.trim().toLowerCase();
-
-        return records
-            .filter((record) => {
-                const matchesSearch =
-                    searchTerm === '' ||
-                    record.employee_name.toLowerCase().includes(searchTerm) ||
-                    record.employee_code.toLowerCase().includes(searchTerm) ||
-                    record.department.toLowerCase().includes(searchTerm) ||
-                    String(record.remarks ?? '').toLowerCase().includes(searchTerm);
-
-                return (
-                    matchesSearch &&
-                    (status === '' || record.status === status) &&
-                    (department === '' || record.department === department) &&
-                    (date === '' || record.date === date)
-                );
-            })
-            .sort((a, b) => b.date.localeCompare(a.date) || a.id - b.id);
-    }, [records, search, status, department, date]);
-
-    const totalHours = filteredRecords.reduce((total, r) => total + r.hours_worked, 0);
+    const deleteForm = useForm({});
 
     const hasFilters = search !== '' || status !== '' || department !== '' || date !== '';
 
+    /* Filters (handled by Laravel, 10 records per page) */
+
+    const visit = (next: Partial<Filters>) => {
+        const merged = { search, status, department, date, ...next };
+
+        router.get(
+            '/attendance',
+            {
+                search: merged.search || undefined,
+                status: merged.status || undefined,
+                department: merged.department || undefined,
+                date: merged.date || undefined,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
+
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        visit({ search: value });
+    };
+
     const clearFilters = () => {
         setSearch('');
-        setStatus('');
-        setDepartment('');
-        setDate('');
+        router.get('/attendance', {}, { preserveState: true, preserveScroll: true, replace: true });
     };
 
-    /* CRUD (local state lang muna) */
+    /* Pagination */
 
-    const handleAdd = (data: FormData) => {
-        const nextId = Math.max(0, ...records.map((r) => r.id)) + 1;
+    const goToPage = (url: string | null) => {
+        if (!url) return;
 
-        setRecords((current) => [
-            ...current,
-            { ...data, id: nextId, hours_worked: calcHours(data.time_in, data.time_out) },
-        ]);
-        setShowAddModal(false);
-    };
-
-    const handleUpdate = (data: FormData) => {
-        if (!selectedRecord) return;
-
-        setRecords((current) =>
-            current.map((r) =>
-                r.id === selectedRecord.id
-                    ? { ...r, ...data, hours_worked: calcHours(data.time_in, data.time_out) }
-                    : r,
-            ),
-        );
-        setSelectedRecord(null);
+        router.get(url, {}, { preserveState: true, preserveScroll: true });
     };
 
     const handleDelete = () => {
         if (!recordToDelete) return;
 
-        setRecords((current) => current.filter((r) => r.id !== recordToDelete.id));
-        setRecordToDelete(null);
+        deleteForm.delete(`/attendance/${recordToDelete.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setRecordToDelete(null),
+        });
     };
 
-    /* Export CSV (client-side) */
+    /* Export CSV (all records matching the current filters, via Laravel) */
 
     const handleExport = () => {
-        const header = ['Employee', 'ID', 'Department', 'Date', 'Time In', 'Time Out', 'Hours', 'Status', 'Remarks'];
-        const rows = filteredRecords.map((r) => [
-            r.employee_name,
-            r.employee_code,
-            r.department,
-            r.date,
-            r.time_in ?? '',
-            r.time_out ?? '',
-            r.hours_worked,
-            statusLabels[r.status],
-            r.remarks ?? '',
-        ]);
+        const params = new URLSearchParams();
 
-        const csv = [header, ...rows]
-            .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-            .join('\n');
+        if (search) params.set('search', search);
+        if (status) params.set('status', status);
+        if (department) params.set('department', department);
+        if (date) params.set('date', date);
 
-        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'attendance.csv';
-        link.click();
-        URL.revokeObjectURL(url);
+        const queryString = params.toString();
+
+        window.location.href = `/attendance/export${queryString ? `?${queryString}` : ''}`;
     };
 
     const statCards = [
-        { label: 'Present', value: stats.present, icon: UserCheck, valueColor: 'text-green-600', iconBg: 'bg-green-50 dark:bg-green-500/10', iconColor: 'text-green-600' },
-        { label: 'Late', value: stats.late, icon: Clock3, valueColor: 'text-amber-600', iconBg: 'bg-amber-50 dark:bg-amber-500/10', iconColor: 'text-amber-600' },
-        { label: 'Absent', value: stats.absent, icon: UserX, valueColor: 'text-red-600', iconBg: 'bg-red-50 dark:bg-red-500/10', iconColor: 'text-red-600' },
-        { label: 'On Leave', value: stats.on_leave, icon: CalendarOff, valueColor: 'text-[#16241c] dark:text-white', iconBg: 'bg-slate-100 dark:bg-white/10', iconColor: 'text-[#16241c] dark:text-white' },
+        {
+            label: 'Present',
+            value: stats.present,
+            icon: UserCheck,
+            valueColor: 'text-[#4D6B00] dark:text-[#C6F432]',
+            iconBg: 'bg-[#C6F432]/25 dark:bg-[#C6F432]/10',
+            iconColor: 'text-[#4D6B00] dark:text-[#C6F432]',
+        },
+        {
+            label: 'Late',
+            value: stats.late,
+            icon: Clock,
+            valueColor: 'text-amber-600 dark:text-amber-300',
+            iconBg: 'bg-amber-100 dark:bg-amber-400/10',
+            iconColor: 'text-amber-600 dark:text-amber-300',
+        },
+        {
+            label: 'Absent',
+            value: stats.absent,
+            icon: UserX,
+            valueColor: 'text-red-600 dark:text-[#FF8A7C]',
+            iconBg: 'bg-red-100 dark:bg-[#FF6B5B]/10',
+            iconColor: 'text-red-600 dark:text-[#FF8A7C]',
+        },
+        {
+            label: 'On Leave',
+            value: stats.on_leave,
+            icon: CalendarOff,
+            valueColor: 'text-[#0B0F1A] dark:text-white',
+            iconBg: 'bg-slate-100 dark:bg-white/10',
+            iconColor: 'text-[#0B0F1A] dark:text-white',
+        },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Attendance" />
+            <Head title="Attendance">
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link
+                    href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,500,600,700|jetbrains-mono:400,500"
+                    rel="stylesheet"
+                />
+            </Head>
 
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0f1712]">
-                <div className="mx-auto max-w-7xl space-y-6 p-6">
-                    {/* Header */}
+            <div className="dark min-h-full bg-[#0B0F1A] p-4 font-['Bricolage_Grotesque'] text-white md:p-6">
+                <div className="mx-auto max-w-7xl space-y-6">
+                    {/* =====================================================
+                        HEADER
+                    ====================================================== */}
+
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#16241c] dark:text-white">
+                            <h1 className="text-2xl font-bold text-[#0B0F1A] dark:text-white">
                                 Attendance
                             </h1>
 
@@ -438,46 +474,44 @@ export default function Attendance() {
                             </p>
                         </div>
 
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <button
-                                type="button"
-                                onClick={handleExport}
-                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#b98a2e] focus:ring-offset-2 dark:border-white/10 dark:bg-transparent dark:text-white/80 dark:hover:bg-white/5 dark:focus:ring-offset-[#0f1712]"
-                            >
+                        <div className="flex flex-wrap gap-2">
+                            <button type="button" onClick={handleExport} className={outlineButton}>
                                 <Download className="h-4 w-4" />
                                 Export
                             </button>
 
-                            <button
-                                type="button"
-                                onClick={() => setShowAddModal(true)}
-                                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#16241c] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#22362a] focus:outline-none focus:ring-2 focus:ring-[#b98a2e] focus:ring-offset-2 dark:focus:ring-offset-[#0f1712]"
-                            >
+                            <button type="button" onClick={() => setShowAddModal(true)} className={primaryButton}>
                                 <Plus className="h-4 w-4" />
                                 Add Attendance
                             </button>
                         </div>
                     </div>
 
-                    {/* Statistics */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {/* =====================================================
+                        STAT CARDS
+                    ====================================================== */}
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         {statCards.map((stat) => {
                             const Icon = stat.icon;
 
                             return (
-                                <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                                <div
+                                    key={stat.label}
+                                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]"
+                                >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-slate-500 dark:text-white/50">
+                                            <p className="text-sm text-slate-500 dark:text-white/50">
                                                 {stat.label}
                                             </p>
 
-                                            <p className={`mt-2 text-2xl font-bold ${stat.valueColor}`}>
+                                            <h2 className={`mt-2 font-['JetBrains_Mono'] text-2xl font-medium ${stat.valueColor}`}>
                                                 {stat.value}
-                                            </p>
+                                            </h2>
                                         </div>
 
-                                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.iconBg}`}>
+                                        <div className={`rounded-xl p-3 ${stat.iconBg}`}>
                                             <Icon className={`h-5 w-5 ${stat.iconColor}`} />
                                         </div>
                                     </div>
@@ -486,101 +520,111 @@ export default function Attendance() {
                         })}
                     </div>
 
-                    {/* Filters */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
-                        <div className="mb-4 flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-[#b98a2e]" />
+                    {/* =====================================================
+                        FILTERS
+                    ====================================================== */}
 
-                            <h2 className="text-sm font-semibold text-[#16241c] dark:text-white">
-                                Filters
-                            </h2>
-                        </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#121829]">
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+                            {/* Search */}
+                            <div className="relative md:col-span-4">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <div>
-                                <label className={labelClass}>Search</label>
-
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-
-                                    <input
-                                        type="text"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        placeholder="Name, ID, or department..."
-                                        className={`${inputClass} pl-9`}
-                                    />
-                                </div>
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    placeholder="Search name, ID, or department..."
+                                    className={`${inputClass} pl-10`}
+                                />
                             </div>
 
-                            <div>
-                                <label className={labelClass}>Date</label>
-                                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+                            {/* Date */}
+                            <div className="md:col-span-2">
+                                <input
+                                    type="date"
+                                    aria-label="Filter by date"
+                                    value={date}
+                                    onChange={(e) => visit({ date: e.target.value })}
+                                    className={`${inputClass} dark:[color-scheme:dark]`}
+                                />
                             </div>
 
-                            <div>
-                                <label className={labelClass}>Department</label>
-
-                                <select value={department} onChange={(e) => setDepartment(e.target.value)} className={inputClass}>
+                            {/* Department */}
+                            <div className="md:col-span-2">
+                                <select
+                                    aria-label="Filter by department"
+                                    value={department}
+                                    onChange={(e) => visit({ department: e.target.value })}
+                                    className={inputClass}
+                                >
                                     <option value="">All Departments</option>
-                                    {DEPARTMENTS.map((item) => (
+                                    {departments.map((item) => (
                                         <option key={item} value={item}>{item}</option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div>
-                                <label className={labelClass}>Status</label>
-
-                                <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass}>
-                                    <option value="">All Statuses</option>
+                            {/* Status */}
+                            <div className="md:col-span-2">
+                                <select
+                                    aria-label="Filter by status"
+                                    value={status}
+                                    onChange={(e) => visit({ status: e.target.value })}
+                                    className={inputClass}
+                                >
+                                    <option value="">All Status</option>
                                     {(Object.keys(statusLabels) as AttendanceStatus[]).map((key) => (
                                         <option key={key} value={key}>{statusLabels[key]}</option>
                                     ))}
                                 </select>
                             </div>
-                        </div>
 
-                        {hasFilters && (
-                            <div className="mt-4 flex justify-end">
+                            {/* Clear */}
+                            <div className="flex items-center gap-2 md:col-span-2">
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    disabled={!hasFilters}
+                                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white"
                                 >
                                     <X className="h-4 w-4" />
-                                    Clear Filters
+                                    Clear
                                 </button>
                             </div>
-                        )}
+                        </div>
                     </div>
 
-                    {/* Attendance table */}
-                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                    {/* =====================================================
+                        TABLE
+                    ====================================================== */}
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]">
                         <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h2 className="text-base font-semibold text-[#16241c] dark:text-white">
+                                <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
                                     Attendance Records
                                 </h2>
 
                                 <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
-                                    {filteredRecords.length} record{filteredRecords.length !== 1 ? 's' : ''} found
+                                    <span className="font-['JetBrains_Mono']">{records.total}</span>{' '}
+                                    record{records.total !== 1 ? 's' : ''} found
                                 </p>
                             </div>
 
                             <p className="text-xs text-slate-500 dark:text-white/40">
                                 Total hours:{' '}
-                                <span className="font-semibold text-[#b98a2e]">
+                                <span className="font-['JetBrains_Mono'] text-sm font-medium text-[#4D6B00] dark:text-[#C6F432]">
                                     {formatHours(totalHours)}
                                 </span>
                             </p>
                         </div>
 
-                        {filteredRecords.length > 0 ? (
+                        {records.data.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[1000px]">
-                                    <thead>
-                                        <tr className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                    <thead className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                        <tr>
                                             <th className={`${th} text-left`}>Employee</th>
                                             <th className={`${th} text-left`}>Department</th>
                                             <th className={`${th} text-left`}>Date</th>
@@ -588,65 +632,73 @@ export default function Attendance() {
                                             <th className={`${th} text-left`}>Time Out</th>
                                             <th className={`${th} text-right`}>Hours</th>
                                             <th className={`${th} text-center`}>Status</th>
-                                            <th className={`${th} text-center`}>Action</th>
+                                            <th className={`${th} text-center`}>Actions</th>
                                         </tr>
                                     </thead>
 
                                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                        {filteredRecords.map((record) => (
-                                            <tr key={record.id} className="transition hover:bg-slate-50 dark:hover:bg-white/[0.03]">
+                                        {records.data.map((record) => (
+                                            <tr key={record.id} className="transition hover:bg-slate-50 dark:hover:bg-white/5">
+                                                {/* Employee */}
                                                 <td className="px-5 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
+                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C6F432] font-['JetBrains_Mono'] text-xs font-medium text-[#0B0F1A]">
                                                             {initialsOf(record.employee_name)}
-                                                        </span>
+                                                        </div>
 
-                                                        <div>
-                                                            <p className="font-medium text-[#16241c] dark:text-white">
+                                                        <div className="min-w-0">
+                                                            <p className="truncate font-medium text-[#0B0F1A] dark:text-white">
                                                                 {record.employee_name}
                                                             </p>
 
-                                                            <p className="mt-1 text-xs text-slate-400">
+                                                            <p className="text-xs text-slate-500 dark:text-white/50">
                                                                 {record.employee_code}
                                                             </p>
                                                         </div>
                                                     </div>
                                                 </td>
 
+                                                {/* Department */}
                                                 <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
                                                     {record.department}
                                                 </td>
 
+                                                {/* Date */}
                                                 <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
                                                     {formatDate(record.date)}
                                                 </td>
 
-                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                {/* Time in */}
+                                                <td className="px-5 py-4 font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
                                                     {formatTime(record.time_in)}
                                                 </td>
 
-                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                {/* Time out */}
+                                                <td className="px-5 py-4 font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
                                                     {formatTime(record.time_out)}
                                                 </td>
 
+                                                {/* Hours */}
                                                 <td className="px-5 py-4 text-right">
-                                                    <span className="text-sm font-semibold text-[#16241c] dark:text-white">
+                                                    <span className="font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A] dark:text-white">
                                                         {formatHours(record.hours_worked)}
                                                     </span>
                                                 </td>
 
+                                                {/* Status */}
                                                 <td className="px-5 py-4 text-center">
                                                     <StatusPill status={record.status} />
                                                 </td>
 
-                                                <td className="px-5 py-4 text-center">
+                                                {/* Actions */}
+                                                <td className="px-5 py-4">
                                                     <div className="flex items-center justify-center gap-1">
                                                         <button
                                                             type="button"
                                                             title="Edit attendance"
                                                             aria-label={`Edit attendance for ${record.employee_name}`}
                                                             onClick={() => setSelectedRecord(record)}
-                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#b98a2e] dark:text-white/50 dark:hover:bg-white/10"
+                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#4D6B00] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-[#C6F432]"
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </button>
@@ -656,7 +708,7 @@ export default function Attendance() {
                                                             title="Delete attendance"
                                                             aria-label={`Delete attendance for ${record.employee_name}`}
                                                             onClick={() => setRecordToDelete(record)}
-                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-red-500/10"
+                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-[#FF6B5B]/10 dark:hover:text-[#FF8A7C]"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -669,46 +721,96 @@ export default function Attendance() {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10">
-                                    <UserCheck className="h-7 w-7 text-slate-400 dark:text-white/40" />
+                                <div className="mb-3 rounded-full bg-slate-100 p-4 dark:bg-white/5">
+                                    <UserCheck className="h-6 w-6 text-slate-400" />
                                 </div>
 
-                                <h3 className="mt-4 text-base font-semibold text-[#16241c] dark:text-white">
+                                <h3 className="font-medium text-slate-700 dark:text-white">
                                     No attendance records found
                                 </h3>
 
-                                <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-white/40">
+                                <p className="mt-1 max-w-sm text-sm text-slate-400">
                                     {hasFilters
                                         ? 'Try changing your filters or search keywords.'
                                         : 'Add an attendance record to get started.'}
                                 </p>
 
                                 {hasFilters ? (
-                                    <button
-                                        type="button"
-                                        onClick={clearFilters}
-                                        className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
-                                    >
+                                    <button type="button" onClick={clearFilters} className={`${outlineButton} mt-4`}>
                                         <X className="h-4 w-4" />
                                         Clear Filters
                                     </button>
                                 ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowAddModal(true)}
-                                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#22362a]"
-                                    >
+                                    <button type="button" onClick={() => setShowAddModal(true)} className={`${primaryButton} mt-4`}>
                                         <Plus className="h-4 w-4" />
                                         Add Attendance
                                     </button>
                                 )}
                             </div>
                         )}
+
+                        {/* =================================================
+                            PAGINATION
+                        ================================================== */}
+
+                        {records.last_page > 1 && (
+                            <div className="flex flex-col gap-4 border-t border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                                <p className="text-sm text-slate-500 dark:text-white/50">
+                                    Showing{' '}
+                                    <span className="font-medium text-slate-700 dark:text-white">{records.from ?? 0}</span>{' '}
+                                    to{' '}
+                                    <span className="font-medium text-slate-700 dark:text-white">{records.to ?? 0}</span>{' '}
+                                    of{' '}
+                                    <span className="font-medium text-slate-700 dark:text-white">{records.total}</span>{' '}
+                                    records
+                                </p>
+
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        type="button"
+                                        disabled={records.current_page === 1}
+                                        onClick={() => goToPage(records.links.find((link) => link.label.includes('Previous'))?.url ?? null)}
+                                        className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </button>
+
+                                    {records.links
+                                        .filter((link) => !link.label.includes('Previous') && !link.label.includes('Next'))
+                                        .map((link, index) => (
+                                            <button
+                                                type="button"
+                                                key={`${link.label}-${index}`}
+                                                onClick={() => goToPage(link.url)}
+                                                disabled={!link.url}
+                                                className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                                                    link.active
+                                                        ? 'bg-[#C6F432] text-[#0B0F1A]'
+                                                        : 'text-slate-600 hover:bg-slate-100 dark:text-white/60 dark:hover:bg-white/5'
+                                                }`}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ))}
+
+                                    <button
+                                        type="button"
+                                        disabled={records.current_page === records.last_page}
+                                        onClick={() => goToPage(records.links.find((link) => link.label.includes('Next'))?.url ?? null)}
+                                        className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Add Attendance Modal */}
+            {/* =============================================================
+                ADD ATTENDANCE MODAL
+            ============================================================== */}
+
             <AddModal
                 open={showAddModal}
                 title="Add Attendance"
@@ -716,13 +818,16 @@ export default function Attendance() {
                 onClose={() => setShowAddModal(false)}
             >
                 <AttendanceForm
+                    employees={employees}
                     submitLabel="Save Attendance"
                     onCancel={() => setShowAddModal(false)}
-                    onSubmit={handleAdd}
                 />
             </AddModal>
 
-            {/* Update Attendance Modal */}
+            {/* =============================================================
+                UPDATE ATTENDANCE MODAL
+            ============================================================== */}
+
             {selectedRecord && (
                 <UpdateModal
                     open
@@ -731,18 +836,21 @@ export default function Attendance() {
                 >
                     <AttendanceForm
                         initial={selectedRecord}
+                        employees={employees}
                         submitLabel="Update Attendance"
                         onCancel={() => setSelectedRecord(null)}
-                        onSubmit={handleUpdate}
                     />
                 </UpdateModal>
             )}
 
-            {/* Delete Attendance Modal */}
+            {/* =============================================================
+                DELETE ATTENDANCE MODAL
+            ============================================================== */}
+
             {recordToDelete && (
                 <DeleteModal
                     open
-                    processing={false}
+                    processing={deleteForm.processing}
                     onClose={() => setRecordToDelete(null)}
                     onConfirm={handleDelete}
                     title="Delete Attendance Record"

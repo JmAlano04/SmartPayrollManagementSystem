@@ -59,8 +59,9 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::get('/attendance', [AttendancesController::class, 'index'])->name('attendance');
-
-
+    Route::post('/attendance', [AttendancesController::class, 'store'])->name('attendance.store');
+    Route::put('/attendance/{attendance}', [AttendancesController::class, 'update'])->name('attendance.update');
+    Route::delete('/attendance/{attendance}', [AttendancesController::class, 'destroy'])->name('attendance.destroy');
     
     //  Payroll Runs ROUTE
     // Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
