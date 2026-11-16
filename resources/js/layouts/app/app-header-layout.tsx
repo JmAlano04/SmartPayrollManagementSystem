@@ -10,9 +10,11 @@ interface AppHeaderLayoutProps {
 
 export default function AppHeaderLayout({ children, breadcrumbs }: AppHeaderLayoutProps) {
     return (
-        <AppShell>
-            <AppHeader breadcrumbs={breadcrumbs} />
-            <AppContent>{children}</AppContent>
-        </AppShell>
+        <div className="dark min-h-screen bg-[#0B0F1A] text-white">
+            <AppShell>
+                <AppHeader breadcrumbs={breadcrumbs} />
+                <AppContent>{children}</AppContent>
+            </AppShell>
+        </div>
     );
 }

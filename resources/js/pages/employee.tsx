@@ -11,13 +11,14 @@ import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
 import UpdateEmployeeForm from '@/components/employees/UpdateEmployeeForm';
 
 import {
-    CheckCircle2,
-    Clock3,
-    Filter,
+    CalendarDays,
+    ChevronLeft,
+    ChevronRight,
+    CircleCheck,
+    Clock,
     Pencil,
     Search,
     Trash2,
-    UserCheck,
     UserMinus,
     UserPlus,
     Users,
@@ -77,12 +78,17 @@ type Props = {
     search?: string;
 };
 
-/* Helpers */
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
 function initialsOf(name: string) {
     return name
         .split(' ')
-        .map((n) => n[0])
+        .filter(Boolean)
+        .map((word) => word[0])
         .slice(0, 2)
         .join('')
         .toUpperCase();
@@ -113,19 +119,42 @@ const statusLabels: Record<string, string> = {
     on_leave: 'On Leave',
 };
 
-/* Shared class names */
+function getStatusClass(status: Employee['status']) {
+    switch (status) {
+        case 'active':
+            return 'bg-[#C6F432]/25 text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]';
 
-const inputClass =
-    'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b98a2e] focus:ring-2 focus:ring-[#b98a2e]/20 dark:border-white/10 dark:bg-[#0f1712] dark:text-white dark:placeholder:text-white/30';
+        case 'on_leave':
+            return 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300';
 
-const labelClass =
-    'mb-2 block text-xs font-medium text-slate-600 dark:text-white/60';
+        case 'terminated':
+            return 'bg-red-100 text-red-700 dark:bg-[#FF6B5B]/10 dark:text-[#FF8A7C]';
+
+        default:
+            return 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white/60';
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Shared class names
+|--------------------------------------------------------------------------
+*/
+
+const fieldClass =
+    'h-10 w-full rounded-lg border border-slate-200 bg-white text-sm outline-none transition focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 dark:border-white/10 dark:bg-white/5 dark:text-white';
 
 const th =
-    'px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50';
+    "px-5 py-4 font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50";
 
 const actionButton =
     'rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 dark:text-white/50 dark:hover:bg-white/10';
+
+/*
+|--------------------------------------------------------------------------
+| Page
+|--------------------------------------------------------------------------
+*/
 
 export default function EmployeesIndex({
     employees,
@@ -249,46 +278,61 @@ export default function EmployeesIndex({
             label: 'Total Employees',
             value: stats.totalEmployees,
             icon: Users,
-            valueColor: 'text-[#16241c] dark:text-white',
+            valueColor: 'text-[#0B0F1A] dark:text-white',
             iconBg: 'bg-slate-100 dark:bg-white/10',
-            iconColor: 'text-[#16241c] dark:text-white',
+            iconColor: 'text-[#0B0F1A] dark:text-white',
         },
         {
             label: 'Active',
             value: stats.activeEmployees,
-            icon: UserCheck,
-            valueColor: 'text-green-600',
-            iconBg: 'bg-green-50 dark:bg-green-500/10',
-            iconColor: 'text-green-600',
+            icon: CircleCheck,
+            valueColor: 'text-[#4D6B00] dark:text-[#C6F432]',
+            iconBg: 'bg-[#C6F432]/25 dark:bg-[#C6F432]/10',
+            iconColor: 'text-[#4D6B00] dark:text-[#C6F432]',
+        },
+        {
+            label: 'On Leave',
+            value: stats.onLeaveCount,
+            icon: Clock,
+            valueColor: 'text-amber-600 dark:text-amber-300',
+            iconBg: 'bg-amber-100 dark:bg-amber-400/10',
+            iconColor: 'text-amber-600 dark:text-amber-300',
         },
         {
             label: 'Terminated',
             value: stats.terminatedEmployees,
             icon: UserMinus,
-            valueColor: 'text-red-600',
-            iconBg: 'bg-red-50 dark:bg-red-500/10',
-            iconColor: 'text-red-600',
-        },
-        {
-            label: 'On Leave',
-            value: stats.onLeaveCount,
-            icon: Clock3,
-            valueColor: 'text-amber-600',
-            iconBg: 'bg-amber-50 dark:bg-amber-500/10',
-            iconColor: 'text-amber-600',
+            valueColor: 'text-red-600 dark:text-[#FF8A7C]',
+            iconBg: 'bg-red-100 dark:bg-[#FF6B5B]/10',
+            iconColor: 'text-red-600 dark:text-[#FF8A7C]',
         },
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Render
+    |--------------------------------------------------------------------------
+    */
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Employees" />
+            <Head title="Employees">
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link
+                    href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,500,600,700|jetbrains-mono:400,500"
+                    rel="stylesheet"
+                />
+            </Head>
 
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0f1712]">
-                <div className="mx-auto max-w-7xl space-y-6 p-6">
-                    {/* Header */}
+            <div className="dark min-h-full bg-[#0B0F1A] p-4 font-['Bricolage_Grotesque'] text-white md:p-6">
+                <div className="mx-auto max-w-7xl space-y-6">
+                    {/* =====================================================
+                        HEADER
+                    ====================================================== */}
+
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#16241c] dark:text-white">
+                            <h1 className="text-2xl font-bold text-[#0B0F1A] dark:text-white">
                                 Employees
                             </h1>
 
@@ -297,41 +341,46 @@ export default function EmployeesIndex({
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => setShowAddEmployeeModal(true)}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#16241c] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#22362a] focus:outline-none focus:ring-2 focus:ring-[#b98a2e] focus:ring-offset-2 dark:focus:ring-offset-[#0f1712]"
-                        >
-                            <UserPlus className="h-4 w-4" />
-                            Add Employee
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowAddEmployeeModal(true)}
+                                className="inline-flex items-center gap-2 rounded-full bg-[#C6F432] px-5 py-2.5 text-sm font-semibold text-[#0B0F1A] transition hover:bg-[#D6FF55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B0F1A]"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                                Add Employee
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Statistics */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {/* =====================================================
+                        STAT CARDS
+                    ====================================================== */}
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         {statCards.map((stat) => {
                             const Icon = stat.icon;
 
                             return (
                                 <div
                                     key={stat.label}
-                                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]"
+                                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]"
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-slate-500 dark:text-white/50">
+                                            <p className="text-sm text-slate-500 dark:text-white/50">
                                                 {stat.label}
                                             </p>
 
-                                            <p
-                                                className={`mt-2 text-2xl font-bold ${stat.valueColor}`}
+                                            <h2
+                                                className={`mt-2 font-['JetBrains_Mono'] text-2xl font-medium ${stat.valueColor}`}
                                             >
                                                 {stat.value}
-                                            </p>
+                                            </h2>
                                         </div>
 
                                         <div
-                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.iconBg}`}
+                                            className={`rounded-xl p-3 ${stat.iconBg}`}
                                         >
                                             <Icon
                                                 className={`h-5 w-5 ${stat.iconColor}`}
@@ -343,46 +392,35 @@ export default function EmployeesIndex({
                         })}
                     </div>
 
-                    {/* Filters */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
-                        <div className="mb-4 flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-[#b98a2e]" />
+                    {/* =====================================================
+                        FILTERS
+                    ====================================================== */}
 
-                            <h2 className="text-sm font-semibold text-[#16241c] dark:text-white">
-                                Filters
-                            </h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#121829]">
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
                             {/* Search */}
-                            <div>
-                                <label className={labelClass}>Search</label>
+                            <div className="relative md:col-span-5">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-
-                                    <input
-                                        type="text"
-                                        value={search}
-                                        onChange={(e) =>
-                                            handleSearch(e.target.value)
-                                        }
-                                        placeholder="Search by name, email, or department..."
-                                        className={`${inputClass} pl-9`}
-                                    />
-                                </div>
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) =>
+                                        handleSearch(e.target.value)
+                                    }
+                                    placeholder="Search by name, email, or department..."
+                                    className={`${fieldClass} pl-10 pr-3`}
+                                />
                             </div>
 
                             {/* Department */}
-                            <div>
-                                <label className={labelClass}>
-                                    Department
-                                </label>
+                            <div className="relative md:col-span-3">
+                                <CalendarDays className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
                                 <select
                                     value={selectedDepartment ?? ''}
                                     onChange={handleDepartmentChange}
-                                    className={inputClass}
+                                    className={`${fieldClass} appearance-none pl-10 pr-3`}
                                 >
                                     <option value="">All Departments</option>
 
@@ -398,15 +436,13 @@ export default function EmployeesIndex({
                             </div>
 
                             {/* Status */}
-                            <div>
-                                <label className={labelClass}>Status</label>
-
+                            <div className="md:col-span-2">
                                 <select
                                     value={selectedStatus ?? ''}
                                     onChange={handleStatusChange}
-                                    className={inputClass}
+                                    className={`${fieldClass} px-3`}
                                 >
-                                    <option value="">All Statuses</option>
+                                    <option value="">All Status</option>
 
                                     {statuses.map((status) => (
                                         <option key={status} value={status}>
@@ -415,32 +451,38 @@ export default function EmployeesIndex({
                                     ))}
                                 </select>
                             </div>
-                        </div>
 
-                        {hasFilters && (
-                            <div className="mt-4 flex justify-end">
+                            {/* Buttons */}
+                            <div className="flex items-center gap-2 md:col-span-2">
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    disabled={!hasFilters}
+                                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white"
                                 >
                                     <X className="h-4 w-4" />
-                                    Clear Filters
+                                    Clear
                                 </button>
                             </div>
-                        )}
+                        </div>
                     </div>
 
-                    {/* Employee table */}
-                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                    {/* =====================================================
+                        TABLE
+                    ====================================================== */}
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]">
                         <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h2 className="text-base font-semibold text-[#16241c] dark:text-white">
+                                <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
                                     Employee Records
                                 </h2>
 
                                 <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
-                                    {employees.total} employee
+                                    <span className="font-['JetBrains_Mono']">
+                                        {employees.total}
+                                    </span>{' '}
+                                    employee
                                     {employees.total !== 1 ? 's' : ''} found
                                 </p>
                             </div>
@@ -448,9 +490,9 @@ export default function EmployeesIndex({
 
                         {employees.data.length > 0 ? (
                             <div className="overflow-x-auto">
-                                <table className="w-full min-w-[950px]">
-                                    <thead>
-                                        <tr className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                <table className="w-full min-w-[1000px]">
+                                    <thead className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                        <tr>
                                             <th className={`${th} text-left`}>
                                                 Employee
                                             </th>
@@ -460,27 +502,20 @@ export default function EmployeesIndex({
                                             <th className={`${th} text-left`}>
                                                 Position
                                             </th>
-
                                             <th className={`${th} text-right`}>
                                                 Base Salary
                                             </th>
                                             <th className={`${th} text-left`}>
                                                 Hired
                                             </th>
-
-                                              <th className={`${th} text-left`}>
+                                            <th className={`${th} text-left`}>
                                                 Employment Type
                                             </th>
-                                            
                                             <th className={`${th} text-center`}>
                                                 Status
                                             </th>
-
-                                            
-                                          
-
                                             <th className={`${th} text-center`}>
-                                                Action
+                                                Actions
                                             </th>
                                         </tr>
                                     </thead>
@@ -489,23 +524,23 @@ export default function EmployeesIndex({
                                         {employees.data.map((employee) => (
                                             <tr
                                                 key={employee.id}
-                                                className="transition hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+                                                className="transition hover:bg-slate-50 dark:hover:bg-white/5"
                                             >
                                                 {/* Employee */}
                                                 <td className="px-5 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-[#16241c] dark:bg-white/10 dark:text-white">
+                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C6F432] font-['JetBrains_Mono'] text-xs font-medium text-[#0B0F1A]">
                                                             {initialsOf(
                                                                 employee.name,
                                                             )}
-                                                        </span>
+                                                        </div>
 
-                                                        <div>
-                                                            <p className="font-medium text-[#16241c] dark:text-white">
+                                                        <div className="min-w-0">
+                                                            <p className="truncate font-medium text-[#0B0F1A] dark:text-white">
                                                                 {employee.name}
                                                             </p>
 
-                                                            <p className="mt-1 text-xs text-slate-400">
+                                                            <p className="truncate text-xs text-slate-500 dark:text-white/50">
                                                                 {employee.email}
                                                             </p>
                                                         </div>
@@ -522,11 +557,9 @@ export default function EmployeesIndex({
                                                     {employee.position}
                                                 </td>
 
-                                         
-
                                                 {/* Salary */}
                                                 <td className="px-5 py-4 text-right">
-                                                    <span className="text-sm font-semibold text-[#16241c] dark:text-white">
+                                                    <span className="font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
                                                         {formatCurrency(
                                                             employee.salary,
                                                         )}
@@ -540,35 +573,26 @@ export default function EmployeesIndex({
                                                     )}
                                                 </td>
 
-                                                {/* Employment Type */}
+                                                {/* Employment type */}
                                                 <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
-                                                    {employee.employment_type} 
+                                                    {employee.employment_type}
                                                 </td>
 
                                                 {/* Status */}
                                                 <td className="px-5 py-4 text-center">
-                                                    {employee.status ===
-                                                    'active' ? (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400">
-                                                            <CheckCircle2 className="h-3.5 w-3.5" />
-                                                            Active
-                                                        </span>
-                                                    ) : employee.status ===
-                                                      'terminated' ? (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400">
-                                                            <UserMinus className="h-3.5 w-3.5" />
-                                                            Terminated
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-                                                            <Clock3 className="h-3.5 w-3.5" />
-                                                            On Leave
-                                                        </span>
-                                                    )}
+                                                    <span
+                                                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(
+                                                            employee.status,
+                                                        )}`}
+                                                    >
+                                                        {statusLabels[
+                                                            employee.status
+                                                        ] ?? employee.status}
+                                                    </span>
                                                 </td>
 
-                                                {/* Action */}
-                                                <td className="px-5 py-4 text-center">
+                                                {/* Actions */}
+                                                <td className="px-5 py-4">
                                                     <div className="flex items-center justify-center gap-1">
                                                         <button
                                                             type="button"
@@ -579,7 +603,7 @@ export default function EmployeesIndex({
                                                                     employee,
                                                                 )
                                                             }
-                                                            className={`${actionButton} hover:text-[#b98a2e]`}
+                                                            className={`${actionButton} hover:text-[#4D6B00] dark:hover:text-[#C6F432]`}
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </button>
@@ -593,7 +617,7 @@ export default function EmployeesIndex({
                                                                     employee,
                                                                 )
                                                             }
-                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-red-500/10"
+                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-[#FF6B5B]/10 dark:hover:text-[#FF8A7C]"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -606,15 +630,15 @@ export default function EmployeesIndex({
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10">
-                                    <Users className="h-7 w-7 text-slate-400 dark:text-white/40" />
+                                <div className="mb-3 rounded-full bg-slate-100 p-4 dark:bg-white/5">
+                                    <Users className="h-6 w-6 text-slate-400" />
                                 </div>
 
-                                <h3 className="mt-4 text-base font-semibold text-[#16241c] dark:text-white">
+                                <h3 className="font-medium text-slate-700 dark:text-white">
                                     No employees found
                                 </h3>
 
-                                <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-white/40">
+                                <p className="mt-1 max-w-sm text-sm text-slate-400">
                                     {hasFilters
                                         ? 'Try changing your filters or search keywords.'
                                         : 'Add your first employee to get started.'}
@@ -624,7 +648,7 @@ export default function EmployeesIndex({
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
+                                        className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                                     >
                                         <X className="h-4 w-4" />
                                         Clear Filters
@@ -635,7 +659,7 @@ export default function EmployeesIndex({
                                         onClick={() =>
                                             setShowAddEmployeeModal(true)
                                         }
-                                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#22362a]"
+                                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#C6F432] px-5 py-2 text-sm font-semibold text-[#0B0F1A] transition hover:bg-[#D6FF55]"
                                     >
                                         <UserPlus className="h-4 w-4" />
                                         Add Employee
@@ -644,46 +668,99 @@ export default function EmployeesIndex({
                             </div>
                         )}
 
-                        {/* Pagination */}
+                        {/* =================================================
+                            PAGINATION
+                        ================================================== */}
+
                         {employees.last_page > 1 && (
-                            <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-3 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-col gap-4 border-t border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-slate-500 dark:text-white/50">
                                     Showing{' '}
-                                    <span className="font-medium text-[#16241c] dark:text-white">
+                                    <span className="font-medium text-slate-700 dark:text-white">
                                         {employees.from ?? 0}
                                     </span>{' '}
                                     to{' '}
-                                    <span className="font-medium text-[#16241c] dark:text-white">
+                                    <span className="font-medium text-slate-700 dark:text-white">
                                         {employees.to ?? 0}
                                     </span>{' '}
                                     of{' '}
-                                    <span className="font-medium text-[#16241c] dark:text-white">
+                                    <span className="font-medium text-slate-700 dark:text-white">
                                         {employees.total}
                                     </span>{' '}
                                     employees
                                 </p>
 
                                 <div className="flex items-center gap-1">
-                                    {employees.links.map((link, index) => (
-                                        <button
-                                            key={index}
-                                            type="button"
-                                            disabled={!link.url}
-                                            onClick={() => goToPage(link.url)}
-                                            className={`rounded-lg px-3 py-1.5 text-sm transition ${
-                                                link.active
-                                                    ? 'bg-[#16241c] text-white dark:bg-[#b98a2e] dark:text-[#16241c]'
-                                                    : 'text-slate-600 hover:bg-slate-100 dark:text-white/60 dark:hover:bg-white/10'
-                                            } ${
-                                                !link.url
-                                                    ? 'cursor-not-allowed opacity-40'
-                                                    : ''
-                                            }`}
-                                            dangerouslySetInnerHTML={{
-                                                __html: link.label,
-                                            }}
-                                        />
-                                    ))}
+                                    {/* Previous */}
+                                    <button
+                                        type="button"
+                                        disabled={employees.current_page === 1}
+                                        onClick={() => {
+                                            const previousLink =
+                                                employees.links.find((link) =>
+                                                    link.label.includes(
+                                                        'Previous',
+                                                    ),
+                                                );
+
+                                            if (previousLink?.url) {
+                                                goToPage(previousLink.url);
+                                            }
+                                        }}
+                                        className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </button>
+
+                                    {/* Page numbers */}
+                                    {employees.links
+                                        .filter(
+                                            (link) =>
+                                                !link.label.includes(
+                                                    'Previous',
+                                                ) &&
+                                                !link.label.includes('Next'),
+                                        )
+                                        .map((link, index) => (
+                                            <button
+                                                type="button"
+                                                key={`${link.label}-${index}`}
+                                                onClick={() =>
+                                                    goToPage(link.url)
+                                                }
+                                                disabled={!link.url}
+                                                className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                                                    link.active
+                                                        ? 'bg-[#C6F432] text-[#0B0F1A]'
+                                                        : 'text-slate-600 hover:bg-slate-100 dark:text-white/60 dark:hover:bg-white/5'
+                                                }`}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: link.label,
+                                                }}
+                                            />
+                                        ))}
+
+                                    {/* Next */}
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            employees.current_page ===
+                                            employees.last_page
+                                        }
+                                        onClick={() => {
+                                            const nextLink =
+                                                employees.links.find((link) =>
+                                                    link.label.includes('Next'),
+                                                );
+
+                                            if (nextLink?.url) {
+                                                goToPage(nextLink.url);
+                                            }
+                                        }}
+                                        className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -691,7 +768,10 @@ export default function EmployeesIndex({
                 </div>
             </div>
 
-            {/* Add Employee Modal */}
+            {/* =============================================================
+                ADD EMPLOYEE MODAL
+            ============================================================== */}
+
             <AddModal
                 open={showAddEmployeeModal}
                 onClose={() => setShowAddEmployeeModal(false)}
@@ -704,7 +784,10 @@ export default function EmployeesIndex({
                 />
             </AddModal>
 
-            {/* Update Employee Modal */}
+            {/* =============================================================
+                UPDATE EMPLOYEE MODAL
+            ============================================================== */}
+
             {selectedEmployee && showUpdateEmployeeModal && (
                 <UpdateModal
                     open={showUpdateEmployeeModal}
@@ -728,7 +811,10 @@ export default function EmployeesIndex({
                 </UpdateModal>
             )}
 
-            {/* Delete Employee Modal */}
+            {/* =============================================================
+                DELETE EMPLOYEE MODAL
+            ============================================================== */}
+
             {selectedEmployee && showDeleteEmployeeModal && (
                 <DeleteModal
                     open

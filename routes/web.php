@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\DashboardsController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\PayrunsController;
+use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\PayslipController;
 use Barryvdh\DomPDF\Facade\Pdf;
 Route::get('/', function () {
@@ -56,6 +57,11 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/payroll/runs/destroy/{payrun}', [PayrunsController::class, 'destroy'])->name('payruns.destroy');
     Route::get ('/payroll/runs/download/{payrun}', [PayrunsController::class, 'downloadPayrun'])->name('payruns.download');
 
+
+    Route::get('/attendance', [AttendancesController::class, 'index'])->name('attendance');
+
+
+    
     //  Payroll Runs ROUTE
     // Route::get('/payroll/runs', [PayrunsController::class, 'index'])->name('payruns.index');
 });

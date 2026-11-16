@@ -40,7 +40,6 @@ const overviewItems: NavItem[] = [{ title: 'Dashboard', href: '/dashboard', icon
 const payrollItems: NavItem[] = [
     { title: 'Pay runs', href: '/payroll/runs', icon: Wallet },
     { title: 'Payslips', href: '/payroll/payslips', icon: ScrollText },
-
 ];
 
 const peopleItems: NavItem[] = [
@@ -75,13 +74,12 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
-
 const reportItems: NavItem[] = [{ title: 'Cost forecast', href: '/reports/forecast', icon: TrendingUp }];
 
 function NavGroup({ label, items, currentPath }: { label: string; items: NavItem[]; currentPath: string }) {
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>{label}</SidebarGroupLabel>
+            <SidebarGroupLabel className="font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase">{label}</SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu>
                     {items.map((item) => {
@@ -90,12 +88,12 @@ function NavGroup({ label, items, currentPath }: { label: string; items: NavItem
                             <SidebarMenuItem key={item.href}>
                                 <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                                     <Link href={item.href}>
-                                        <item.icon className="text-[#b98a2e]/70 group-data-[active=true]/menu-button:text-[#b98a2e]" />
+                                        <item.icon className="text-[#C6F432]/60 group-data-[active=true]/menu-button:text-[#C6F432]" />
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
                                 {item.badge && (
-                                    <SidebarMenuBadge className="rounded-full bg-[#b98a2e] px-1.5 text-[10px] font-semibold text-[#16241c]">
+                                    <SidebarMenuBadge className="rounded-full bg-[#C6F432] px-1.5 text-[10px] font-semibold text-[#0B0F1A]">
                                         {item.badge}
                                     </SidebarMenuBadge>
                                 )}
@@ -111,8 +109,8 @@ function NavGroup({ label, items, currentPath }: { label: string; items: NavItem
 export function AppSidebar() {
     const { url, props } = usePage<SharedData>();
 
-    const user = props.auth.user;
-    const role = props.auth.role;
+    const user = props.auth?.user;
+    const role = props.auth?.role;
 
     const initials =
         user?.name
@@ -125,68 +123,51 @@ export function AppSidebar() {
     return (
         <Sidebar
             collapsible="icon"
-            className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[#16241c]"
+            className="dark border-r-0 font-['Bricolage_Grotesque'] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-white/10 [&_[data-sidebar=sidebar]]:!bg-[#0B0F1A]"
+            style={
+                {
+                    '--sidebar': '#0B0F1A',
+                    '--sidebar-foreground': '#ffffff',
+                    '--sidebar-border': 'rgba(255,255,255,0.1)',
+                } as React.CSSProperties
+            }
         >
             <SidebarHeader className="border-b border-white/10 px-2.5 py-3.5">
                 <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#b98a2e] font-['Space_Grotesk'] text-sm font-semibold text-white">
-                        S
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#C6F432] font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A]">
+                        §
                     </span>
 
                     <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-                        <span className="truncate font-['Space_Grotesk'] text-sm font-semibold text-white">
-                            SmartPayroll
-                        </span>
+                        <span className="truncate text-sm font-semibold text-white">SmartPayroll</span>
 
-                        <span className="truncate text-xs text-white/45">
-                            Acme Corp
-                        </span>
+                        <span className="truncate text-xs text-white/45">Acme Corp</span>
                     </div>
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="px-1 py-2 [&_[data-sidebar=group-label]]:text-white/40 [&_[data-sidebar=menu-button]]:text-white/75 [&_[data-sidebar=menu-button]]:hover:bg-[#b98a2e]/15 [&_[data-sidebar=menu-button]]:hover:text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-[#b98a2e]/20 [&_[data-sidebar=menu-button][data-active=true]]:text-white">
-                <NavGroup
-                    label="Overview"
-                    items={overviewItems}
-                    currentPath={url}
-                />
+            <SidebarContent className="px-1 py-2 [&_[data-sidebar=group-label]]:text-white/40 [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-white/70 [&_[data-sidebar=menu-button]]:hover:bg-[#C6F432]/10 [&_[data-sidebar=menu-button]]:hover:text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-[#C6F432]/15 [&_[data-sidebar=menu-button][data-active=true]]:font-medium [&_[data-sidebar=menu-button][data-active=true]]:text-white">
+                <NavGroup label="Overview" items={overviewItems} currentPath={url} />
 
                 <SidebarSeparator className="bg-white/10" />
 
-                <NavGroup
-                    label="Payroll"
-                    items={payrollItems}
-                    currentPath={url}
-                />
+                <NavGroup label="Payroll" items={payrollItems} currentPath={url} />
 
                 <SidebarSeparator className="bg-white/10" />
 
-                <NavGroup
-                    label="People"
-                    items={peopleItems}
-                    currentPath={url}
-                />
+                <NavGroup label="People" items={peopleItems} currentPath={url} />
 
                 <SidebarSeparator className="bg-white/10" />
 
-                <NavGroup
-                    label="Reports"
-                    items={reportItems}
-                    currentPath={url}
-                />
+                <NavGroup label="Reports" items={reportItems} currentPath={url} />
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-white/10 px-1 py-2 [&_[data-sidebar=menu-button]]:text-white/75 [&_[data-sidebar=menu-button]]:hover:bg-[#b98a2e]/15 [&_[data-sidebar=menu-button]]:hover:text-white">
+            <SidebarFooter className="border-t border-white/10 px-1 py-2 [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-white/70 [&_[data-sidebar=menu-button]]:hover:bg-[#C6F432]/10 [&_[data-sidebar=menu-button]]:hover:text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-[#C6F432]/15 [&_[data-sidebar=menu-button][data-active=true]]:text-white">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={url.startsWith('/settings')}
-                            tooltip="Settings"
-                        >
+                        <SidebarMenuButton asChild isActive={url.startsWith('/settings')} tooltip="Settings">
                             <Link href="/settings">
-                                <Settings className="text-[#b98a2e]/70" />
+                                <Settings className="text-[#C6F432]/60" />
                                 <span>Settings</span>
                             </Link>
                         </SidebarMenuButton>
@@ -198,18 +179,14 @@ export function AppSidebar() {
                             className="mt-1 data-[state=open]:bg-white/[0.06]"
                             tooltip={user?.name ?? 'User'}
                         >
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#b98a2e] font-['IBM_Plex_Mono'] text-xs font-semibold text-[#16241c]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#C6F432] font-['JetBrains_Mono'] text-xs font-medium text-[#0B0F1A]">
                                 {initials}
                             </span>
 
                             <div className="flex min-w-0 flex-col text-left">
-                                <span className="truncate text-sm font-medium">
-                                    {user?.name ?? 'User'}
-                                </span>
+                                <span className="truncate text-sm font-medium">{user?.name ?? 'User'}</span>
 
-                                <span className="truncate text-xs text-white/45">
-                                    {role ?? 'User'}
-                                </span>
+                                <span className="truncate text-xs text-white/45">{role ?? 'User'}</span>
                             </div>
 
                             {/* <ChevronsUpDown className="ml-auto h-4 w-4 text-white/40" /> */}

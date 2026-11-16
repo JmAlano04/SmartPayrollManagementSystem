@@ -23,13 +23,11 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             : titleFromComponent(component);
 
     return (
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#14172B]/8 bg-white/70 px-4 backdrop-blur dark:border-white/10 dark:bg-white/5">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-[#0B0F1A] px-4 text-white">
             <div className="flex items-center gap-3">
-                <SidebarTrigger className="text-[#14172B]/60 dark:text-white/60" />
+                <SidebarTrigger className="text-white/60" />
                 <div>
-                    <p className="font-['Space_Grotesk'] text-base font-sans text-[#14172B] dark:text-white">
-                        {pageTitle}
-                    </p>
+                    <p className="font-['Space_Grotesk'] font-sans text-base text-white">{pageTitle}</p>
 
                     {breadcrumbs.length > 1 ? (
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -41,7 +39,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 href="/logout"
                 method="post"
                 as="button"
-                className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/10"
+                className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-white/10"
             >
                 <LogOut className="size-4" />
                 <span>Log out</span>

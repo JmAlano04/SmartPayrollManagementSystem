@@ -111,7 +111,7 @@ type Props = {
 */
 
 function formatCurrency(value: number) {
-    return `P ${Number(value || 0).toLocaleString('en-PH', {
+    return `₱ ${Number(value || 0).toLocaleString('en-PH', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
@@ -120,10 +120,10 @@ function formatCurrency(value: number) {
 function getStatusClass(status: PayslipStatus) {
     switch (status) {
         case 'paid':
-            return 'bg-[#22C55E]/10 text-[#16A34A]';
+            return 'bg-[#C6F432]/25 text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]';
 
         case 'pending':
-            return 'bg-amber-100 text-amber-700';
+            return 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300';
 
         case 'draft':
             return 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white/60';
@@ -550,9 +550,15 @@ export default function Payslips({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Payslips" />
+            <Head title="Payslips">
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link
+                    href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,500,600,700|jetbrains-mono:400,500"
+                    rel="stylesheet"
+                />
+            </Head>
 
-            <div className="min-h-screen bg-slate-50 p-4 dark:bg-[#0f1712] md:p-6">
+            <div className="dark min-h-full bg-[#0B0F1A] p-4 font-['Bricolage_Grotesque'] text-white md:p-6">
                 <div className="mx-auto max-w-7xl space-y-6">
 
                     {/* =====================================================
@@ -562,7 +568,7 @@ export default function Payslips({
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
                         <div>
-                            <h1 className="text-2xl font-bold text-[#16241c] dark:text-white">
+                            <h1 className="text-2xl font-bold text-[#0B0F1A] dark:text-white">
                                 Payslips
                             </h1>
 
@@ -576,7 +582,7 @@ export default function Payslips({
                             <button
                                 type="button"
                                 onClick={handleExportCsv}
-                                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                             >
                                 <FileUp className="h-4 w-4" />
                                 Export
@@ -585,7 +591,7 @@ export default function Payslips({
                             <button
                                 type="button"
                                 onClick={handleDownloadAll}
-                                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                             >
                                 <Download className="h-4 w-4" />
                                 Download All
@@ -596,7 +602,7 @@ export default function Payslips({
                                 onClick={() =>
                                     setShowGenerateModal(true)
                                 }
-                                className="inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#22362a]"
+                                className="inline-flex items-center gap-2 rounded-full bg-[#C6F432] px-5 py-2.5 text-sm font-semibold text-[#0B0F1A] transition hover:bg-[#D6FF55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B0F1A]"
                             >
                                 <FileText className="h-4 w-4" />
                                 Generate Payslip
@@ -613,7 +619,7 @@ export default function Payslips({
 
                         {/* Total */}
 
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]">
 
                             <div className="flex items-center justify-between">
 
@@ -622,13 +628,13 @@ export default function Payslips({
                                         Total Payslips
                                     </p>
 
-                                    <h2 className="mt-2 text-2xl font-bold text-[#16241c] dark:text-white">
+                                    <h2 className="mt-2 font-['JetBrains_Mono'] text-2xl font-medium text-[#0B0F1A] dark:text-white">
                                         {stats.total_payslips}
                                     </h2>
                                 </div>
 
-                                <div className="rounded-lg bg-[#16241c]/10 p-3">
-                                    <FileText className="h-5 w-5 text-[#16241c] dark:text-white" />
+                                <div className="rounded-xl bg-slate-100 p-3 dark:bg-white/10">
+                                    <FileText className="h-5 w-5 text-[#0B0F1A] dark:text-white" />
                                 </div>
 
                             </div>
@@ -637,7 +643,7 @@ export default function Payslips({
 
                         {/* Paid */}
 
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]">
 
                             <div className="flex items-center justify-between">
 
@@ -646,13 +652,13 @@ export default function Payslips({
                                         Paid
                                     </p>
 
-                                    <h2 className="mt-2 text-2xl font-bold text-[#16A34A]">
+                                    <h2 className="mt-2 font-['JetBrains_Mono'] text-2xl font-medium text-[#4D6B00] dark:text-[#C6F432]">
                                         {stats.paid_payslips}
                                     </h2>
                                 </div>
 
-                                <div className="rounded-lg bg-green-100 p-3">
-                                    <CircleCheck className="h-5 w-5 text-green-600" />
+                                <div className="rounded-xl bg-[#C6F432]/25 p-3 dark:bg-[#C6F432]/10">
+                                    <CircleCheck className="h-5 w-5 text-[#4D6B00] dark:text-[#C6F432]" />
                                 </div>
 
                             </div>
@@ -661,7 +667,7 @@ export default function Payslips({
 
                         {/* Pending */}
 
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]">
 
                             <div className="flex items-center justify-between">
 
@@ -670,13 +676,13 @@ export default function Payslips({
                                         Draft
                                     </p>
 
-                                    <h2 className="mt-2 text-2xl font-bold text-amber-600">
+                                    <h2 className="mt-2 font-['JetBrains_Mono'] text-2xl font-medium text-amber-600 dark:text-amber-300">
                                         {stats.draft_payslips}
                                     </h2>
                                 </div>
 
-                                <div className="rounded-lg bg-amber-100 p-3">
-                                    <Clock className="h-5 w-5 text-amber-600" />
+                                <div className="rounded-xl bg-amber-100 p-3 dark:bg-amber-400/10">
+                                    <Clock className="h-5 w-5 text-amber-600 dark:text-amber-300" />
                                 </div>
 
                             </div>
@@ -685,7 +691,7 @@ export default function Payslips({
 
                         {/* Net Pay */}
 
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]">
 
                             <div className="flex items-center justify-between">
 
@@ -694,15 +700,15 @@ export default function Payslips({
                                         Total Net Pay
                                     </p>
 
-                                    <h2 className="mt-2 text-xl font-bold text-[#b98a2e]">
+                                    <h2 className="mt-2 font-['JetBrains_Mono'] text-xl font-medium text-[#0B0F1A] dark:text-white">
                                         {formatCurrency(
                                             stats.total_net_pay
                                         )}
                                     </h2>
                                 </div>
 
-                                <div className="rounded-lg bg-[#b98a2e]/10 p-3">
-                                    <Wallet className="h-5 w-5 text-[#b98a2e]" />
+                                <div className="rounded-xl bg-[#C6F432] p-3">
+                                    <Wallet className="h-5 w-5 text-[#0B0F1A]" />
                                 </div>
 
                             </div>
@@ -714,7 +720,7 @@ export default function Payslips({
                     {/* =====================================================
                         FILTERS
                     ====================================================== */}
-<div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#121829]">
     <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
 
         {/* Search */}
@@ -731,7 +737,7 @@ export default function Payslips({
                     }
                 }}
                 placeholder="Search employee, payslip, department, or amount..."
-                className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 dark:border-white/10 dark:bg-white/5 dark:text-white"
             />
         </div>
 
@@ -744,7 +750,7 @@ export default function Payslips({
                 onChange={(e) => {
                     setPayPeriod(e.target.value);
                 }}
-                className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
                 <option value="">
                     All Pay Periods
@@ -768,7 +774,7 @@ export default function Payslips({
                 onChange={(e) =>
                     setStatus(e.target.value)
                 }
-                className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#b98a2e] focus:ring-1 focus:ring-[#b98a2e] dark:border-white/10 dark:bg-white/5 dark:text-white"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
                 <option value="">
                     All Status
@@ -789,7 +795,7 @@ export default function Payslips({
             <button
                 type="button"
                 onClick={clearFilters}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
                 Clear
             </button>
@@ -802,7 +808,7 @@ export default function Payslips({
                         TABLE
                     ====================================================== */}
 
-                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]">
 
                         <div className="overflow-x-auto">
 
@@ -812,31 +818,31 @@ export default function Payslips({
 
                                     <tr>
 
-                                        <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-left font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Employee
                                         </th>
 
-                                        <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-left font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Pay Period
                                         </th>
 
-                                        <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-right font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Gross Pay
                                         </th>
 
-                                        <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-right font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Deductions
                                         </th>
 
-                                        <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-right font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Net Pay
                                         </th>
 
-                                        <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-center font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Status
                                         </th>
 
-                                        <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50">
+                                        <th className="px-5 py-4 text-center font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50">
                                             Actions
                                         </th>
 
@@ -870,7 +876,7 @@ export default function Payslips({
 
                                                             <div className="flex items-center gap-3">
 
-                                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#16241c] text-xs font-bold text-white">
+                                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C6F432] font-['JetBrains_Mono'] text-xs font-medium text-[#0B0F1A]">
                                                                     {initialsOf(
                                                                         fullName
                                                                     )}
@@ -878,7 +884,7 @@ export default function Payslips({
 
                                                                 <div className="min-w-0">
 
-                                                                    <p className="truncate font-medium text-[#16241c] dark:text-white">
+                                                                    <p className="truncate font-medium text-[#0B0F1A] dark:text-white">
                                                                         {
                                                                             fullName
                                                                         }
@@ -921,7 +927,7 @@ export default function Payslips({
 
                                                         <td className="px-5 py-4 text-right">
 
-                                                            <span className="text-sm font-medium text-slate-700 dark:text-white/80">
+                                                            <span className="font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
                                                                 {formatCurrency(
                                                                     payslip.gross_pay
                                                                 )}
@@ -945,7 +951,7 @@ export default function Payslips({
 
                                                         <td className="px-5 py-4 text-right">
 
-                                                            <span className="text-sm font-semibold text-[#16241c] dark:text-white">
+                                                            <span className="text-sm font-semibold text-[#0B0F1A] dark:text-white">
                                                                 {formatCurrency(
                                                                     payslip.net_pay
                                                                 )}
@@ -985,7 +991,7 @@ export default function Payslips({
                                                                         )
                                                                     }
                                                                     title="View payslip"
-                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#16241c] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#0B0F1A] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
                                                                 >
                                                                     <Eye className="h-4 w-4" />
                                                                 </button>
@@ -1000,7 +1006,7 @@ export default function Payslips({
                                                                         )
                                                                     }
                                                                     title="Edit payslip"
-                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#b98a2e] dark:text-white/50 dark:hover:bg-white/10"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#4D6B00] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-[#C6F432]"
                                                                 >
                                                                     <Pencil className="h-4 w-4" />
                                                                 </button>
@@ -1015,7 +1021,7 @@ export default function Payslips({
                                                                         )
                                                                     }
                                                                     title="Download payslip"
-                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-white/50 dark:hover:bg-white/10"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-[#9AA3FF]"
                                                                 >
                                                                     <Download className="h-4 w-4" />
                                                                 </button>
@@ -1030,7 +1036,7 @@ export default function Payslips({
                                                                         )
                                                                     }
                                                                     title="Delete payslip"
-                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-red-500/10"
+                                                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-[#FF6B5B]/10 dark:hover:text-[#FF8A7C]"
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </button>
@@ -1175,7 +1181,7 @@ export default function Payslips({
                                                     }
                                                     className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${
                                                         link.active
-                                                            ? 'bg-[#16241c] text-white'
+                                                            ? 'bg-[#C6F432] text-[#0B0F1A]'
                                                             : 'text-slate-600 hover:bg-slate-100 dark:text-white/60 dark:hover:bg-white/5'
                                                     }`}
                                                     dangerouslySetInnerHTML={{

@@ -5,7 +5,6 @@ import AddPayrunsForm from '@/components/payruns/AddPayrunsForm';
 import UpdateModal from '@/components/UpdateModal';
 import UpdatePayrunsForm from '@/components/payruns/UpdatePayrunsForm';
 
-
 import ViewPayruns from '@/components/payruns/ViewPayruns';
 
 import DeleteModal from '@/components/DeleteModal';
@@ -72,26 +71,42 @@ function getPayrunNumber(payrun: PayRun) {
     return `PR-${String(payrun.id).padStart(4, '0')}`;
 }
 
+/* Shared class names */
+
+const card =
+    'rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]';
+
+const th =
+    "px-5 py-3 font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50";
+
+const field =
+    'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 dark:border-white/10 dark:bg-[#0B0F1A] dark:text-white';
+
+const accentText = 'text-[#4D6B00] dark:text-[#C6F432]';
+
+const primaryBtn =
+    'inline-flex items-center justify-center gap-2 rounded-full bg-[#C6F432] px-5 py-2.5 text-sm font-semibold text-[#0B0F1A] shadow-sm transition hover:bg-[#D6FF55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B0F1A]';
+
+const ghostBtn =
+    'inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5';
+
+const iconBtn =
+    'rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 dark:text-white/50 dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
+
 export default function PayRuns({ payRuns, stats }: Props) {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [payPeriod, setPayPeriod] = useState('');
     const [showGenerateModal, setShowGenerateModal] = useState(false);
-  
 
-    const [showUpdatePayrunsModal, setShowUpdatePayrunsModal] =
-            useState(false);
-            
-    const [selectedPayruns, setSelectedPayruns] =
-            useState<PayRun | null>(null);
+    const [showUpdatePayrunsModal, setShowUpdatePayrunsModal] = useState(false);
+
+    const [selectedPayruns, setSelectedPayruns] = useState<PayRun | null>(null);
 
     const [payrunToDelete, setPayrunToDelete] = useState<PayRun | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const [showViewPayrunsModal, setShowViewPayrunsModal] =
-        useState(false);
-
-
+    const [showViewPayrunsModal, setShowViewPayrunsModal] = useState(false);
 
     const payPeriods = useMemo(() => {
         const periods = payRuns.map(
@@ -154,13 +169,11 @@ export default function PayRuns({ payRuns, stats }: Props) {
     const hasFilters = search !== '' || status !== '' || payPeriod !== '';
 
     /* Update handlers */
-    const handleEditPayrun = (payrun: PayRun) => {       
+    const handleEditPayrun = (payrun: PayRun) => {
         setSelectedPayruns(payrun);
         setShowUpdatePayrunsModal(true);
+    };
 
-
-        
-    }
     /*
     | Delete handlers
     */
@@ -196,22 +209,26 @@ export default function PayRuns({ payRuns, stats }: Props) {
         });
     };
 
-
-     const handleDownloadPayrun = (payslipId: number) => {
-        
+    const handleDownloadPayrun = (payslipId: number) => {
         window.location.href = route('payruns.download', payslipId);
     };
-    
+
     return (
         <AppLayout>
-            <Head title="Pay Runs" />
+            <Head title="Pay Runs">
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link
+                    href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,500,600,700|jetbrains-mono:400,500"
+                    rel="stylesheet"
+                />
+            </Head>
 
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0f1712]">
+            <div className="dark min-h-full bg-[#0B0F1A] font-['Bricolage_Grotesque'] text-white">
                 <div className="mx-auto max-w-7xl space-y-6 p-6">
                     {/* Header */}
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#16241c] dark:text-white">
+                            <h1 className="text-2xl font-bold tracking-tight text-[#0B0F1A] dark:text-white">
                                 Pay Runs
                             </h1>
 
@@ -223,7 +240,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                         <button
                             type="button"
                             onClick={() => setShowGenerateModal(true)}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#16241c] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#22362a] focus:outline-none focus:ring-2 focus:ring-[#b98a2e] focus:ring-offset-2 dark:focus:ring-offset-[#0f1712]"
+                            className={primaryBtn}
                         >
                             <Plus className="h-4 w-4" />
                             Add Payroll
@@ -233,88 +250,92 @@ export default function PayRuns({ payRuns, stats }: Props) {
                     {/* Statistics */}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {/* Total Pay Runs */}
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className={`${card} p-5`}>
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-slate-500 dark:text-white/50">
                                         Total Pay Runs
                                     </p>
 
-                                    <p className="mt-2 text-2xl font-bold text-[#16241c] dark:text-white">
+                                    <p className="mt-2 font-['JetBrains_Mono'] text-2xl font-medium text-[#0B0F1A] dark:text-white">
                                         {stats.total_payroll_runs}
                                     </p>
                                 </div>
 
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10">
-                                    <Banknote className="h-5 w-5 text-[#16241c] dark:text-white" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/10">
+                                    <Banknote className="h-5 w-5 text-[#0B0F1A] dark:text-white" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Paid */}
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className={`${card} p-5`}>
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-slate-500 dark:text-white/50">
                                         Paid
                                     </p>
 
-                                    <p className="mt-2 text-2xl font-bold text-green-600">
+                                    <p
+                                        className={`mt-2 font-['JetBrains_Mono'] text-2xl font-medium ${accentText}`}
+                                    >
                                         {stats.paid_payroll_runs}
                                     </p>
                                 </div>
 
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-500/10">
-                                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C6F432]/25 dark:bg-[#C6F432]/10">
+                                    <CheckCircle2
+                                        className={`h-5 w-5 ${accentText}`}
+                                    />
                                 </div>
                             </div>
                         </div>
 
                         {/* Draft */}
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className={`${card} p-5`}>
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-slate-500 dark:text-white/50">
                                         Draft
                                     </p>
 
-                                    <p className="mt-2 text-2xl font-bold text-amber-600">
+                                    <p className="mt-2 font-['JetBrains_Mono'] text-2xl font-medium text-amber-600 dark:text-amber-300">
                                         {stats.pending_payroll_runs}
                                     </p>
                                 </div>
 
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/10">
-                                    <Clock3 className="h-5 w-5 text-amber-600" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-400/10">
+                                    <Clock3 className="h-5 w-5 text-amber-600 dark:text-amber-300" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Total Net Pay */}
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                        <div className={`${card} p-5`}>
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-slate-500 dark:text-white/50">
                                         Total Net Pay
                                     </p>
 
-                                    <p className="mt-2 text-xl font-bold text-[#16241c] dark:text-white">
+                                    <p className="mt-2 font-['JetBrains_Mono'] text-xl font-medium text-[#0B0F1A] dark:text-white">
                                         {formatCurrency(totalNetPay)}
                                     </p>
                                 </div>
 
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#b98a2e]/10">
-                                    <Banknote className="h-5 w-5 text-[#b98a2e]" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C6F432]">
+                                    <Banknote className="h-5 w-5 text-[#0B0F1A]" />
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Filters */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                    <div className={`${card} p-5`}>
                         <div className="mb-4 flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-[#b98a2e]" />
+                            <Filter className={`h-4 w-4 ${accentText}`} />
 
-                            <h2 className="text-sm font-semibold text-[#16241c] dark:text-white">
+                            <h2 className="text-sm font-semibold text-[#0B0F1A] dark:text-white">
                                 Filters
                             </h2>
                         </div>
@@ -322,35 +343,43 @@ export default function PayRuns({ payRuns, stats }: Props) {
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             {/* Search */}
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-white/60">
+                                <label
+                                    htmlFor="payrun-search"
+                                    className="mb-2 block text-xs font-medium text-slate-600 dark:text-white/60"
+                                >
                                     Search
                                 </label>
 
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
                                     <input
+                                        id="payrun-search"
                                         type="text"
                                         value={search}
                                         onChange={(e) =>
                                             setSearch(e.target.value)
                                         }
                                         placeholder="Search pay runs..."
-                                        className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b98a2e] focus:ring-2 focus:ring-[#b98a2e]/20 dark:border-white/10 dark:bg-[#0f1712] dark:text-white dark:placeholder:text-white/30"
+                                        className={`${field} pl-9 placeholder:text-slate-400 dark:placeholder:text-white/30`}
                                     />
                                 </div>
                             </div>
 
                             {/* Status */}
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-white/60">
+                                <label
+                                    htmlFor="payrun-status"
+                                    className="mb-2 block text-xs font-medium text-slate-600 dark:text-white/60"
+                                >
                                     Status
                                 </label>
 
                                 <select
+                                    id="payrun-status"
                                     value={status}
                                     onChange={(e) => setStatus(e.target.value)}
-                                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#b98a2e] focus:ring-2 focus:ring-[#b98a2e]/20 dark:border-white/10 dark:bg-[#0f1712] dark:text-white"
+                                    className={field}
                                 >
                                     <option value="">All Statuses</option>
                                     <option value="draft">Draft</option>
@@ -360,16 +389,20 @@ export default function PayRuns({ payRuns, stats }: Props) {
 
                             {/* Pay Period */}
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-white/60">
+                                <label
+                                    htmlFor="payrun-period"
+                                    className="mb-2 block text-xs font-medium text-slate-600 dark:text-white/60"
+                                >
                                     Pay Period
                                 </label>
 
                                 <select
+                                    id="payrun-period"
                                     value={payPeriod}
                                     onChange={(e) =>
                                         setPayPeriod(e.target.value)
                                     }
-                                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#b98a2e] focus:ring-2 focus:ring-[#b98a2e]/20 dark:border-white/10 dark:bg-[#0f1712] dark:text-white"
+                                    className={field}
                                 >
                                     <option value="">All Pay Periods</option>
 
@@ -387,7 +420,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                    className={ghostBtn}
                                 >
                                     <X className="h-4 w-4" />
                                     Clear Filters
@@ -397,19 +430,17 @@ export default function PayRuns({ payRuns, stats }: Props) {
                     </div>
 
                     {/* Pay Runs Table */}
-                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#16241c]">
+                    <div className={`${card} overflow-hidden`}>
                         {/* Table Header */}
-                        <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
                             <div>
-                                <h2 className="text-base font-semibold text-[#16241c] dark:text-white">
+                                <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
                                     Payroll Runs
                                 </h2>
 
                                 <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
                                     {filteredPayRuns.length} payroll run
-                                    {filteredPayRuns.length !== 1
-                                        ? 's'
-                                        : ''}{' '}
+                                    {filteredPayRuns.length !== 1 ? 's' : ''}{' '}
                                     found
                                 </p>
                             </div>
@@ -420,31 +451,31 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                 <table className="w-full min-w-[950px]">
                                     <thead>
                                         <tr className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-                                            <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-left`}>
                                                 Pay Run
                                             </th>
 
-                                            <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-left`}>
                                                 Pay Period
                                             </th>
 
-                                            <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-left`}>
                                                 Pay Date
                                             </th>
 
-                                            <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-right`}>
                                                 Gross Pay
                                             </th>
 
-                                            <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-right`}>
                                                 Net Pay
                                             </th>
 
-                                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-center`}>
                                                 Status
                                             </th>
 
-                                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
+                                            <th className={`${th} text-center`}>
                                                 Action
                                             </th>
                                         </tr>
@@ -467,12 +498,12 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                     {/* Pay Run */}
                                                     <td className="px-5 py-4">
                                                         <div>
-                                                            <p className="font-medium text-[#16241c] dark:text-white">
+                                                            <p className="font-medium text-[#0B0F1A] dark:text-white">
                                                                 {payrun.name ||
                                                                     payrunNumber}
                                                             </p>
 
-                                                            <p className="mt-1 text-xs text-slate-400">
+                                                            <p className="mt-1 font-['JetBrains_Mono'] text-xs text-slate-400">
                                                                 {payrunNumber}
                                                             </p>
                                                         </div>
@@ -482,30 +513,30 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                     <td className="px-5 py-4">
                                                         <p className="text-sm text-slate-700 dark:text-white/80">
                                                             {formatDate(
-                                                                payrun.period_start
+                                                                payrun.period_start,
                                                             )}
                                                         </p>
 
                                                         <p className="mt-1 text-xs text-slate-400">
                                                             to{' '}
-                                                            {
-                                                                payrun.period_end
-                                                            }
+                                                            {formatDate(
+                                                                payrun.period_end,
+                                                            )}
                                                         </p>
                                                     </td>
 
                                                     {/* Pay Date */}
                                                     <td className="px-5 py-4">
                                                         <span className="text-sm text-slate-700 dark:text-white/80">
-                                                            {
-                                                                payrun.pay_date
-                                                            }
+                                                            {formatDate(
+                                                                payrun.pay_date,
+                                                            )}
                                                         </span>
                                                     </td>
 
                                                     {/* Gross Pay */}
                                                     <td className="px-5 py-4 text-right">
-                                                        <span className="text-sm font-medium text-slate-700 dark:text-white/80">
+                                                        <span className="font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
                                                             {formatCurrency(
                                                                 payrun.gross_pay,
                                                             )}
@@ -514,7 +545,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
 
                                                     {/* Net Pay */}
                                                     <td className="px-5 py-4 text-right">
-                                                        <span className="text-sm font-semibold text-[#16241c] dark:text-white">
+                                                        <span className="font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A] dark:text-white">
                                                             {formatCurrency(
                                                                 payrun.net_pay,
                                                             )}
@@ -524,12 +555,12 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                     {/* Status */}
                                                     <td className="px-5 py-4 text-center">
                                                         {isPaid ? (
-                                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F432]/25 px-2.5 py-1 text-xs font-medium text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]">
                                                                 <CheckCircle2 className="h-3.5 w-3.5" />
                                                                 Paid
                                                             </span>
                                                         ) : (
-                                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+                                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">
                                                                 <Clock3 className="h-3.5 w-3.5" />
                                                                 Draft
                                                             </span>
@@ -552,7 +583,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                                     );
                                                                 }}
                                                                 aria-label={`View pay run ${payrunNumber}`}
-                                                                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#16241c] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
+                                                                className={`${iconBtn} hover:text-[#0B0F1A] dark:hover:text-white`}
                                                             >
                                                                 <Eye className="h-4 w-4" />
                                                             </button>
@@ -561,12 +592,13 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                             <button
                                                                 type="button"
                                                                 title="Edit pay run"
-                                                                onClick = {() => 
-                                                                    handleEditPayrun(payrun)
-                                                            }
-                                                            
+                                                                onClick={() =>
+                                                                    handleEditPayrun(
+                                                                        payrun,
+                                                                    )
+                                                                }
                                                                 aria-label={`Edit pay run ${payrunNumber}`}
-                                                                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#b98a2e] dark:text-white/50 dark:hover:bg-white/10"
+                                                                className={`${iconBtn} hover:text-[#4D6B00] dark:hover:text-[#C6F432]`}
                                                             >
                                                                 <Pencil className="h-4 w-4" />
                                                             </button>
@@ -574,20 +606,17 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                             {/* Download */}
                                                             <button
                                                                 type="button"
-                                                             
                                                                 onClick={() =>
                                                                     handleDownloadPayrun(
                                                                         payrun.id,
                                                                     )
                                                                 }
-                                                                 disabled={
+                                                                disabled={
                                                                     isDraft
                                                                 }
                                                                 title="Download pay run"
                                                                 aria-label={`Download pay run ${payrunNumber}`}
-                                                                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600
-                                                               disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-500 dark:text-white/50 dark:hover:bg-red-500/10
-                                                                "
+                                                                className={`${iconBtn} hover:text-indigo-600 dark:hover:text-[#9AA3FF]`}
                                                             >
                                                                 <Download className="h-4 w-4" />
                                                             </button>
@@ -609,7 +638,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                                                         : 'Delete pay run'
                                                                 }
                                                                 aria-label={`Delete pay run ${payrunNumber}`}
-                                                                className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-500 dark:text-white/50 dark:hover:bg-red-500/10"
+                                                                className={`${iconBtn} hover:bg-red-50 hover:text-red-600 dark:hover:bg-[#FF6B5B]/10 dark:hover:text-[#FF8A7C]`}
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </button>
@@ -627,7 +656,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                     <Banknote className="h-7 w-7 text-slate-400 dark:text-white/40" />
                                 </div>
 
-                                <h3 className="mt-4 text-base font-semibold text-[#16241c] dark:text-white">
+                                <h3 className="mt-4 text-base font-semibold text-[#0B0F1A] dark:text-white">
                                     No payroll runs found
                                 </h3>
 
@@ -641,7 +670,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
+                                        className={`mt-4 ${ghostBtn}`}
                                     >
                                         <X className="h-4 w-4" />
                                         Clear Filters
@@ -652,7 +681,7 @@ export default function PayRuns({ payRuns, stats }: Props) {
                                         onClick={() =>
                                             setShowGenerateModal(true)
                                         }
-                                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#16241c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#22362a]"
+                                        className={`mt-4 ${primaryBtn}`}
                                     >
                                         <Plus className="h-4 w-4" />
                                         Add Payroll
@@ -676,49 +705,37 @@ export default function PayRuns({ payRuns, stats }: Props) {
                 />
             </AddModal>
 
-
-
-    {/* =============================================================
-                UPDATE PAYSLIP MODAL
-    ============================================================== */}
-
-
-      {selectedPayruns && (
-                    <UpdateModal
-                        open={showUpdatePayrunsModal}
-                        onClose={() => {
-                            setShowUpdatePayrunsModal(
-                                false
-                            );
+            {/* Update Pay Run Modal */}
+            {selectedPayruns && (
+                <UpdateModal
+                    open={showUpdatePayrunsModal}
+                    onClose={() => {
+                        setShowUpdatePayrunsModal(false);
+                        setSelectedPayruns(null);
+                    }}
+                    title="Update Pay Run"
+                >
+                    <UpdatePayrunsForm
+                        payrun={selectedPayruns}
+                        onCancel={() => {
+                            setShowUpdatePayrunsModal(false);
                             setSelectedPayruns(null);
                         }}
-                        title="Update Pay Run"
-                    >
-                     <UpdatePayrunsForm
-                            payrun={selectedPayruns}
-                            onCancel={() => {
-                                setShowUpdatePayrunsModal(false);
-                                setSelectedPayruns(null);
-                            }}
-                            onSuccess={() => {
-                                setShowUpdatePayrunsModal(false);
-                                setSelectedPayruns(null);
-                            }}
-                        />
-                    </UpdateModal>
+                        onSuccess={() => {
+                            setShowUpdatePayrunsModal(false);
+                            setSelectedPayruns(null);
+                        }}
+                    />
+                </UpdateModal>
             )}
-   {/* =============================================================
-                VIEW PAYSLIP MODAL
-            ============================================================== */}
 
+            {/* View Pay Run Modal */}
             {selectedPayruns && (
                 <ViewPayruns
                     open={showViewPayrunsModal}
                     payrun={selectedPayruns}
                     onClose={() => {
-                        setShowViewPayrunsModal(
-                            false
-                        );
+                        setShowViewPayrunsModal(false);
                         setSelectedPayruns(null);
                     }}
                 />
