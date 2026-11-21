@@ -2,14 +2,15 @@ import { Link, usePage } from '@inertiajs/react';
 
 import {
     CalendarClock,
+    Camera,
     Home,
-    // LogOut,
     ScrollText,
     Settings,
     TrendingUp,
     Users,
     Wallet,
 } from 'lucide-react';
+
 import * as React from 'react';
 
 import {
@@ -28,24 +29,25 @@ import {
     SidebarSeparator,
 } from '@/components/ui/sidebar';
 
+/*
+ * Light palette (matches welcome-light, dashboard-light, login-light)
+ *   surface #FFFFFF   ink #101828   muted #475467 / #667085   line #E4E7EC
+ *   hover   #F2F4F7   active #D1FADF / #05603A   green #0E7A5A
+ * Type: Instrument Sans (UI), IBM Plex Mono (figures / initials only).
+ */
+
+// ==========================================
+// TYPES
+// ==========================================
+
+type UserRole = 'admin' | 'hr' | 'employee';
+
 type NavItem = {
     title: string;
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: string;
 };
-
-const overviewItems: NavItem[] = [{ title: 'Dashboard', href: '/dashboard', icon: Home }];
-
-const payrollItems: NavItem[] = [
-    { title: 'Pay runs', href: '/payroll/runs', icon: Wallet },
-    { title: 'Payslips', href: '/payroll/payslips', icon: ScrollText },
-];
-
-const peopleItems: NavItem[] = [
-    { title: 'Employees', href: '/employees', icon: Users },
-    { title: 'Attendance', href: '/attendance', icon: CalendarClock },
-];
 
 type User = {
     id: number;
@@ -74,26 +76,176 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
-const reportItems: NavItem[] = [{ title: 'Cost forecast', href: '/reports/forecast', icon: TrendingUp }];
+type RoleNavigation = {
+    payroll: NavItem[];
+    people: NavItem[];
+    attendance: NavItem[];
+    reports: NavItem[];
+};
 
-function NavGroup({ label, items, currentPath }: { label: string; items: NavItem[]; currentPath: string }) {
+// ==========================================
+// NAVIGATION ITEMS
+// ==========================================
+
+const overviewItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/dashboard',
+        icon: Home,
+    },
+];
+
+// ---------- Admin ----------
+
+const adminPayrollItems: NavItem[] = [
+    {
+        title: 'Pay Runs',
+        href: '/payroll/runs',
+        icon: Wallet,
+    },
+    {
+        title: 'Payslips',
+        href: '/payroll/payslips',
+        icon: ScrollText,
+    },
+];
+
+const adminPeopleItems: NavItem[] = [
+    {
+        title: 'Employees',
+        href: '/employees',
+        icon: Users,
+    },
+    {
+        title: 'Attendance',
+        href: '/attendance',
+        icon: CalendarClock,
+    },
+];
+
+// ---------- HR ----------
+
+const hrPayrollItems: NavItem[] = [
+    {
+        title: 'Payslips',
+        href: '/payroll/payslips',
+        icon: ScrollText,
+    },
+];
+
+const hrPeopleItems: NavItem[] = [
+    {
+        title: 'Employees',
+        href: '/employees',
+        icon: Users,
+    },
+    {
+        title: 'Attendance',
+        href: '/attendance',
+        icon: CalendarClock,
+    },
+];
+
+// ---------- Employee ----------
+
+const employeePayrollItems: NavItem[] = [
+    {
+        title: 'My Payslips',
+        href: '/payroll/payslips',
+        icon: ScrollText,
+    },
+];
+
+const employeeAttendanceItems: NavItem[] = [
+    {
+        title: 'Camera',
+        href: '/camera', // change to your actual camera route
+        icon: Camera,
+    },
+];
+
+// ---------- Shared ----------
+
+const reportItems: NavItem[] = [
+    {
+        title: 'Cost Forecast',
+        href: '/reports/forecast',
+        icon: TrendingUp,
+    },
+];
+
+// ==========================================
+// ROLE-BASED NAVIGATION
+// ==========================================
+
+const roleNavigation: Record<UserRole, RoleNavigation> = {
+    admin: {
+        payroll: adminPayrollItems,
+        people: adminPeopleItems,
+        attendance: [],
+        reports: reportItems,
+    },
+
+    hr: {
+        payroll: hrPayrollItems,
+        people: hrPeopleItems,
+        attendance: [],
+        reports: reportItems,
+    },
+
+    // Employee sees only: Dashboard (overview), My Payslips, Camera
+    employee: {
+        payroll: employeePayrollItems,
+        people: [],
+        attendance: employeeAttendanceItems,
+        reports: [],
+    },
+};
+
+// ==========================================
+// NAVIGATION GROUP COMPONENT
+// ==========================================
+
+function NavGroup({
+    label,
+    items,
+    currentPath,
+}: {
+    label: string;
+    items: NavItem[];
+    currentPath: string;
+}) {
+    if (items.length === 0) return null;
+
     return (
         <SidebarGroup>
-            <SidebarGroupLabel className="font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase">{label}</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs font-medium">
+                {label}
+            </SidebarGroupLabel>
+
             <SidebarGroupContent>
                 <SidebarMenu>
                     {items.map((item) => {
-                        const isActive = currentPath.startsWith(item.href);
+                        const isActive =
+                            currentPath === item.href ||
+                            currentPath.startsWith(`${item.href}/`);
+
                         return (
                             <SidebarMenuItem key={item.href}>
-                                <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={isActive}
+                                    tooltip={item.title}
+                                >
                                     <Link href={item.href}>
-                                        <item.icon className="text-[#C6F432]/60 group-data-[active=true]/menu-button:text-[#C6F432]" />
+                                        <item.icon className="text-[#98A2B3] group-data-[active=true]/menu-button:text-[#0E7A5A]" />
+
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
+
                                 {item.badge && (
-                                    <SidebarMenuBadge className="rounded-full bg-[#C6F432] px-1.5 text-[10px] font-semibold text-[#0B0F1A]">
+                                    <SidebarMenuBadge className="rounded-full bg-[#0E7A5A] px-1.5 text-[10px] font-semibold text-white">
                                         {item.badge}
                                     </SidebarMenuBadge>
                                 )}
@@ -106,11 +258,20 @@ function NavGroup({ label, items, currentPath }: { label: string; items: NavItem
     );
 }
 
+// ==========================================
+// MAIN SIDEBAR
+// ==========================================
+
 export function AppSidebar() {
     const { url, props } = usePage<SharedData>();
 
     const user = props.auth?.user;
-    const role = props.auth?.role;
+
+    const role = props.auth?.role?.toLowerCase() as UserRole | undefined;
+
+    // Null if the role is invalid or unassigned
+    const navigation =
+        role && role in roleNavigation ? roleNavigation[role] : null;
 
     const initials =
         user?.name
@@ -120,76 +281,144 @@ export function AppSidebar() {
             .join('')
             .toUpperCase() ?? 'U';
 
+    const roleLabel = role
+        ? role.charAt(0).toUpperCase() + role.slice(1)
+        : 'User';
+
     return (
         <Sidebar
             collapsible="icon"
-            className="dark border-r-0 font-['Bricolage_Grotesque'] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-white/10 [&_[data-sidebar=sidebar]]:!bg-[#0B0F1A]"
+            className="border-r-0 font-['Instrument_Sans'] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-[#E4E7EC] [&_[data-sidebar=sidebar]]:!bg-white"
             style={
                 {
-                    '--sidebar': '#0B0F1A',
-                    '--sidebar-foreground': '#ffffff',
-                    '--sidebar-border': 'rgba(255,255,255,0.1)',
+                    '--sidebar': '#FFFFFF',
+                    '--sidebar-foreground': '#101828',
+                    '--sidebar-border': '#E4E7EC',
                 } as React.CSSProperties
             }
         >
-            <SidebarHeader className="border-b border-white/10 px-2.5 py-3.5">
+            {/* HEADER */}
+            <SidebarHeader className="border-b border-[#E4E7EC] px-2.5 py-3.5">
                 <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#C6F432] font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A]">
-                        §
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0E7A5A] font-['IBM_Plex_Mono'] text-sm font-medium text-white">
+                        ₱
                     </span>
 
                     <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-                        <span className="truncate text-sm font-semibold text-white">SmartPayroll</span>
+                        <span className="truncate text-sm font-semibold text-[#101828]">
+                            SmartPayroll
+                        </span>
 
-                        <span className="truncate text-xs text-white/45">Acme Corp</span>
+                        <span className="truncate text-xs text-[#667085]">
+                            {roleLabel} Portal
+                        </span>
                     </div>
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="px-1 py-2 [&_[data-sidebar=group-label]]:text-white/40 [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-white/70 [&_[data-sidebar=menu-button]]:hover:bg-[#C6F432]/10 [&_[data-sidebar=menu-button]]:hover:text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-[#C6F432]/15 [&_[data-sidebar=menu-button][data-active=true]]:font-medium [&_[data-sidebar=menu-button][data-active=true]]:text-white">
-                <NavGroup label="Overview" items={overviewItems} currentPath={url} />
+            {/* NAVIGATION */}
+            <SidebarContent className="px-1 py-2 [&_[data-sidebar=group-label]]:text-[#667085] [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-[#475467] [&_[data-sidebar=menu-button]]:hover:bg-[#F2F4F7] [&_[data-sidebar=menu-button]]:hover:text-[#101828] [&_[data-sidebar=menu-button][data-active=true]]:bg-[#D1FADF] [&_[data-sidebar=menu-button][data-active=true]]:font-medium [&_[data-sidebar=menu-button][data-active=true]]:text-[#05603A]">
+                {/* ALL AUTHENTICATED USERS */}
+                <NavGroup
+                    label="Overview"
+                    items={overviewItems}
+                    currentPath={url}
+                />
 
-                <SidebarSeparator className="bg-white/10" />
+                <SidebarSeparator className="bg-[#E4E7EC]" />
 
-                <NavGroup label="Payroll" items={payrollItems} currentPath={url} />
+                {/* ADMIN / HR / EMPLOYEE */}
+                {navigation && (
+                    <>
+                        <NavGroup
+                            label="Payroll"
+                            items={navigation.payroll}
+                            currentPath={url}
+                        />
 
-                <SidebarSeparator className="bg-white/10" />
+                        {navigation.payroll.length > 0 && (
+                            <SidebarSeparator className="bg-[#E4E7EC]" />
+                        )}
 
-                <NavGroup label="People" items={peopleItems} currentPath={url} />
+                        <NavGroup
+                            label="People"
+                            items={navigation.people}
+                            currentPath={url}
+                        />
 
-                <SidebarSeparator className="bg-white/10" />
+                        {navigation.people.length > 0 && (
+                            <SidebarSeparator className="bg-[#E4E7EC]" />
+                        )}
 
-                <NavGroup label="Reports" items={reportItems} currentPath={url} />
+                        <NavGroup
+                            label="Attendance"
+                            items={navigation.attendance}
+                            currentPath={url}
+                        />
+
+                        {navigation.attendance.length > 0 && (
+                            <SidebarSeparator className="bg-[#E4E7EC]" />
+                        )}
+
+                        <NavGroup
+                            label="Reports"
+                            items={navigation.reports}
+                            currentPath={url}
+                        />
+                    </>
+                )}
+
+                {/* INVALID OR UNASSIGNED ROLE */}
+                {!navigation && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>No Assigned Role</SidebarGroupLabel>
+                    </SidebarGroup>
+                )}
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-white/10 px-1 py-2 [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-white/70 [&_[data-sidebar=menu-button]]:hover:bg-[#C6F432]/10 [&_[data-sidebar=menu-button]]:hover:text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-[#C6F432]/15 [&_[data-sidebar=menu-button][data-active=true]]:text-white">
+            {/* FOOTER */}
+            <SidebarFooter className="border-t border-[#E4E7EC] px-1 py-2 [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-[#475467] [&_[data-sidebar=menu-button]]:hover:bg-[#F2F4F7] [&_[data-sidebar=menu-button]]:hover:text-[#101828] [&_[data-sidebar=menu-button][data-active=true]]:bg-[#D1FADF] [&_[data-sidebar=menu-button][data-active=true]]:text-[#05603A]">
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={url.startsWith('/settings')} tooltip="Settings">
-                            <Link href="/settings">
-                                <Settings className="text-[#C6F432]/60" />
-                                <span>Settings</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    {/* SETTINGS (hidden for employees) */}
+                    {role !== 'employee' && (
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={
+                                    url === '/settings' ||
+                                    url.startsWith('/settings/')
+                                }
+                                tooltip="Settings"
+                            >
+                                <Link href="/settings">
+                                    <Settings className="text-[#98A2B3] group-data-[active=true]/menu-button:text-[#0E7A5A]" />
 
+                                    <span>Settings</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    )}
+
+                    {/* USER INFORMATION */}
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             size="lg"
-                            className="mt-1 data-[state=open]:bg-white/[0.06]"
+                            className="mt-1 data-[state=open]:bg-[#F2F4F7]"
                             tooltip={user?.name ?? 'User'}
                         >
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#C6F432] font-['JetBrains_Mono'] text-xs font-medium text-[#0B0F1A]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0E7A5A] font-['IBM_Plex_Mono'] text-xs font-medium text-white">
                                 {initials}
                             </span>
 
                             <div className="flex min-w-0 flex-col text-left">
-                                <span className="truncate text-sm font-medium">{user?.name ?? 'User'}</span>
+                                <span className="truncate text-sm font-medium text-[#101828]">
+                                    {user?.name ?? 'User'}
+                                </span>
 
-                                <span className="truncate text-xs text-white/45">{role ?? 'User'}</span>
+                                <span className="truncate text-xs text-[#667085]">
+                                    {roleLabel}
+                                </span>
                             </div>
-
-                            {/* <ChevronsUpDown className="ml-auto h-4 w-4 text-white/40" /> */}
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>

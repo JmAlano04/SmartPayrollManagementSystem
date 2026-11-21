@@ -22,6 +22,14 @@ import {
     X,
 } from 'lucide-react';
 
+/*
+ * Light palette (matches welcome-light, dashboard-light, pay-runs-light)
+ *   paper  #F5F7FA   ink    #101828   muted  #475467 / #667085   line  #E4E7EC
+ *   green  #0E7A5A   present #D1FADF / #05603A   late #FEF0C7 / #7A4B00
+ *   absent #FEE4E2 / #B42318   leave #E0EAFF / #3538CD
+ * Type: Instrument Sans (UI + headings), IBM Plex Mono (figures only).
+ */
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Attendance',
@@ -153,19 +161,19 @@ const statusLabels: Record<AttendanceStatus, string> = {
 function getStatusClass(status: AttendanceStatus) {
     switch (status) {
         case 'present':
-            return 'bg-[#C6F432]/25 text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]';
+            return 'bg-[#D1FADF] text-[#05603A]';
 
         case 'late':
-            return 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300';
+            return 'bg-[#FEF0C7] text-[#7A4B00]';
 
         case 'absent':
-            return 'bg-red-100 text-red-700 dark:bg-[#FF6B5B]/10 dark:text-[#FF8A7C]';
+            return 'bg-[#FEE4E2] text-[#B42318]';
 
         case 'on_leave':
-            return 'bg-indigo-100 text-indigo-700 dark:bg-[#9AA3FF]/10 dark:text-[#9AA3FF]';
+            return 'bg-[#E0EAFF] text-[#3538CD]';
 
         default:
-            return 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white/60';
+            return 'bg-[#F2F4F7] text-[#475467]';
     }
 }
 
@@ -175,20 +183,28 @@ function getStatusClass(status: AttendanceStatus) {
 |--------------------------------------------------------------------------
 */
 
+const card =
+    'rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_32px_-12px_rgba(16,24,40,0.1)]';
+
+const mono = "font-['IBM_Plex_Mono']";
+
 const inputClass =
-    'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#C6F432] focus:ring-2 focus:ring-[#C6F432]/25 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30';
+    'h-10 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-sm text-[#101828] outline-none transition placeholder:text-[#98A2B3] focus:border-[#0E7A5A] focus:ring-2 focus:ring-[#0E7A5A]/20 disabled:opacity-40';
 
-const labelClass =
-    'mb-2 block text-xs font-medium text-slate-600 dark:text-white/60';
+const labelClass = 'mb-2 block text-xs font-medium text-[#344054]';
 
-const th =
-    "px-5 py-4 font-['JetBrains_Mono'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50";
+const th = 'px-5 py-4 text-xs font-medium text-[#667085]';
 
 const outlineButton =
-    'inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white';
+    'inline-flex items-center justify-center gap-2 rounded-full border border-[#D0D5DD] bg-white px-4 py-2.5 text-sm font-medium text-[#344054] transition hover:bg-[#F9FAFB]';
 
 const primaryButton =
-    'inline-flex items-center justify-center gap-2 rounded-full bg-[#C6F432] px-5 py-2.5 text-sm font-semibold text-[#0B0F1A] transition hover:bg-[#D6FF55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-[#0B0F1A]';
+    'inline-flex items-center justify-center gap-2 rounded-full bg-[#0E7A5A] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0B6249] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7A5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F5F7FA] disabled:cursor-not-allowed disabled:opacity-50';
+
+const pageButton =
+    'rounded-lg border border-[#D0D5DD] p-2 text-[#475467] transition hover:bg-[#F9FAFB] disabled:cursor-not-allowed disabled:opacity-40';
+
+const errorText = 'mt-1 text-xs text-[#D92D20]';
 
 function StatusPill({ status }: { status: AttendanceStatus }) {
     return (
@@ -271,7 +287,7 @@ function AttendanceForm({
                             ))
                         )}
                     </select>
-                    {form.errors.employee_id && <p className="mt-1 text-xs text-red-500">{form.errors.employee_id}</p>}
+                    {form.errors.employee_id && <p className={errorText}>{form.errors.employee_id}</p>}
                 </div>
 
                 <div>
@@ -279,14 +295,14 @@ function AttendanceForm({
                     <input
                         readOnly
                         value={employees.find((employee) => employee.id === form.data.employee_id)?.department ?? '—'}
-                        className={inputClass}
+                        className={`${inputClass} bg-[#F9FAFB]`}
                     />
                 </div>
 
                 <div>
                     <label className={labelClass}>Date</label>
                     <input required type="date" value={form.data.date} onChange={(event) => form.setData('date', event.target.value)} className={inputClass} />
-                    {form.errors.date && <p className="mt-1 text-xs text-red-500">{form.errors.date}</p>}
+                    {form.errors.date && <p className={errorText}>{form.errors.date}</p>}
                 </div>
 
                 <div>
@@ -296,7 +312,7 @@ function AttendanceForm({
                             <option key={key} value={key}>{statusLabels[key]}</option>
                         ))}
                     </select>
-                    {form.errors.status && <p className="mt-1 text-xs text-red-500">{form.errors.status}</p>}
+                    {form.errors.status && <p className={errorText}>{form.errors.status}</p>}
                 </div>
 
                 <div className="hidden sm:block" />
@@ -304,20 +320,20 @@ function AttendanceForm({
                 <div>
                     <label className={labelClass}>Time In</label>
                     <input type="time" disabled={noTime} value={form.data.time_in ?? ''} onChange={(event) => form.setData('time_in', event.target.value)} className={inputClass} />
-                    {form.errors.time_in && <p className="mt-1 text-xs text-red-500">{form.errors.time_in}</p>}
+                    {form.errors.time_in && <p className={errorText}>{form.errors.time_in}</p>}
                 </div>
 
                 <div>
                     <label className={labelClass}>Time Out</label>
                     <input type="time" disabled={noTime} value={form.data.time_out ?? ''} onChange={(event) => form.setData('time_out', event.target.value)} className={inputClass} />
-                    {form.errors.time_out && <p className="mt-1 text-xs text-red-500">{form.errors.time_out}</p>}
+                    {form.errors.time_out && <p className={errorText}>{form.errors.time_out}</p>}
                 </div>
             </div>
 
             <div>
                 <label className={labelClass}>Remarks</label>
                 <input value={form.data.remarks ?? ''} onChange={(event) => form.setData('remarks', event.target.value)} placeholder="Optional" className={inputClass} />
-                {form.errors.remarks && <p className="mt-1 text-xs text-red-500">{form.errors.remarks}</p>}
+                {form.errors.remarks && <p className={errorText}>{form.errors.remarks}</p>}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -417,33 +433,33 @@ export default function Attendance({ records, stats, totalHours, employees, depa
             label: 'Present',
             value: stats.present,
             icon: UserCheck,
-            valueColor: 'text-[#4D6B00] dark:text-[#C6F432]',
-            iconBg: 'bg-[#C6F432]/25 dark:bg-[#C6F432]/10',
-            iconColor: 'text-[#4D6B00] dark:text-[#C6F432]',
+            valueColor: 'text-[#0E7A5A]',
+            iconBg: 'bg-[#D1FADF]',
+            iconColor: 'text-[#0E7A5A]',
         },
         {
             label: 'Late',
             value: stats.late,
             icon: Clock,
-            valueColor: 'text-amber-600 dark:text-amber-300',
-            iconBg: 'bg-amber-100 dark:bg-amber-400/10',
-            iconColor: 'text-amber-600 dark:text-amber-300',
+            valueColor: 'text-[#7A4B00]',
+            iconBg: 'bg-[#FEF0C7]',
+            iconColor: 'text-[#7A4B00]',
         },
         {
             label: 'Absent',
             value: stats.absent,
             icon: UserX,
-            valueColor: 'text-red-600 dark:text-[#FF8A7C]',
-            iconBg: 'bg-red-100 dark:bg-[#FF6B5B]/10',
-            iconColor: 'text-red-600 dark:text-[#FF8A7C]',
+            valueColor: 'text-[#B42318]',
+            iconBg: 'bg-[#FEE4E2]',
+            iconColor: 'text-[#B42318]',
         },
         {
             label: 'On Leave',
             value: stats.on_leave,
             icon: CalendarOff,
-            valueColor: 'text-[#0B0F1A] dark:text-white',
-            iconBg: 'bg-slate-100 dark:bg-white/10',
-            iconColor: 'text-[#0B0F1A] dark:text-white',
+            valueColor: 'text-[#3538CD]',
+            iconBg: 'bg-[#E0EAFF]',
+            iconColor: 'text-[#3538CD]',
         },
     ];
 
@@ -452,12 +468,18 @@ export default function Attendance({ records, stats, totalHours, employees, depa
             <Head title="Attendance">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
-                    href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,500,600,700|jetbrains-mono:400,500"
+                    href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|ibm-plex-mono:400,500"
                     rel="stylesheet"
                 />
             </Head>
 
-            <div className="dark min-h-full bg-[#0B0F1A] p-4 font-['Bricolage_Grotesque'] text-white md:p-6">
+            <div
+                className="min-h-full bg-[#F5F7FA] p-4 font-['Instrument_Sans'] text-[#101828] md:p-6"
+                style={{
+                    backgroundImage: 'linear-gradient(to bottom, rgba(16,24,40,0.035) 1px, transparent 1px)',
+                    backgroundSize: '100% 32px',
+                }}
+            >
                 <div className="mx-auto max-w-7xl space-y-6">
                     {/* =====================================================
                         HEADER
@@ -465,11 +487,9 @@ export default function Attendance({ records, stats, totalHours, employees, depa
 
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-[#0B0F1A] dark:text-white">
-                                Attendance
-                            </h1>
+                            <h1 className="text-2xl font-bold tracking-tight text-[#101828]">Attendance</h1>
 
-                            <p className="mt-1 text-sm text-slate-500 dark:text-white/50">
+                            <p className="mt-1 text-sm text-[#475467]">
                                 Monitor employee time in, time out, and attendance status
                             </p>
                         </div>
@@ -496,17 +516,12 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                             const Icon = stat.icon;
 
                             return (
-                                <div
-                                    key={stat.label}
-                                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121829]"
-                                >
+                                <div key={stat.label} className={`${card} p-5`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm text-slate-500 dark:text-white/50">
-                                                {stat.label}
-                                            </p>
+                                            <p className="text-sm text-[#667085]">{stat.label}</p>
 
-                                            <h2 className={`mt-2 font-['JetBrains_Mono'] text-2xl font-medium ${stat.valueColor}`}>
+                                            <h2 className={`mt-2 ${mono} text-2xl font-medium ${stat.valueColor}`}>
                                                 {stat.value}
                                             </h2>
                                         </div>
@@ -524,11 +539,11 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                         FILTERS
                     ====================================================== */}
 
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#121829]">
+                    <div className={`${card} p-4`}>
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
                             {/* Search */}
                             <div className="relative md:col-span-4">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
 
                                 <input
                                     type="text"
@@ -546,7 +561,7 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                     aria-label="Filter by date"
                                     value={date}
                                     onChange={(e) => visit({ date: e.target.value })}
-                                    className={`${inputClass} dark:[color-scheme:dark]`}
+                                    className={inputClass}
                                 />
                             </div>
 
@@ -586,7 +601,7 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                     type="button"
                                     onClick={clearFilters}
                                     disabled={!hasFilters}
-                                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#D0D5DD] bg-white px-4 text-sm font-medium text-[#344054] transition hover:bg-[#F9FAFB] disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <X className="h-4 w-4" />
                                     Clear
@@ -599,22 +614,20 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                         TABLE
                     ====================================================== */}
 
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]">
-                        <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                    <div className={`${card} overflow-hidden`}>
+                        <div className="flex flex-col gap-2 border-b border-[#E4E7EC] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
-                                    Attendance Records
-                                </h2>
+                                <h2 className="text-base font-semibold text-[#101828]">Attendance Records</h2>
 
-                                <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
-                                    <span className="font-['JetBrains_Mono']">{records.total}</span>{' '}
+                                <p className="mt-1 text-xs text-[#667085]">
+                                    <span className={mono}>{records.total}</span>{' '}
                                     record{records.total !== 1 ? 's' : ''} found
                                 </p>
                             </div>
 
-                            <p className="text-xs text-slate-500 dark:text-white/40">
+                            <p className="text-xs text-[#667085]">
                                 Total hours:{' '}
-                                <span className="font-['JetBrains_Mono'] text-sm font-medium text-[#4D6B00] dark:text-[#C6F432]">
+                                <span className={`${mono} text-sm font-medium text-[#0E7A5A]`}>
                                     {formatHours(totalHours)}
                                 </span>
                             </p>
@@ -623,7 +636,7 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                         {records.data.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[1000px]">
-                                    <thead className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                    <thead className="border-b border-[#E4E7EC] bg-[#F9FAFB]">
                                         <tr>
                                             <th className={`${th} text-left`}>Employee</th>
                                             <th className={`${th} text-left`}>Department</th>
@@ -636,22 +649,22 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                         </tr>
                                     </thead>
 
-                                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                                    <tbody className="divide-y divide-[#F2F4F7]">
                                         {records.data.map((record) => (
-                                            <tr key={record.id} className="transition hover:bg-slate-50 dark:hover:bg-white/5">
+                                            <tr key={record.id} className="transition hover:bg-[#F9FAFB]">
                                                 {/* Employee */}
                                                 <td className="px-5 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C6F432] font-['JetBrains_Mono'] text-xs font-medium text-[#0B0F1A]">
+                                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D1FADF] ${mono} text-xs font-medium text-[#05603A]`}>
                                                             {initialsOf(record.employee_name)}
                                                         </div>
 
                                                         <div className="min-w-0">
-                                                            <p className="truncate font-medium text-[#0B0F1A] dark:text-white">
+                                                            <p className="truncate font-medium text-[#101828]">
                                                                 {record.employee_name}
                                                             </p>
 
-                                                            <p className="text-xs text-slate-500 dark:text-white/50">
+                                                            <p className="text-xs text-[#667085]">
                                                                 {record.employee_code}
                                                             </p>
                                                         </div>
@@ -659,28 +672,28 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                                 </td>
 
                                                 {/* Department */}
-                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                <td className="px-5 py-4 text-sm text-[#344054]">
                                                     {record.department}
                                                 </td>
 
                                                 {/* Date */}
-                                                <td className="px-5 py-4 text-sm text-slate-700 dark:text-white/80">
+                                                <td className="px-5 py-4 text-sm text-[#344054]">
                                                     {formatDate(record.date)}
                                                 </td>
 
                                                 {/* Time in */}
-                                                <td className="px-5 py-4 font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
+                                                <td className={`px-5 py-4 ${mono} text-sm text-[#344054]`}>
                                                     {formatTime(record.time_in)}
                                                 </td>
 
                                                 {/* Time out */}
-                                                <td className="px-5 py-4 font-['JetBrains_Mono'] text-sm text-slate-700 dark:text-white/80">
+                                                <td className={`px-5 py-4 ${mono} text-sm text-[#344054]`}>
                                                     {formatTime(record.time_out)}
                                                 </td>
 
                                                 {/* Hours */}
                                                 <td className="px-5 py-4 text-right">
-                                                    <span className="font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A] dark:text-white">
+                                                    <span className={`${mono} text-sm font-medium text-[#101828]`}>
                                                         {formatHours(record.hours_worked)}
                                                     </span>
                                                 </td>
@@ -698,7 +711,7 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                                             title="Edit attendance"
                                                             aria-label={`Edit attendance for ${record.employee_name}`}
                                                             onClick={() => setSelectedRecord(record)}
-                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#4D6B00] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-[#C6F432]"
+                                                            className="rounded-lg p-2 text-[#667085] transition hover:bg-[#F2F4F7] hover:text-[#0E7A5A]"
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </button>
@@ -708,7 +721,7 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                                             title="Delete attendance"
                                                             aria-label={`Delete attendance for ${record.employee_name}`}
                                                             onClick={() => setRecordToDelete(record)}
-                                                            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-white/50 dark:hover:bg-[#FF6B5B]/10 dark:hover:text-[#FF8A7C]"
+                                                            className="rounded-lg p-2 text-[#667085] transition hover:bg-[#FEE4E2] hover:text-[#B42318]"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -721,15 +734,13 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                <div className="mb-3 rounded-full bg-slate-100 p-4 dark:bg-white/5">
-                                    <UserCheck className="h-6 w-6 text-slate-400" />
+                                <div className="mb-3 rounded-full bg-[#F2F4F7] p-4">
+                                    <UserCheck className="h-6 w-6 text-[#98A2B3]" />
                                 </div>
 
-                                <h3 className="font-medium text-slate-700 dark:text-white">
-                                    No attendance records found
-                                </h3>
+                                <h3 className="font-medium text-[#101828]">No attendance records found</h3>
 
-                                <p className="mt-1 max-w-sm text-sm text-slate-400">
+                                <p className="mt-1 max-w-sm text-sm text-[#667085]">
                                     {hasFilters
                                         ? 'Try changing your filters or search keywords.'
                                         : 'Add an attendance record to get started.'}
@@ -754,23 +765,24 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                         ================================================== */}
 
                         {records.last_page > 1 && (
-                            <div className="flex flex-col gap-4 border-t border-slate-200 px-5 py-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
-                                <p className="text-sm text-slate-500 dark:text-white/50">
+                            <div className="flex flex-col gap-4 border-t border-[#E4E7EC] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <p className="text-sm text-[#667085]">
                                     Showing{' '}
-                                    <span className="font-medium text-slate-700 dark:text-white">{records.from ?? 0}</span>{' '}
+                                    <span className="font-medium text-[#101828]">{records.from ?? 0}</span>{' '}
                                     to{' '}
-                                    <span className="font-medium text-slate-700 dark:text-white">{records.to ?? 0}</span>{' '}
+                                    <span className="font-medium text-[#101828]">{records.to ?? 0}</span>{' '}
                                     of{' '}
-                                    <span className="font-medium text-slate-700 dark:text-white">{records.total}</span>{' '}
+                                    <span className="font-medium text-[#101828]">{records.total}</span>{' '}
                                     records
                                 </p>
 
                                 <div className="flex items-center gap-1">
                                     <button
                                         type="button"
+                                        aria-label="Previous page"
                                         disabled={records.current_page === 1}
                                         onClick={() => goToPage(records.links.find((link) => link.label.includes('Previous'))?.url ?? null)}
-                                        className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                        className={pageButton}
                                     >
                                         <ChevronLeft className="h-4 w-4" />
                                     </button>
@@ -785,8 +797,8 @@ export default function Attendance({ records, stats, totalHours, employees, depa
                                                 disabled={!link.url}
                                                 className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${
                                                     link.active
-                                                        ? 'bg-[#C6F432] text-[#0B0F1A]'
-                                                        : 'text-slate-600 hover:bg-slate-100 dark:text-white/60 dark:hover:bg-white/5'
+                                                        ? 'bg-[#0E7A5A] text-white'
+                                                        : 'text-[#475467] hover:bg-[#F2F4F7]'
                                                 }`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
@@ -794,9 +806,10 @@ export default function Attendance({ records, stats, totalHours, employees, depa
 
                                     <button
                                         type="button"
+                                        aria-label="Next page"
                                         disabled={records.current_page === records.last_page}
                                         onClick={() => goToPage(records.links.find((link) => link.label.includes('Next'))?.url ?? null)}
-                                        className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                                        className={pageButton}
                                     >
                                         <ChevronRight className="h-4 w-4" />
                                     </button>

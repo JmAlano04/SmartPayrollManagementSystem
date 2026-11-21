@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
+use Carbon\CarbonPeriod;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\CarbonPeriod;
-
 
 class AttendanceSeeder extends Seeder
 {
@@ -26,15 +25,26 @@ class AttendanceSeeder extends Seeder
 
         foreach ($employeeIds as $employeeId) {
             foreach ($weekdays as $date) {
-                $isAbsent = rand(1, 100) <= 5; // 5% chance absent
+                $isAbsent = rand(1, 100) <= 5;       // 5% chance absent
+                $isPaidLeave = !$isAbsent && rand(1, 100) <= 3; // 3% chance paid leave
+                $overtimeHours = (!$isAbsent && !$isPaidLeave) ? rand(0, 2) : 0;
+
+                $status = $isAbsent ? 'absent' : ($isPaidLeave ? 'on_leave' : 'present');
+                $timeIn = ($isAbsent || $isPaidLeave) ? null : '08:00:00';
+                $timeOut = ($isAbsent || $isPaidLeave) ? null : sprintf('%02d:00:00', 17 + $overtimeHours);
+                $hoursWorked = ($isAbsent) ? 0 : 8;
 
                 DB::table('attendance')->updateOrInsert(
                     ['employee_id' => $employeeId, 'work_date' => $date->format('Y-m-d')],
                     [
-                        'hours_worked' => $isAbsent ? 0 : 8,
-                        'overtime_hours' => $isAbsent ? 0 : rand(0, 2),
+                        'time_in' => $timeIn,
+                        'time_out' => $timeOut,
+                        'hours_worked' => $hoursWorked,
+                        'overtime_hours' => $overtimeHours,
+                        'status' => $status,
+                        'remarks' => $isAbsent ? 'No show' : ($isPaidLeave ? 'Paid leave' : null),
                         'is_absent' => $isAbsent,
-                        'is_paid_leave' => false,
+                        'is_paid_leave' => $isPaidLeave,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]

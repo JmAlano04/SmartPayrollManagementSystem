@@ -2,58 +2,30 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Employee;
-use App\Models\Attendance;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\RolePermission;
-use App\Models\SalaryStructure;
-
-
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
         $this->call([
+            // 1st: roles & permissions (Spatie) — kailangan bago gumawa ng users
+            RoleSeeder::class,
 
-        // SEED THIS 1st for User Roles and Permissions
-            //  RoleSeeder::class, 
+            // 2nd: admin/hr/employee login accounts
+            UserSeeder::class,
 
-        // SEED THIS 3rd for Attendance Sample Data after EmployeeSeeder is seeded
-            //  AttendanceSeeder::class,
-            
-        // SEED THIS 4th for tax brackets after EmployeeSeeder is seeded
-            //   TaxBracketSeeder::class,
+            // 3rd: employees + salary structures
+            EmployeeSeeder::class,
 
-        // SEED THIS 5th for Payroll Run after EmployeeSeeder is seeded
-            //   PayrollRunSeeder::class,
-        ]); 
-     
-        // SEED this 2nd for Users and Employees
+            // 4th: tax brackets (independent, pwede kahit saan pero dito na lang)
+            TaxBracketSeeder::class,
 
-            //  Employee::factory()
-            // ->count(10)
-            // ->create()
-            // ->each(function ($employee) {
-            //     SalaryStructure::factory()->create([
-            //         'employee_id' => $employee->id,
-            //     ]);
-            // });
+            // 5th: attendance sample data (depende sa employees)
+            AttendanceSeeder::class,
+
+            // 6th: payroll runs, payslips, at logs (depende sa employees)
+            PayrollRunSeeder::class,
+        ]);
     }
 }

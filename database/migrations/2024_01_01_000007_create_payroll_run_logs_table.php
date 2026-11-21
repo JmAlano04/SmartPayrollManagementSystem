@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('payroll_run_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('payroll_run_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('payroll_run_id')->constrained('payroll_runs')->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('action');
             $table->string('from_status')->nullable();
             $table->string('to_status')->nullable();

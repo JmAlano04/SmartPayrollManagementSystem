@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,7 +34,23 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+
+        // Admin and HR manager: go back to the page they were trying to open,
+        // otherwise the dashboard.
+        if ($user->hasAnyRole(['admin', 'hr_manager', 'employee'])) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        // Logged in but no role assigned: don't let them in.
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        throw ValidationException::withMessages([
+            'email' => 'Your account has no role assigned. Please contact an administrator.',
+        ]);
     }
 
     /**

@@ -21,16 +21,17 @@ class PayrollRunSeeder extends Seeder
 
         // 3 buwan na "paid" na payroll runs
         foreach ([3, 2, 1] as $monthsAgo) {
-            $periodStart = now()->subMonths($monthsAgo)->startOfMonth()->format('Y-m-d');
-            $periodEnd = now()->subMonths($monthsAgo)->endOfMonth()->format('Y-m-d');
+            $periodStart = now()->subMonths($monthsAgo)->startOfMonth();
+            $periodEnd = now()->subMonths($monthsAgo)->endOfMonth();
 
             $runId = DB::table('payroll_runs')->insertGetId([
-                'period_start' => $periodStart,
-                'period_end' => $periodEnd,
+                'period_start' => $periodStart->toDateString(),
+                'period_end' => $periodEnd->toDateString(),
+                'pay_date' => $periodEnd->copy()->addDays(5)->toDateString(),
                 'status' => 'paid',
                 'created_by' => $userId,
                 'approved_by' => $userId,
-                'approved_at' => now()->subMonths($monthsAgo)->endOfMonth(),
+                'approved_at' => $periodEnd->copy(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

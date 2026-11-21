@@ -12,15 +12,15 @@ return new class extends Migration
             $table->id();
             $table->date('period_start');
             $table->date('period_end');
-            $table->enum('status', ['draft', 'under_review', 'approved', 'paid', 'archived'])->default('draft');
-            $table->decimal('total_gross', 14, 2)->nullable();
-            $table->decimal('total_net', 14, 2)->nullable();
+            $table->date('pay_date')->nullable();
+            $table->string('status')->default('draft'); // draft, under_review, approved, paid, archived
+            $table->decimal('total_gross', 14, 2)->default(0);
+            $table->decimal('total_net', 14, 2)->default(0);
             $table->unsignedInteger('flagged_anomalies_count')->default(0);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
-            $table->index('status');
         });
     }
 

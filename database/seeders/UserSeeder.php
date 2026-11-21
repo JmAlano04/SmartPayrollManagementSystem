@@ -3,18 +3,17 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Admin user
+        // Clear Spatie's cached roles/permissions so new roles are seen immediately.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
@@ -22,9 +21,8 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        $admin->assignRole('admin');
+        $admin->syncRoles('admin');
 
-        // HR Manager user
         $hr = User::firstOrCreate(
             ['email' => 'hr@example.com'],
             [
@@ -32,9 +30,8 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        $hr->assignRole('hr_manager');
+        $hr->syncRoles('hr_manager');
 
-        // Employee user
         $employee = User::firstOrCreate(
             ['email' => 'employee@example.com'],
             [
@@ -42,6 +39,6 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
-        $employee->assignRole('employee');
+        $employee->syncRoles('employee');
     }
 }

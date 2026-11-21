@@ -17,6 +17,13 @@ import {
     XCircle,
 } from 'lucide-react';
 
+/*
+ * Light palette (matches welcome-light.tsx)
+ *   paper  #F5F7FA   ink    #101828   muted  #475467 / #667085   line  #E4E7EC
+ *   green  #0E7A5A   amber  #F2B01E   red    #D92D20
+ * Type: Instrument Sans (UI + headings), IBM Plex Mono (figures only).
+ */
+
 /* Breadcrumbs */
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -95,7 +102,7 @@ function getPayrunNumber(id: number) {
     return `PR-${String(id).padStart(4, '0')}`;
 }
 
-/* Status pills (same look as the Pay Runs page) */
+/* Status pills */
 
 type StatusStyle = {
     label: string;
@@ -103,8 +110,8 @@ type StatusStyle = {
     icon: ComponentType<{ className?: string }>;
 };
 
-const okPill = 'bg-[#C6F432]/25 text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]';
-const waitPill = 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300';
+const okPill = 'bg-[#D1FADF] text-[#05603A]';
+const waitPill = 'bg-[#FEF0C7] text-[#7A4B00]';
 
 const statusStyles: Record<string, StatusStyle> = {
     paid: { label: 'Paid', icon: CheckCircle2, className: okPill },
@@ -114,33 +121,34 @@ const statusStyles: Record<string, StatusStyle> = {
     processing: {
         label: 'Processing',
         icon: Clock3,
-        className: 'bg-indigo-100 text-indigo-700 dark:bg-[#4F5BFF]/15 dark:text-[#9AA3FF]',
+        className: 'bg-[#E0EAFF] text-[#3538CD]',
     },
     failed: {
         label: 'Failed',
         icon: XCircle,
-        className: 'bg-red-100 text-red-700 dark:bg-[#FF6B5B]/15 dark:text-[#FF8A7C]',
+        className: 'bg-[#FEE4E2] text-[#B42318]',
     },
 };
 
 const fallbackStatus: StatusStyle = {
     label: '',
     icon: Clock3,
-    className: 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white/60',
+    className: 'bg-[#F2F4F7] text-[#475467]',
 };
 
 /* Shared class names */
 
 const card =
-    'rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]';
+    'rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_32px_-12px_rgba(16,24,40,0.1)]';
 
 const cardHeader =
-    'flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-white/10';
+    'flex items-center justify-between border-b border-[#E4E7EC] px-5 py-4';
 
-const th =
-    'px-5 py-3 font-[\'JetBrains_Mono\'] text-[11px] font-medium uppercase tracking-widest text-slate-500 dark:text-white/50';
+const th = 'px-5 py-3 text-xs font-medium text-[#667085]';
 
-const accentText = 'text-[#4D6B00] dark:text-[#C6F432]';
+const accentText = 'text-[#0E7A5A]';
+
+const mono = "font-['IBM_Plex_Mono']";
 
 /* Dashboard */
 
@@ -185,32 +193,32 @@ export default function Dashboard({
             label: 'Total Payroll - Paid',
             value: formatCurrency(stats?.totalPayroll ?? 0),
             icon: Banknote,
-            iconBg: 'bg-[#C6F432]',
-            iconColor: 'text-[#0B0F1A]',
+            iconBg: 'bg-[#0E7A5A]',
+            iconColor: 'text-white',
             valueSize: 'text-xl',
         },
         {
             label: 'Employees',
             value: stats?.employees ?? 0,
             icon: Users,
-            iconBg: 'bg-slate-100 dark:bg-white/10',
-            iconColor: 'text-[#0B0F1A] dark:text-white',
+            iconBg: 'bg-[#F2F4F7]',
+            iconColor: 'text-[#344054]',
             valueSize: 'text-2xl',
         },
         {
             label: 'Draft Payroll Runs',
             value: stats?.payrollRuns ?? 0,
             icon: Clock3,
-            iconBg: 'bg-amber-50 dark:bg-amber-400/10',
-            iconColor: 'text-amber-600 dark:text-amber-300',
+            iconBg: 'bg-[#FEF0C7]',
+            iconColor: 'text-[#7A4B00]',
             valueSize: 'text-2xl',
         },
         {
             label: 'Payslips',
             value: stats?.payslips ?? 0,
             icon: FileText,
-            iconBg: 'bg-indigo-50 dark:bg-[#4F5BFF]/15',
-            iconColor: 'text-indigo-600 dark:text-[#9AA3FF]',
+            iconBg: 'bg-[#E0EAFF]',
+            iconColor: 'text-[#3538CD]',
             valueSize: 'text-2xl',
         },
     ];
@@ -245,21 +253,28 @@ export default function Dashboard({
             <Head title="Dashboard">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
-                    href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,500,600,700|jetbrains-mono:400,500"
+                    href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|ibm-plex-mono:400,500"
                     rel="stylesheet"
                 />
             </Head>
 
-            <div className="dark min-h-full bg-[#0B0F1A] font-['Bricolage_Grotesque'] text-white">
+            <div
+                className="min-h-full bg-[#F5F7FA] font-['Instrument_Sans'] text-[#101828]"
+                style={{
+                    backgroundImage:
+                        'linear-gradient(to bottom, rgba(16,24,40,0.035) 1px, transparent 1px)',
+                    backgroundSize: '100% 32px',
+                }}
+            >
                 <div className="mx-auto max-w-7xl space-y-6 p-6">
                     {/* Header */}
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-[#0B0F1A] dark:text-white">
+                            <h1 className="text-2xl font-bold tracking-tight text-[#101828]">
                                 {greeting}
                             </h1>
 
-                            <p className="mt-1 text-sm text-slate-500 dark:text-white/50">
+                            <p className="mt-1 text-sm text-[#475467]">
                                 Payroll performance and what needs your
                                 attention today
                             </p>
@@ -268,7 +283,7 @@ export default function Dashboard({
                         <button
                             type="button"
                             onClick={() => setShowAddEmployeeModal(true)}
-                            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#C6F432] px-5 py-2.5 text-sm font-semibold text-[#0B0F1A] shadow-sm transition hover:bg-[#D6FF55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B0F1A]"
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0E7A5A] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0B6249] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7A5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F5F7FA]"
                         >
                             <UserPlus className="h-4 w-4" />
                             Add Employee
@@ -284,12 +299,12 @@ export default function Dashboard({
                                 <div key={stat.label} className={`${card} p-5`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-slate-500 dark:text-white/50">
+                                            <p className="text-sm font-medium text-[#667085]">
                                                 {stat.label}
                                             </p>
 
                                             <p
-                                                className={`mt-2 font-['JetBrains_Mono'] font-medium text-[#0B0F1A] dark:text-white ${stat.valueSize}`}
+                                                className={`mt-2 ${mono} font-medium text-[#101828] ${stat.valueSize}`}
                                             >
                                                 {stat.value}
                                             </p>
@@ -314,16 +329,16 @@ export default function Dashboard({
                         <div className={`${card} overflow-hidden`}>
                             <div className={cardHeader}>
                                 <div>
-                                    <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
+                                    <h2 className="text-base font-semibold text-[#101828]">
                                         Payroll Cost Trend
                                     </h2>
 
-                                    <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
+                                    <p className="mt-1 text-xs text-[#667085]">
                                         Payroll cost per pay cycle
                                     </p>
                                 </div>
 
-                                <span className="rounded-full bg-[#C6F432]/25 px-2.5 py-1 text-xs font-medium text-[#456000] dark:bg-[#C6F432]/10 dark:text-[#C6F432]">
+                                <span className="rounded-full bg-[#D1FADF] px-2.5 py-1 text-xs font-medium text-[#05603A]">
                                     Net Pay
                                 </span>
                             </div>
@@ -331,18 +346,20 @@ export default function Dashboard({
                             <div className="p-5">
                                 {trendData.length === 0 ? (
                                     <div className="flex h-40 items-center justify-center">
-                                        <p className="text-sm text-slate-500 dark:text-white/40">
+                                        <p className="text-sm text-[#667085]">
                                             No payroll trend data available.
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="flex items-end gap-2 rounded-xl bg-slate-50 p-3 dark:bg-white/5">
+                                    <div className="flex items-end gap-2 rounded-xl bg-[#F9FAFB] p-3">
                                         {trendData.map((item) => (
                                             <div
                                                 key={item.id}
                                                 className="flex min-w-0 flex-1 flex-col items-center gap-2"
                                             >
-                                                <span className="font-['JetBrains_Mono'] text-[10px] text-slate-500 dark:text-white/70">
+                                                <span
+                                                    className={`${mono} text-[10px] text-[#475467]`}
+                                                >
                                                     ₱
                                                     {item.value.toLocaleString(
                                                         'en-PH',
@@ -353,10 +370,10 @@ export default function Dashboard({
                                                 </span>
 
                                                 <div className="relative flex h-32 w-full items-end justify-center">
-                                                    <div className="h-full w-full max-w-9 rounded-t-md bg-slate-200 dark:bg-white/10" />
+                                                    <div className="h-full w-full max-w-9 rounded-t-md bg-[#E4E7EC]" />
 
                                                     <div
-                                                        className="absolute bottom-0 w-full max-w-9 rounded-t-md bg-[#C6F432]"
+                                                        className="absolute bottom-0 w-full max-w-9 rounded-t-md bg-[#0E7A5A]"
                                                         style={{
                                                             height:
                                                                 maxTrend > 0
@@ -366,7 +383,7 @@ export default function Dashboard({
                                                     />
                                                 </div>
 
-                                                <span className="text-[11px] text-slate-400 dark:text-white/45">
+                                                <span className="text-[11px] text-[#667085]">
                                                     {item.month} {item.year}
                                                 </span>
                                             </div>
@@ -379,18 +396,18 @@ export default function Dashboard({
                         {/* Needs review */}
                         <div className={`${card} overflow-hidden`}>
                             <div className={cardHeader}>
-                                <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
+                                <h2 className="text-base font-semibold text-[#101828]">
                                     Needs Review
                                 </h2>
 
-                                <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-[#FF6B5B]/15 dark:text-[#FF8A7C]">
+                                <span className="inline-flex items-center rounded-full bg-[#FEE4E2] px-2.5 py-1 text-xs font-medium text-[#B42318]">
                                     {anomalies.length} flagged
                                 </span>
                             </div>
 
                             <div className="space-y-3 p-5">
                                 {anomalies.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed border-slate-200 px-3 py-6 text-center text-sm text-slate-500 dark:border-white/10 dark:text-white/40">
+                                    <div className="rounded-xl border border-dashed border-[#D0D5DD] px-3 py-6 text-center text-sm text-[#667085]">
                                         No items need review.
                                     </div>
                                 ) : (
@@ -398,24 +415,24 @@ export default function Dashboard({
                                         <button
                                             key={a.id}
                                             type="button"
-                                            className="flex w-full items-start justify-between gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-[#C6F432]/60 hover:bg-[#C6F432]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6F432]/60 dark:border-white/10"
+                                            className="flex w-full items-start justify-between gap-3 rounded-xl border border-[#E4E7EC] p-3 text-left transition hover:border-[#0E7A5A]/40 hover:bg-[#D1FADF]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7A5A]/60"
                                         >
                                             <div className="min-w-0">
-                                                <p className="truncate text-sm font-medium text-[#0B0F1A] dark:text-white">
+                                                <p className="truncate text-sm font-medium text-[#101828]">
                                                     {a.employee}
                                                 </p>
 
-                                                <p className="text-xs text-slate-400">
+                                                <p className="text-xs text-[#667085]">
                                                     {a.role}
                                                 </p>
 
-                                                <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-white/60">
+                                                <p className="mt-1 text-xs leading-5 text-[#475467]">
                                                     {a.issue}
                                                 </p>
                                             </div>
 
                                             <div
-                                                className={`flex shrink-0 items-center gap-1 pt-0.5 font-['JetBrains_Mono'] text-xs font-medium ${accentText}`}
+                                                className={`flex shrink-0 items-center gap-1 pt-0.5 ${mono} text-xs font-medium ${accentText}`}
                                             >
                                                 {a.amount}
                                                 <ChevronRight className="h-3.5 w-3.5" />
@@ -431,11 +448,11 @@ export default function Dashboard({
                     <div className={`${card} overflow-hidden`}>
                         <div className={cardHeader}>
                             <div>
-                                <h2 className="text-base font-semibold text-[#0B0F1A] dark:text-white">
+                                <h2 className="text-base font-semibold text-[#101828]">
                                     Recent Pay Runs
                                 </h2>
 
-                                <p className="mt-1 text-xs text-slate-500 dark:text-white/40">
+                                <p className="mt-1 text-xs text-[#667085]">
                                     Your latest payroll runs
                                 </p>
                             </div>
@@ -451,7 +468,7 @@ export default function Dashboard({
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[600px]">
                                 <thead>
-                                    <tr className="border-b border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                                    <tr className="border-b border-[#E4E7EC] bg-[#F9FAFB]">
                                         <th className={`${th} text-left`}>
                                             Pay Run
                                         </th>
@@ -467,7 +484,7 @@ export default function Dashboard({
                                     </tr>
                                 </thead>
 
-                                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                                <tbody className="divide-y divide-[#F2F4F7]">
                                     {payRuns?.length > 0 ? (
                                         payRuns.map((run) => {
                                             const style =
@@ -481,22 +498,24 @@ export default function Dashboard({
                                             return (
                                                 <tr
                                                     key={run.id}
-                                                    className="transition hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+                                                    className="transition hover:bg-[#F9FAFB]"
                                                 >
-                                                    <td className="px-5 py-4 font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A] dark:text-white">
+                                                    <td
+                                                        className={`px-5 py-4 ${mono} text-sm font-medium text-[#101828]`}
+                                                    >
                                                         {getPayrunNumber(
                                                             run.id,
                                                         )}
                                                     </td>
 
                                                     <td className="px-5 py-4">
-                                                        <p className="text-sm text-slate-700 dark:text-white/80">
+                                                        <p className="text-sm text-[#344054]">
                                                             {formatDate(
                                                                 run.period_start,
                                                             )}
                                                         </p>
 
-                                                        <p className="mt-1 text-xs text-slate-400">
+                                                        <p className="mt-1 text-xs text-[#667085]">
                                                             to{' '}
                                                             {formatDate(
                                                                 run.period_end,
@@ -505,7 +524,9 @@ export default function Dashboard({
                                                     </td>
 
                                                     <td className="px-5 py-4 text-right">
-                                                        <span className="font-['JetBrains_Mono'] text-sm font-medium text-[#0B0F1A] dark:text-white">
+                                                        <span
+                                                            className={`${mono} text-sm font-medium text-[#101828]`}
+                                                        >
                                                             {formatCurrency(
                                                                 run.total_net,
                                                             )}
@@ -528,7 +549,7 @@ export default function Dashboard({
                                         <tr>
                                             <td
                                                 colSpan={4}
-                                                className="px-6 py-12 text-center text-sm text-slate-500 dark:text-white/40"
+                                                className="px-6 py-12 text-center text-sm text-[#667085]"
                                             >
                                                 No recent pay runs available.
                                             </td>
