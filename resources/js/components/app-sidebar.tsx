@@ -6,7 +6,6 @@ import {
     Home,
     ScrollText,
     Settings,
-    TrendingUp,
     Users,
     Wallet,
 } from 'lucide-react';
@@ -80,7 +79,24 @@ type RoleNavigation = {
     payroll: NavItem[];
     people: NavItem[];
     attendance: NavItem[];
-    reports: NavItem[];
+};
+
+// ==========================================
+// ROLE MAPPING
+// ==========================================
+
+// Backend role name (Spatie) -> sidebar role key
+const roleAliases: Record<string, UserRole> = {
+    admin: 'admin',
+    hr_manager: 'hr',
+    hr: 'hr',
+    employee: 'employee',
+};
+
+const roleLabels: Record<UserRole, string> = {
+    admin: 'Admin',
+    hr: 'HR Manager',
+    employee: 'Employee',
 };
 
 // ==========================================
@@ -151,26 +167,16 @@ const hrPeopleItems: NavItem[] = [
 const employeePayrollItems: NavItem[] = [
     {
         title: 'My Payslips',
-        href: '/payroll/payslips',
+        href: '/payroll/payslips-employee',
         icon: ScrollText,
     },
 ];
 
 const employeeAttendanceItems: NavItem[] = [
     {
-        title: 'Camera',
-        href: '/camera', // change to your actual camera route
+        title: 'Face Registration',
+        href: '/face-recognition', // change to your actual camera route
         icon: Camera,
-    },
-];
-
-// ---------- Shared ----------
-
-const reportItems: NavItem[] = [
-    {
-        title: 'Cost Forecast',
-        href: '/reports/forecast',
-        icon: TrendingUp,
     },
 ];
 
@@ -183,14 +189,12 @@ const roleNavigation: Record<UserRole, RoleNavigation> = {
         payroll: adminPayrollItems,
         people: adminPeopleItems,
         attendance: [],
-        reports: reportItems,
     },
 
     hr: {
         payroll: hrPayrollItems,
         people: hrPeopleItems,
         attendance: [],
-        reports: reportItems,
     },
 
     // Employee sees only: Dashboard (overview), My Payslips, Camera
@@ -198,7 +202,6 @@ const roleNavigation: Record<UserRole, RoleNavigation> = {
         payroll: employeePayrollItems,
         people: [],
         attendance: employeeAttendanceItems,
-        reports: [],
     },
 };
 
@@ -267,11 +270,23 @@ export function AppSidebar() {
 
     const user = props.auth?.user;
 
-    const role = props.auth?.role?.toLowerCase() as UserRole | undefined;
+    // Map the backend role name (e.g. "hr_manager") to a sidebar role key
+    const role: UserRole | undefined = props.auth?.role
+        ? roleAliases[props.auth.role.toLowerCase()]
+        : undefined;
 
     // Null if the role is invalid or unassigned
-    const navigation =
-        role && role in roleNavigation ? roleNavigation[role] : null;
+    const navigation = role ? roleNavigation[role] : null;
+
+    // Only groups that have items, so separators sit between groups and
+    // never trail after the last one.
+    const groups = navigation
+        ? [
+              { label: 'Payroll', items: navigation.payroll },
+              { label: 'People', items: navigation.people },
+              { label: 'Attendance', items: navigation.attendance },
+          ].filter((group) => group.items.length > 0)
+        : [];
 
     const initials =
         user?.name
@@ -281,9 +296,7 @@ export function AppSidebar() {
             .join('')
             .toUpperCase() ?? 'U';
 
-    const roleLabel = role
-        ? role.charAt(0).toUpperCase() + role.slice(1)
-        : 'User';
+    const roleLabel = role ? roleLabels[role] : 'User';
 
     return (
         <Sidebar
@@ -325,48 +338,18 @@ export function AppSidebar() {
                     currentPath={url}
                 />
 
-                <SidebarSeparator className="bg-[#E4E7EC]" />
-
                 {/* ADMIN / HR / EMPLOYEE */}
-                {navigation && (
-                    <>
-                        <NavGroup
-                            label="Payroll"
-                            items={navigation.payroll}
-                            currentPath={url}
-                        />
-
-                        {navigation.payroll.length > 0 && (
-                            <SidebarSeparator className="bg-[#E4E7EC]" />
-                        )}
+                {groups.map((group) => (
+                    <React.Fragment key={group.label}>
+                        <SidebarSeparator className="bg-[#E4E7EC]" />
 
                         <NavGroup
-                            label="People"
-                            items={navigation.people}
+                            label={group.label}
+                            items={group.items}
                             currentPath={url}
                         />
-
-                        {navigation.people.length > 0 && (
-                            <SidebarSeparator className="bg-[#E4E7EC]" />
-                        )}
-
-                        <NavGroup
-                            label="Attendance"
-                            items={navigation.attendance}
-                            currentPath={url}
-                        />
-
-                        {navigation.attendance.length > 0 && (
-                            <SidebarSeparator className="bg-[#E4E7EC]" />
-                        )}
-
-                        <NavGroup
-                            label="Reports"
-                            items={navigation.reports}
-                            currentPath={url}
-                        />
-                    </>
-                )}
+                    </React.Fragment>
+                ))}
 
                 {/* INVALID OR UNASSIGNED ROLE */}
                 {!navigation && (
@@ -380,7 +363,7 @@ export function AppSidebar() {
             <SidebarFooter className="border-t border-[#E4E7EC] px-1 py-2 [&_[data-sidebar=menu-button]]:rounded-lg [&_[data-sidebar=menu-button]]:text-[#475467] [&_[data-sidebar=menu-button]]:hover:bg-[#F2F4F7] [&_[data-sidebar=menu-button]]:hover:text-[#101828] [&_[data-sidebar=menu-button][data-active=true]]:bg-[#D1FADF] [&_[data-sidebar=menu-button][data-active=true]]:text-[#05603A]">
                 <SidebarMenu>
                     {/* SETTINGS (hidden for employees) */}
-                    {role !== 'employee' && (
+                    {role && role !== 'employee' && (
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 asChild

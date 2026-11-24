@@ -2,136 +2,245 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
-use App\Models\Employee;
-use App\Models\Payslip;
 use App\Models\User;
+use App\Models\Employee;
+use App\Services\EmployeeService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+
 
 class EmployeesController extends Controller
 {
-    /**
-     * One route (/dashboard), two dashboards:
-     *  - employee            -> resources/js/pages/employee-dashboard.tsx (their own data only)
-     *  - admin / hr_manager  -> resources/js/pages/dashboard.tsx (company-wide)
-     */
-    public function index(Request $request): Response
+    public function __construct(
+        protected EmployeeService $employeeService
+    ) {}
+
+    public function index(Request $request)
     {
-        $user = $request->user();
+        return Inertia::render('employee', [
+            'stats' => $this->employeeService->getStats(),
 
-        if ($user->hasRole('employee') && ! $user->hasAnyRole(['admin', 'hr_manager'])) {
-            return Inertia::render('employee.employeeDashboard', [
-                'employee' => $this->employeeData($user),
-            ]);
-        }
+            'employees' => $this->employeeService->getEmployees($request),
 
-        return $this->adminDashboard($request);
-    }
+            'departments' => $this->employeeService->getDepartments(),
 
-    /**
-     * Company-wide dashboard.
-     * Paste your EXISTING dashboard code here unchanged (stats, payRuns, trend, needsReview).
-     */
-    private function adminDashboard(Request $request): Response
-    {
-        return Inertia::render('dashboard', [
-            // 'stats'       => ...,
-            // 'payRuns'     => ...,
-            // 'trend'       => ...,
-            // 'needsReview' => ...,
+            'statuses' => $this->employeeService->getStatuses(),
+
+            'employment_type' => $this->employeeService->getEmploymentTypes(),
+
+            'selectedDepartment' => $request->input(
+                'department',
+                ''
+            ),
+
+            'selectedStatus' => $request->input(
+                'status',
+                ''
+            ),
+
+            'search' => $request->input(
+                'search',
+                ''
+            ),
         ]);
     }
 
-    /**
-     * Everything the employee dashboard needs, limited to the logged-in employee.
-     * Adjust model / column names to match your schema.
-     */
-    private function employeeData(User $user): array
+
+   public function store(Request $request): RedirectResponse
     {
-        $employee = Employee::query()->where('user_id', $user->id)->first();
+        // Validate
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'unique:' . User::class,
+            ],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::defaults(),
+            ],
+        ]);
 
-        $emptyAttendance = [
-            'present' => 0,
-            'late' => 0,
-            'absent' => 0,
-            'on_leave' => 0,
-            'hours_worked' => 0,
-            'recent' => [],
-            'days' => [],
-        ];
+        // Create user
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+        ]);
 
-        if (! $employee) {
-            return [
-                'employee_code' => null,
-                'position' => null,
-                'department' => null,
-                'latestPayslip' => null,
-                'payslips' => [],
-                'attendance' => $emptyAttendance,
-            ];
+        // Split name
+        $nameParts = preg_split(
+            '/\s+/',
+            trim($user->name),
+            2
+        );
+
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? '';
+
+        // Employee code
+        $code = 'EMP-' . str_pad(
+            $user->id,
+            4,
+            '0',
+            STR_PAD_LEFT
+        );
+
+        // Create employee
+        Employee::create([
+            'user_id' => $user->id,
+            'employee_code' => $code,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $user->email,
+            'department' => 'Unassigned',
+            'position' => 'Employee',
+            'hire_date' => now(),
+            'employment_type' => 'full_time',
+            'status' => 'active',
+        ]);
+
+        // Assign role
+        $user->assignRole('employee');
+
+        return redirect()
+            ->back()
+            ->with('success', 'Employee added successfully.');
+    }
+
+  public function update(
+    Request $request,
+    Employee $employee
+): RedirectResponse {
+    $validated = $request->validate([
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'email' => [
+            'required',
+            'email',
+            Rule::unique('employees', 'email')
+                ->ignore($employee->id),
+        ],
+
+        'department' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'position' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'employment_type' => [
+            'required',
+            Rule::in([
+                'full_time',
+                'part_time',
+                'contract',
+            ]),
+        ],
+
+        'status' => [
+            'required',
+            Rule::in([
+                'active',
+                'on_leave',
+                'terminated',
+            ]),
+        ],
+
+        'hire_date' => [
+            'required',
+            'date',
+        ],
+
+        'salary' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+    ]);
+
+    DB::transaction(function () use ($validated, $employee) {
+
+        $nameParts = preg_split(
+            '/\s+/',
+            trim($validated['name']),
+            2
+        );
+
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? '';
+
+        $employee->update([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $validated['email'],
+            'department' => $validated['department'],
+            'employment_type' => $validated['employment_type'],
+            'position' => $validated['position'],
+            'status' => $validated['status'],
+            'hire_date' => $validated['hire_date'],
+        ]);
+
+        if ($employee->user) {
+            $employee->user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+            ]);
         }
 
-        /* Payslips */
+        $salaryStructure = $employee
+            ->salaryStructures()
+            ->latest()
+            ->first();
 
-        $payslips = Payslip::query()
-            ->where('employee_id', $employee->id)
-            ->latest('id')
-            ->limit(10)
-            ->get();
+        if ($salaryStructure) {
+            $salaryStructure->update([
+                'base_salary' => $validated['salary'],
+            ]);
+        } else {
+            $employee->salaryStructures()->create([
+                'base_salary' => $validated['salary'],
+                'effective_from' => $validated['hire_date'],
+            ]);
+        }
+    });
 
-        /* Attendance this month */
+    return redirect()
+        ->back()
+        ->with('success', 'Employee updated successfully.');
+    }
 
-        $monthStart = now()->startOfMonth()->toDateString();
+    public function destroy (Employee $employee) 
+    {
+         DB::table($employee->getTable())
+            ->where($employee->getKeyName(), $employee->getKey())
+            ->delete();
 
-        $month = fn () => Attendance::query()
-            ->where('employee_id', $employee->id)
-            ->where('date', '>=', $monthStart);
-
-        $counts = $month()
-            ->selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
-
-        $recent = $month()
-            ->latest('date')
-            ->limit(5)
-            ->get(['id', 'date', 'time_in', 'time_out', 'hours_worked', 'status']);
-
-        // One entry per day with a record: powers the calendar on the dashboard.
-        $days = $month()
-            ->get(['date', 'status'])
-            ->map(fn ($row) => [
-                'date' => substr((string) $row->date, 0, 10),
-                'status' => $row->status,
-            ])
-            ->values();
-
-        return [
-            'employee_code' => $employee->employee_code,
-            'position' => $employee->position,
-            'department' => $employee->department,
-
-            'latestPayslip' => $payslips->first()?->only([
-                'id', 'payslip_number', 'pay_period', 'pay_date', 'status',
-                'base_pay', 'overtime_pay', 'allowances_total',
-                'gross_pay', 'tax_amount', 'total_deductions', 'net_pay',
-            ]),
-
-            'payslips' => $payslips->map->only([
-                'id', 'payslip_number', 'pay_period', 'pay_date', 'status', 'net_pay',
-            ])->values(),
-
-            'attendance' => [
-                'present' => (int) ($counts['present'] ?? 0),
-                'late' => (int) ($counts['late'] ?? 0),
-                'absent' => (int) ($counts['absent'] ?? 0),
-                'on_leave' => (int) ($counts['on_leave'] ?? 0),
-                'hours_worked' => (float) $month()->sum('hours_worked'),
-                'recent' => $recent,
-                'days' => $days,
-            ],
-        ];
+        return redirect()
+        ->back()
+        ->with('success', 'Employee Deleted successfully');
     }
 }

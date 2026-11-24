@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendance extends Model
 {
+    // Table is singular in your DB, so Laravel's default ("attendances") would be wrong.
     protected $table = 'attendance';
 
     protected $fillable = [
@@ -23,11 +24,11 @@ class Attendance extends Model
     ];
 
     protected $casts = [
-        'work_date' => 'date',
-        'hours_worked' => 'float',
-        'overtime_hours' => 'float',
-        'is_absent' => 'boolean',
-        'is_paid_leave' => 'boolean',
+        'work_date'      => 'date:Y-m-d',
+        'hours_worked'   => 'decimal:2',
+        'overtime_hours' => 'decimal:2',
+        'is_absent'      => 'boolean',
+        'is_paid_leave'  => 'boolean',
     ];
 
     public function employee(): BelongsTo

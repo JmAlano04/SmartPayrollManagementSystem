@@ -120,7 +120,11 @@ type Props = {
 const card =
     'rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_32px_-12px_rgba(16,24,40,0.1)]';
 
-const th = 'px-5 py-4 text-xs font-medium text-[#667085]';
+const th = 'px-4 py-4 text-xs font-medium text-[#667085]';
+
+const td = 'px-4 py-4 align-top text-sm break-words text-[#344054]';
+
+const tdNum = 'px-4 py-4 text-right align-top whitespace-nowrap';
 
 const mono = "font-['IBM_Plex_Mono']";
 
@@ -753,8 +757,8 @@ export default function Payslips({
                     ====================================================== */}
 
                     <div className={`${card} overflow-hidden`}>
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[1000px]">
+                        <div className="w-full">
+                            <table className="w-full table-auto">
                                 <thead className="border-b border-[#E4E7EC] bg-[#F9FAFB]">
                                     <tr>
                                         <th className={`${th} text-left`}>
@@ -799,8 +803,8 @@ export default function Payslips({
                                                     className="transition hover:bg-[#F9FAFB]"
                                                 >
                                                     {/* Employee */}
-                                                    <td className="px-5 py-4">
-                                                        <div className="flex items-center gap-3">
+                                                    <td className="px-4 py-4 align-top">
+                                                        <div className="flex items-start gap-3">
                                                             <div
                                                                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D1FADF] ${mono} text-xs font-medium text-[#05603A]`}
                                                             >
@@ -810,11 +814,11 @@ export default function Payslips({
                                                             </div>
 
                                                             <div className="min-w-0">
-                                                                <p className="truncate font-medium text-[#101828]">
+                                                                <p className="font-medium break-words text-[#101828]">
                                                                     {fullName}
                                                                 </p>
 
-                                                                <p className="text-xs text-[#667085]">
+                                                                <p className="text-xs break-words text-[#667085]">
                                                                     {
                                                                         payslip.employee_code
                                                                     }
@@ -824,8 +828,8 @@ export default function Payslips({
                                                     </td>
 
                                                     {/* Period */}
-                                                    <td className="px-5 py-4">
-                                                        <p className="text-sm text-[#344054]">
+                                                    <td className={td}>
+                                                        <p>
                                                             {payslip.pay_period}
                                                         </p>
 
@@ -838,7 +842,7 @@ export default function Payslips({
                                                     </td>
 
                                                     {/* Gross */}
-                                                    <td className="px-5 py-4 text-right">
+                                                    <td className={tdNum}>
                                                         <span
                                                             className={`${mono} text-sm text-[#344054]`}
                                                         >
@@ -849,7 +853,7 @@ export default function Payslips({
                                                     </td>
 
                                                     {/* Deductions */}
-                                                    <td className="px-5 py-4 text-right">
+                                                    <td className={tdNum}>
                                                         <span
                                                             className={`${mono} text-sm text-[#475467]`}
                                                         >
@@ -860,7 +864,7 @@ export default function Payslips({
                                                     </td>
 
                                                     {/* Net */}
-                                                    <td className="px-5 py-4 text-right">
+                                                    <td className={tdNum}>
                                                         <span
                                                             className={`${mono} text-sm font-medium text-[#101828]`}
                                                         >
@@ -871,9 +875,9 @@ export default function Payslips({
                                                     </td>
 
                                                     {/* Status */}
-                                                    <td className="px-5 py-4 text-center">
+                                                    <td className="px-4 py-4 text-center align-top">
                                                         <span
-                                                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(
+                                                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${getStatusClass(
                                                                 payslip.status,
                                                             )}`}
                                                         >
@@ -884,7 +888,7 @@ export default function Payslips({
                                                     </td>
 
                                                     {/* Actions */}
-                                                    <td className="px-5 py-4">
+                                                    <td className="px-4 py-4 align-top">
                                                         <div className="flex items-center justify-center gap-1">
                                                             <button
                                                                 type="button"

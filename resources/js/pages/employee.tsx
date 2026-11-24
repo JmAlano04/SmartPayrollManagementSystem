@@ -11,11 +11,11 @@ import AddEmployeeForm from '@/components/employees/AddEmployeeForm';
 import UpdateEmployeeForm from '@/components/employees/UpdateEmployeeForm';
 
 import {
-    CalendarDays,
+    CheckCircle2,
     ChevronLeft,
     ChevronRight,
-    CircleCheck,
-    Clock,
+    Clock3,
+    Filter,
     Pencil,
     Search,
     Trash2,
@@ -26,10 +26,10 @@ import {
 } from 'lucide-react';
 
 /*
- * Light palette (matches welcome-light, dashboard-light, pay-runs-light)
+ * Light palette (matches Pay Runs, welcome-light, dashboard-light, login-light)
  *   paper  #F5F7FA   ink    #101828   muted  #475467 / #667085   line  #E4E7EC
  *   green  #0E7A5A   active #D1FADF / #05603A   leave #FEF0C7 / #7A4B00
- *   red    #FEE4E2 / #B42318
+ *   terminated #FEE4E2 / #B42318
  * Type: Instrument Sans (UI + headings), IBM Plex Mono (figures only).
  */
 
@@ -86,11 +86,7 @@ type Props = {
     search?: string;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Helpers
-|--------------------------------------------------------------------------
-*/
+/* Helpers */
 
 function initialsOf(name: string) {
     return name
@@ -127,54 +123,72 @@ const statusLabels: Record<string, string> = {
     on_leave: 'On Leave',
 };
 
-function getStatusClass(status: Employee['status']) {
-    switch (status) {
-        case 'active':
-            return 'bg-[#D1FADF] text-[#05603A]';
+function StatusBadge({ status }: { status: Employee['status'] }) {
+    const label = statusLabels[status] ?? status;
 
-        case 'on_leave':
-            return 'bg-[#FEF0C7] text-[#7A4B00]';
-
-        case 'terminated':
-            return 'bg-[#FEE4E2] text-[#B42318]';
-
-        default:
-            return 'bg-[#F2F4F7] text-[#475467]';
+    if (status === 'active') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D1FADF] px-2.5 py-1 text-xs font-medium whitespace-nowrap text-[#05603A]">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {label}
+            </span>
+        );
     }
+
+    if (status === 'on_leave') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF0C7] px-2.5 py-1 text-xs font-medium whitespace-nowrap text-[#7A4B00]">
+                <Clock3 className="h-3.5 w-3.5" />
+                {label}
+            </span>
+        );
+    }
+
+    if (status === 'terminated') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE4E2] px-2.5 py-1 text-xs font-medium whitespace-nowrap text-[#B42318]">
+                <UserMinus className="h-3.5 w-3.5" />
+                {label}
+            </span>
+        );
+    }
+
+    return (
+        <span className="inline-flex items-center rounded-full bg-[#F2F4F7] px-2.5 py-1 text-xs font-medium whitespace-nowrap text-[#475467]">
+            {label}
+        </span>
+    );
 }
 
-/*
-|--------------------------------------------------------------------------
-| Shared class names
-|--------------------------------------------------------------------------
-*/
+/* Shared class names */
 
 const card =
     'rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_32px_-12px_rgba(16,24,40,0.1)]';
 
+const th = 'px-4 py-3 text-xs font-medium text-[#667085]';
+
+const td = 'px-4 py-4 align-top text-sm break-words text-[#344054]';
+
 const mono = "font-['IBM_Plex_Mono']";
 
-const fieldClass =
-    'h-10 w-full rounded-lg border border-[#D0D5DD] bg-white text-sm text-[#101828] outline-none transition focus:border-[#0E7A5A] focus:ring-2 focus:ring-[#0E7A5A]/20';
+const field =
+    'w-full rounded-xl border border-[#D0D5DD] bg-white px-3 py-2.5 text-sm text-[#101828] outline-none transition focus:border-[#0E7A5A] focus:ring-2 focus:ring-[#0E7A5A]/20';
 
-const th = 'px-5 py-4 text-xs font-medium text-[#667085]';
-
-const actionButton = 'rounded-lg p-2 text-[#667085] transition hover:bg-[#F2F4F7]';
-
-const outlineBtn =
-    'inline-flex items-center justify-center gap-2 rounded-full border border-[#D0D5DD] bg-white px-4 text-sm font-medium text-[#344054] transition hover:bg-[#F9FAFB]';
+const accentText = 'text-[#0E7A5A]';
 
 const primaryBtn =
-    'inline-flex items-center gap-2 rounded-full bg-[#0E7A5A] text-sm font-semibold text-white shadow-sm transition hover:bg-[#0B6249] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7A5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F5F7FA]';
+    'inline-flex items-center justify-center gap-2 rounded-full bg-[#0E7A5A] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0B6249] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7A5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F5F7FA]';
+
+const ghostBtn =
+    'inline-flex items-center gap-2 rounded-full border border-[#D0D5DD] bg-white px-4 py-2 text-sm font-medium text-[#344054] transition hover:bg-[#F9FAFB]';
+
+const iconBtn =
+    'rounded-lg p-2 text-[#667085] transition hover:bg-[#F2F4F7] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 
 const pageBtn =
-    'rounded-lg border border-[#D0D5DD] p-2 text-[#475467] transition hover:bg-[#F9FAFB] disabled:cursor-not-allowed disabled:opacity-40';
+    'rounded-lg border border-[#D0D5DD] bg-white p-2 text-[#344054] transition hover:bg-[#F9FAFB] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white';
 
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
+/* Page */
 
 export default function EmployeesIndex({
     employees,
@@ -305,15 +319,15 @@ export default function EmployeesIndex({
         {
             label: 'Active',
             value: stats.activeEmployees,
-            icon: CircleCheck,
-            valueColor: 'text-[#0E7A5A]',
+            icon: CheckCircle2,
+            valueColor: accentText,
             iconBg: 'bg-[#D1FADF]',
-            iconColor: 'text-[#0E7A5A]',
+            iconColor: accentText,
         },
         {
             label: 'On Leave',
             value: stats.onLeaveCount,
-            icon: Clock,
+            icon: Clock3,
             valueColor: 'text-[#7A4B00]',
             iconBg: 'bg-[#FEF0C7]',
             iconColor: 'text-[#7A4B00]',
@@ -328,12 +342,6 @@ export default function EmployeesIndex({
         },
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Render
-    |--------------------------------------------------------------------------
-    */
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Employees">
@@ -345,18 +353,15 @@ export default function EmployeesIndex({
             </Head>
 
             <div
-                className="min-h-full bg-[#F5F7FA] p-4 font-['Instrument_Sans'] text-[#101828] md:p-6"
+                className="min-h-full bg-[#F5F7FA] font-['Instrument_Sans'] text-[#101828]"
                 style={{
                     backgroundImage:
                         'linear-gradient(to bottom, rgba(16,24,40,0.035) 1px, transparent 1px)',
                     backgroundSize: '100% 32px',
                 }}
             >
-                <div className="mx-auto max-w-7xl space-y-6">
-                    {/* =====================================================
-                        HEADER
-                    ====================================================== */}
-
+                <div className="mx-auto max-w-7xl space-y-6 p-6">
+                    {/* Header */}
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-[#101828]">
@@ -368,46 +373,38 @@ export default function EmployeesIndex({
                             </p>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setShowAddEmployeeModal(true)}
-                                className={`${primaryBtn} px-5 py-2.5`}
-                            >
-                                <UserPlus className="h-4 w-4" />
-                                Add Employee
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowAddEmployeeModal(true)}
+                            className={primaryBtn}
+                        >
+                            <UserPlus className="h-4 w-4" />
+                            Add Employee
+                        </button>
                     </div>
 
-                    {/* =====================================================
-                        STAT CARDS
-                    ====================================================== */}
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {/* Statistics */}
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {statCards.map((stat) => {
                             const Icon = stat.icon;
 
                             return (
-                                <div
-                                    key={stat.label}
-                                    className={`${card} p-5`}
-                                >
+                                <div key={stat.label} className={`${card} p-5`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm text-[#667085]">
+                                            <p className="text-sm font-medium text-[#667085]">
                                                 {stat.label}
                                             </p>
 
-                                            <h2
+                                            <p
                                                 className={`mt-2 ${mono} text-2xl font-medium ${stat.valueColor}`}
                                             >
                                                 {stat.value}
-                                            </h2>
+                                            </p>
                                         </div>
 
                                         <div
-                                            className={`rounded-xl p-3 ${stat.iconBg}`}
+                                            className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.iconBg}`}
                                         >
                                             <Icon
                                                 className={`h-5 w-5 ${stat.iconColor}`}
@@ -419,35 +416,56 @@ export default function EmployeesIndex({
                         })}
                     </div>
 
-                    {/* =====================================================
-                        FILTERS
-                    ====================================================== */}
+                    {/* Filters */}
+                    <div className={`${card} p-5`}>
+                        <div className="mb-4 flex items-center gap-2">
+                            <Filter className={`h-4 w-4 ${accentText}`} />
 
-                    <div className={`${card} p-4`}>
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+                            <h2 className="text-sm font-semibold text-[#101828]">
+                                Filters
+                            </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             {/* Search */}
-                            <div className="relative md:col-span-5">
-                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+                            <div>
+                                <label
+                                    htmlFor="employee-search"
+                                    className="mb-2 block text-xs font-medium text-[#344054]"
+                                >
+                                    Search
+                                </label>
 
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) =>
-                                        handleSearch(e.target.value)
-                                    }
-                                    placeholder="Search by name, email, or department..."
-                                    className={`${fieldClass} pr-3 pl-10 placeholder:text-[#98A2B3]`}
-                                />
+                                <div className="relative">
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+
+                                    <input
+                                        id="employee-search"
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) =>
+                                            handleSearch(e.target.value)
+                                        }
+                                        placeholder="Search by name, email, or department..."
+                                        className={`${field} pl-9 placeholder:text-[#98A2B3]`}
+                                    />
+                                </div>
                             </div>
 
                             {/* Department */}
-                            <div className="relative md:col-span-3">
-                                <CalendarDays className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+                            <div>
+                                <label
+                                    htmlFor="employee-department"
+                                    className="mb-2 block text-xs font-medium text-[#344054]"
+                                >
+                                    Department
+                                </label>
 
                                 <select
+                                    id="employee-department"
                                     value={selectedDepartment ?? ''}
                                     onChange={handleDepartmentChange}
-                                    className={`${fieldClass} appearance-none pr-3 pl-10`}
+                                    className={field}
                                 >
                                     <option value="">All Departments</option>
 
@@ -463,13 +481,21 @@ export default function EmployeesIndex({
                             </div>
 
                             {/* Status */}
-                            <div className="md:col-span-2">
+                            <div>
+                                <label
+                                    htmlFor="employee-status"
+                                    className="mb-2 block text-xs font-medium text-[#344054]"
+                                >
+                                    Status
+                                </label>
+
                                 <select
+                                    id="employee-status"
                                     value={selectedStatus ?? ''}
                                     onChange={handleStatusChange}
-                                    className={`${fieldClass} px-3`}
+                                    className={field}
                                 >
-                                    <option value="">All Status</option>
+                                    <option value="">All Statuses</option>
 
                                     {statuses.map((status) => (
                                         <option key={status} value={status}>
@@ -478,27 +504,25 @@ export default function EmployeesIndex({
                                     ))}
                                 </select>
                             </div>
+                        </div>
 
-                            {/* Buttons */}
-                            <div className="flex items-center gap-2 md:col-span-2">
+                        {hasFilters && (
+                            <div className="mt-4 flex justify-end">
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    disabled={!hasFilters}
-                                    className={`${outlineBtn} h-10 w-full disabled:cursor-not-allowed disabled:opacity-40`}
+                                    className={ghostBtn}
                                 >
                                     <X className="h-4 w-4" />
-                                    Clear
+                                    Clear Filters
                                 </button>
                             </div>
-                        </div>
+                        )}
                     </div>
 
-                    {/* =====================================================
-                        TABLE
-                    ====================================================== */}
-
+                    {/* Employees Table */}
                     <div className={`${card} overflow-hidden`}>
+                        {/* Table Header */}
                         <div className="flex flex-col gap-2 border-b border-[#E4E7EC] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h2 className="text-base font-semibold text-[#101828]">
@@ -516,10 +540,10 @@ export default function EmployeesIndex({
                         </div>
 
                         {employees.data.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[1000px]">
-                                    <thead className="border-b border-[#E4E7EC] bg-[#F9FAFB]">
-                                        <tr>
+                            <div className="w-full">
+                                <table className="w-full table-auto">
+                                    <thead>
+                                        <tr className="border-b border-[#E4E7EC] bg-[#F9FAFB]">
                                             <th className={`${th} text-left`}>
                                                 Employee
                                             </th>
@@ -542,7 +566,7 @@ export default function EmployeesIndex({
                                                 Status
                                             </th>
                                             <th className={`${th} text-center`}>
-                                                Actions
+                                                Action
                                             </th>
                                         </tr>
                                     </thead>
@@ -554,8 +578,8 @@ export default function EmployeesIndex({
                                                 className="transition hover:bg-[#F9FAFB]"
                                             >
                                                 {/* Employee */}
-                                                <td className="px-5 py-4">
-                                                    <div className="flex items-center gap-3">
+                                                <td className="px-4 py-4 align-top">
+                                                    <div className="flex items-start gap-3">
                                                         <div
                                                             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D1FADF] ${mono} text-xs font-medium text-[#05603A]`}
                                                         >
@@ -565,11 +589,11 @@ export default function EmployeesIndex({
                                                         </div>
 
                                                         <div className="min-w-0">
-                                                            <p className="truncate font-medium text-[#101828]">
+                                                            <p className="font-medium break-words text-[#101828]">
                                                                 {employee.name}
                                                             </p>
 
-                                                            <p className="truncate text-xs text-[#667085]">
+                                                            <p className="mt-0.5 text-xs break-all text-[#667085]">
                                                                 {employee.email}
                                                             </p>
                                                         </div>
@@ -577,19 +601,19 @@ export default function EmployeesIndex({
                                                 </td>
 
                                                 {/* Department */}
-                                                <td className="px-5 py-4 text-sm text-[#344054]">
+                                                <td className={td}>
                                                     {employee.department}
                                                 </td>
 
                                                 {/* Position */}
-                                                <td className="px-5 py-4 text-sm text-[#344054]">
+                                                <td className={td}>
                                                     {employee.position}
                                                 </td>
 
                                                 {/* Salary */}
-                                                <td className="px-5 py-4 text-right">
+                                                <td className="px-4 py-4 text-right align-top whitespace-nowrap">
                                                     <span
-                                                        className={`${mono} text-sm text-[#344054]`}
+                                                        className={`${mono} text-sm font-medium text-[#101828]`}
                                                     >
                                                         {formatCurrency(
                                                             employee.salary,
@@ -598,32 +622,26 @@ export default function EmployeesIndex({
                                                 </td>
 
                                                 {/* Hire date */}
-                                                <td className="px-5 py-4 text-sm text-[#344054]">
+                                                <td className={td}>
                                                     {formatDate(
                                                         employee.hire_date,
                                                     )}
                                                 </td>
 
                                                 {/* Employment type */}
-                                                <td className="px-5 py-4 text-sm text-[#344054]">
+                                                <td className={td}>
                                                     {employee.employment_type}
                                                 </td>
 
                                                 {/* Status */}
-                                                <td className="px-5 py-4 text-center">
-                                                    <span
-                                                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(
-                                                            employee.status,
-                                                        )}`}
-                                                    >
-                                                        {statusLabels[
-                                                            employee.status
-                                                        ] ?? employee.status}
-                                                    </span>
+                                                <td className="px-4 py-4 text-center align-top">
+                                                    <StatusBadge
+                                                        status={employee.status}
+                                                    />
                                                 </td>
 
-                                                {/* Actions */}
-                                                <td className="px-5 py-4">
+                                                {/* Action */}
+                                                <td className="px-4 py-4 align-top">
                                                     <div className="flex items-center justify-center gap-1">
                                                         <button
                                                             type="button"
@@ -634,7 +652,7 @@ export default function EmployeesIndex({
                                                                     employee,
                                                                 )
                                                             }
-                                                            className={`${actionButton} hover:text-[#0E7A5A]`}
+                                                            className={`${iconBtn} hover:text-[#0E7A5A]`}
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </button>
@@ -648,7 +666,7 @@ export default function EmployeesIndex({
                                                                     employee,
                                                                 )
                                                             }
-                                                            className={`${actionButton} hover:bg-[#FEE4E2] hover:text-[#B42318]`}
+                                                            className={`${iconBtn} hover:bg-[#FEE4E2] hover:text-[#B42318]`}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -661,11 +679,11 @@ export default function EmployeesIndex({
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                <div className="mb-3 rounded-full bg-[#F2F4F7] p-4">
-                                    <Users className="h-6 w-6 text-[#98A2B3]" />
+                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F2F4F7]">
+                                    <Users className="h-7 w-7 text-[#98A2B3]" />
                                 </div>
 
-                                <h3 className="font-medium text-[#101828]">
+                                <h3 className="mt-4 text-base font-semibold text-[#101828]">
                                     No employees found
                                 </h3>
 
@@ -679,7 +697,7 @@ export default function EmployeesIndex({
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className={`${outlineBtn} mt-4 py-2`}
+                                        className={`mt-4 ${ghostBtn}`}
                                     >
                                         <X className="h-4 w-4" />
                                         Clear Filters
@@ -690,7 +708,7 @@ export default function EmployeesIndex({
                                         onClick={() =>
                                             setShowAddEmployeeModal(true)
                                         }
-                                        className={`${primaryBtn} mt-4 px-5 py-2`}
+                                        className={`mt-4 ${primaryBtn}`}
                                     >
                                         <UserPlus className="h-4 w-4" />
                                         Add Employee
@@ -699,23 +717,26 @@ export default function EmployeesIndex({
                             </div>
                         )}
 
-                        {/* =================================================
-                            PAGINATION
-                        ================================================== */}
-
+                        {/* Pagination */}
                         {employees.last_page > 1 && (
                             <div className="flex flex-col gap-4 border-t border-[#E4E7EC] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-[#667085]">
                                     Showing{' '}
-                                    <span className="font-medium text-[#101828]">
+                                    <span
+                                        className={`${mono} font-medium text-[#101828]`}
+                                    >
                                         {employees.from ?? 0}
                                     </span>{' '}
                                     to{' '}
-                                    <span className="font-medium text-[#101828]">
+                                    <span
+                                        className={`${mono} font-medium text-[#101828]`}
+                                    >
                                         {employees.to ?? 0}
                                     </span>{' '}
                                     of{' '}
-                                    <span className="font-medium text-[#101828]">
+                                    <span
+                                        className={`${mono} font-medium text-[#101828]`}
+                                    >
                                         {employees.total}
                                     </span>{' '}
                                     employees
@@ -764,7 +785,7 @@ export default function EmployeesIndex({
                                                 className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${
                                                     link.active
                                                         ? 'bg-[#0E7A5A] text-white'
-                                                        : 'text-[#475467] hover:bg-[#F2F4F7]'
+                                                        : 'text-[#344054] hover:bg-[#F2F4F7]'
                                                 }`}
                                                 dangerouslySetInnerHTML={{
                                                     __html: link.label,
@@ -801,10 +822,7 @@ export default function EmployeesIndex({
                 </div>
             </div>
 
-            {/* =============================================================
-                ADD EMPLOYEE MODAL
-            ============================================================== */}
-
+            {/* Add Employee Modal */}
             <AddModal
                 open={showAddEmployeeModal}
                 onClose={() => setShowAddEmployeeModal(false)}
@@ -817,10 +835,7 @@ export default function EmployeesIndex({
                 />
             </AddModal>
 
-            {/* =============================================================
-                UPDATE EMPLOYEE MODAL
-            ============================================================== */}
-
+            {/* Update Employee Modal */}
             {selectedEmployee && showUpdateEmployeeModal && (
                 <UpdateModal
                     open={showUpdateEmployeeModal}
@@ -844,10 +859,7 @@ export default function EmployeesIndex({
                 </UpdateModal>
             )}
 
-            {/* =============================================================
-                DELETE EMPLOYEE MODAL
-            ============================================================== */}
-
+            {/* Delete Employee Modal */}
             {selectedEmployee && showDeleteEmployeeModal && (
                 <DeleteModal
                     open

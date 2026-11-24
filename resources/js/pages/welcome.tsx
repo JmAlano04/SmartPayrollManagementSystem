@@ -1,6 +1,6 @@
-
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Camera } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 /*
@@ -234,6 +234,7 @@ export default function Welcome() {
                         <a href="#security" className="hover:text-[#101828]">Security</a>
                     </nav>
                     <div className="flex items-center gap-2 text-sm">
+                        
                         {auth.user ? (
                             <Link href={route('dashboard')} className={`rounded-full border border-[#D0D5DD] bg-white px-4 py-1.5 hover:border-[#98A2B3] ${focus}`}>
                                 Dashboard
@@ -244,7 +245,17 @@ export default function Welcome() {
                                 <Link href={route('register')} className={`rounded-full bg-[#101828] px-4 py-1.5 font-medium text-white hover:bg-[#1D2939] ${focus}`}>
                                     Get started
                                 </Link>
+
+                                <Link
+                            href={route('clock-in')}
+                            className={`inline-flex items-center gap-1.5 rounded-full bg-[#0E7A5A] px-4 py-1.5 font-medium text-white hover:bg-[#0B6249] ${focus}`}
+                        >
+                            <Camera className="h-4 w-4" />
+                            Clock in
+                        </Link>
                             </>
+
+                            
                         )}
                     </div>
                 </header>
@@ -258,7 +269,14 @@ export default function Welcome() {
                             Tax, overtime and deductions calculate themselves. Anything unusual is flagged for review, and employees clock in with a glance at the camera.
                         </p>
                         <div className="mt-8 flex flex-wrap items-center gap-4">
-                            <Link href={route('register')} className={`rounded-full bg-[#0E7A5A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#0B6249] ${focus}`}>
+                            <Link
+                                href="/clock-in"
+                                className={`inline-flex items-center gap-2 rounded-full bg-[#0E7A5A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#0B6249] ${focus}`}
+                            >
+                                <Camera className="h-4 w-4" />
+                                Clock in now
+                            </Link>
+                            <Link href={route('register')} className={`rounded-full border border-[#D0D5DD] bg-white px-6 py-3 text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] ${focus}`}>
                                 Start free
                             </Link>
                             <a href="#features" className="text-sm font-medium text-[#344054] underline decoration-[#D0D5DD] underline-offset-4 hover:decoration-[#344054]">See what’s inside</a>

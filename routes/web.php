@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -10,6 +9,13 @@ use App\Http\Controllers\PayrunsController as Payruns;
 use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\CostForecastController;
+use App\Http\Controllers\FaceRecognitionController;
+use App\Http\Controllers\GuestAttendanceController;
+use App\Http\Controllers\EmployeePayslipController;
+
+
+use App\Http\Controllers\FaceAttendanceController;
+use App\Http\Controllers\FaceRegistrationController;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -27,6 +33,14 @@ Route::get('/test-pdf', function () {
 
     return $pdf->download('test.pdf');
 });
+
+
+   Route::get('/clock-in', [GuestAttendanceController::class, 'show'])
+    ->name('clock-in');
+
+Route::post('/clock-in', [GuestAttendanceController::class, 'punch'])
+    ->middleware('throttle:10,1')
+    ->name('clock-in.punch');
 
 // AUTHENTICATED ROUTES
 Route::middleware(['auth'])->group(function () {
@@ -52,6 +66,12 @@ Route::middleware(['auth'])->group(function () {
     // PAYSLIPS
     Route::get('/payroll/payslips', [PayslipController::class, 'index'])
         ->name('payslips.index');
+
+    Route::get('/payroll/payslips-employee' , [EmployeePayslipController::class,'index'])
+        ->name('payroll.payslips-employee.index');
+
+    Route::get('/payroll/payslips-employee/download/{payslip}', [EmployeePayslipController::class, 'download'])
+        ->name('employee.payslips.download');
 
     Route::post('/payroll/payslips/generate-payslips', [PayslipController::class, 'store'])
         ->name('payslips.store');
@@ -103,21 +123,18 @@ Route::middleware(['auth'])->group(function () {
         ->name('attendance.destroy');
 
 
-    // COST FORECAST
-    Route::prefix('reports')->group(function () {
+ 
 
-        Route::get('/forecast', [CostForecastController::class, 'index'])
-            ->name('forecast');
-    
-        Route::post('/forecast/generate', [CostForecastController::class, 'generate'])
-            ->name('forecast.generate');
+      
 
-        Route::delete('/forecast/{forecast}', [CostForecastController::class, 'destroy'])
-            ->name('forecast.destroy');
+    Route::middleware(['auth', 'verified'])->get('/face-recognition', [FaceRecognitionController::class, 'show'])->name('camera');
 
-    });
+   
+
 
 });
+
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
